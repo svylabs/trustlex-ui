@@ -17,7 +17,7 @@ const Sidebar = (props: Props) => {
           title="Exchange"
         />
         <NavItem icon="ic:baseline-history" to="/history" title="History" />
-        <NavItem icon="bxs:dollar-circle" to="/amount" title="Amount" />
+        <NavItem icon="bxs:dollar-circle" to="/earn" title="Earn" />
       </div>
     </aside>
   );

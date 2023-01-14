@@ -1,0 +1,23 @@
+.earnPage {
+  padding: 2rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  section {
+    > h3 {
+      color: var(--dark);
+      margin-bottom: 1rem;
+    }
+    .box {
+      background-color: var(--white);
+      padding: 2rem;
+      border-radius: 1rem;
+      border: 1px solid var(--border);
+
+      .subTitle {
+        color: var(--dark);
+        font-size: 2rem;
+      }
+    }
+  }
+}

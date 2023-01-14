@@ -8,19 +8,26 @@
     display: flex;
     flex-direction: column;
     gap: 3rem;
-    .navItem {
-      border-radius: 50%;
-      padding: 1rem;
-      display: grid;
-      place-items: center;
-      cursor: pointer;
-      transition: background 0.3s;
-      &:hover {
-        background-color: var(--border);
+    .navLink {
+      color: var(--dark);
+
+      &.active {
+        color: var(--primary);
       }
-      .icon {
-        font-size: 3.5rem;
-        color: var(--dark);
+
+      .navItem {
+        border-radius: 50%;
+        padding: 1rem;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        transition: background 0.3s;
+        &:hover {
+          background-color: var(--border);
+        }
+        .icon {
+          font-size: 3.5rem;
+        }
       }
     }
   }

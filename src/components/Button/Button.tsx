@@ -8,7 +8,7 @@ type Props = {
 
 const Button = ({ children, indicator }: Props) => {
   return (
-    <MantineButton variant="light" className={styles.button}>
+    <MantineButton className={styles.button}>
       {children} {indicator && <ColorSwatch color={"lime"} size={15} ml={10} />}
     </MantineButton>
   );

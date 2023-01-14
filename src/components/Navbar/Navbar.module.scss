@@ -1,0 +1,25 @@
+.navbar {
+  background-color: var(--white);
+  padding: 1.5rem 3rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  .left {
+    .title {
+      color: var(--black);
+      letter-spacing: 1px;
+      font-size: 2.5rem;
+    }
+    .tagLine {
+      color: var(--dark);
+      letter-spacing: 1px;
+      font-size: 1.7rem;
+    }
+  }
+  .right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+}

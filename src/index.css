@@ -1,0 +1,16 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --background: #fcf7ff;
+  --dark: #4a4453;
+  --border: #4a445320;
+  --white: #ffffff;
+  --black: #000000;
+}
+html {
+  font-size: 62.5%;
+}

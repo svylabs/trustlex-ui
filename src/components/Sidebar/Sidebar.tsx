@@ -3,6 +3,7 @@ import { Icon } from "@iconify/react";
 import styles from "./Sidebar.module.scss";
 import { NavLink } from "react-router-dom";
 import { clsx, Tooltip } from "@mantine/core";
+import { INavItem } from "~/interfaces/INavItem";
 type Props = {};
 
 const Sidebar = (props: Props) => {
@@ -24,15 +25,7 @@ const Sidebar = (props: Props) => {
 
 export default Sidebar;
 
-function NavItem({
-  icon,
-  to,
-  title,
-}: {
-  icon: string;
-  to: string;
-  title?: string;
-}) {
+function NavItem({ icon, to, title }: INavItem) {
   return (
     <Tooltip label={title}>
       <NavLink

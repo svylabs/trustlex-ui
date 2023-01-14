@@ -1,11 +1,6 @@
 import { MantineProvider } from "@mantine/core";
 import Layout from "./components/Layout/Layout";
-import {
-  createBrowserRouter,
-  BrowserRouter,
-  Routes,
-  Route,
-} from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 export default function App() {
   return (

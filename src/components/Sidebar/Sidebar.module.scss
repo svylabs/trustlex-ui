@@ -6,6 +6,7 @@
   border-right: 3px solid var(--black);
 
   .navList {
+    height: 100%;
     display: flex;
     flex-direction: column;
     gap: 3rem;
@@ -13,6 +14,34 @@
     .brandLogo {
       padding-left: 3rem;
       margin-bottom: 2rem;
+    }
+
+    .sidebarUser {
+      justify-self: flex-end;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin: auto 3rem 0 3rem;
+      margin-top: auto;
+      padding: 1rem;
+      border-radius: 1rem;
+      cursor: pointer;
+      &:hover {
+        background-color: var(--darkGray);
+      }
+
+      .userDetails {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        .userFullName {
+          color: var(--gray);
+          font-family: "Inter", sans-serif;
+          font-style: normal;
+          font-weight: 500;
+          font-size: 1.6rem;
+        }
+      }
     }
 
     .navItem {

@@ -1,6 +1,6 @@
 import styles from "./Sidebar.module.scss";
 import { NavLink } from "react-router-dom";
-import { clsx, Image } from "@mantine/core";
+import { Avatar, clsx, Image } from "@mantine/core";
 import { INavItem } from "~/interfaces/INavItem";
 import BrandLogo from "~/components/BrandLogo/BrandLogo";
 type Props = {};
@@ -25,6 +25,13 @@ const Sidebar = (props: Props) => {
         <NavItem icon={"/icons/earn.png"} to="/earn">
           Earn
         </NavItem>
+
+        <div className={styles.sidebarUser}>
+          <Avatar src="/images/user.png" className={styles.avatar} />
+          <div className={styles.userDetails}>
+            <b className={styles.userFullName}>Dmytro H.</b>
+          </div>
+        </div>
       </div>
     </aside>
   );

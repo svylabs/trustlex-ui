@@ -1,8 +1,6 @@
-import React from "react";
-import { Icon } from "@iconify/react";
 import styles from "./Sidebar.module.scss";
 import { NavLink } from "react-router-dom";
-import { clsx, Tooltip } from "@mantine/core";
+import { clsx, Image } from "@mantine/core";
 import { INavItem } from "~/interfaces/INavItem";
 import BrandLogo from "~/components/BrandLogo/BrandLogo";
 type Props = {};
@@ -11,15 +9,22 @@ const Sidebar = (props: Props) => {
   return (
     <aside className={styles.sidebar}>
       <div className={styles.navList}>
-        <BrandLogo />
-        <NavItem icon="ic:round-home" to="/" title="Home" />
-        <NavItem
-          icon="ic:twotone-currency-exchange"
-          to="/exchange"
-          title="Exchange"
-        />
-        <NavItem icon="ic:baseline-history" to="/history" title="History" />
-        <NavItem icon="bxs:dollar-circle" to="/earn" title="Earn" />
+        <div className={styles.brandLogo}>
+          <BrandLogo />
+        </div>
+
+        <NavItem icon={"/icons/Home.png"} to="/">
+          Home
+        </NavItem>
+        <NavItem icon={"/icons/exchange.png"} to="/exchange">
+          Exchange
+        </NavItem>
+        <NavItem icon={"/icons/recent.png"} to="/history">
+          History
+        </NavItem>
+        <NavItem icon={"/icons/earn.png"} to="/earn">
+          Earn
+        </NavItem>
       </div>
     </aside>
   );
@@ -27,19 +32,18 @@ const Sidebar = (props: Props) => {
 
 export default Sidebar;
 
-function NavItem({ icon, to, title }: INavItem) {
+function NavItem({ icon, to, children }: INavItem) {
   return (
-    <Tooltip label={title}>
+    <div className={styles.navItem}>
       <NavLink
         to={to}
         className={({ isActive }) =>
           isActive ? clsx(styles.active, styles.navLink) : styles.navLink
         }
       >
-        <span className={styles.navItem}>
-          <Icon icon={icon} className={styles.icon} />
-        </span>
+        <Image alt={children} src={icon} className={styles.icon} />
+        <span className={styles.navItem}>{children}</span>
       </NavLink>
-    </Tooltip>
+    </div>
   );
 }

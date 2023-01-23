@@ -12,7 +12,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       <Grid.Col span={"auto"}>
         <Stack>
           <Navbar />
-          {children}
+          <main className={styles.content}>{children}</main>
         </Stack>
       </Grid.Col>
     </Grid>

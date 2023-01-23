@@ -5,7 +5,11 @@ import Earn from "~/pages/Earn/Earn";
 
 export default function App() {
   return (
-    <MantineProvider withGlobalStyles withNormalizeCSS>
+    <MantineProvider
+      theme={{ colorScheme: "dark" }}
+      withGlobalStyles
+      withNormalizeCSS
+    >
       <BrowserRouter>
         <Layout>
           <Routes>

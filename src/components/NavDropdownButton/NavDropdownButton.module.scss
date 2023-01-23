@@ -1,0 +1,28 @@
+.root {
+  align-self: flex-start;
+  height: fit-content;
+  border: 2px solid #4d5161;
+  border-radius: 14px;
+
+  .navButton {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 1rem;
+    gap: 1rem;
+    .icon {
+      width: 2.5rem;
+    }
+    .title {
+      font-family: "Inter", sans-serif;
+      font-style: normal;
+      font-weight: 600;
+      font-size: 1.4rem;
+      color: var(--white);
+    }
+    > .chevronIcon {
+      font-size: 2rem;
+      color: var(--white);
+    }
+  }
+}

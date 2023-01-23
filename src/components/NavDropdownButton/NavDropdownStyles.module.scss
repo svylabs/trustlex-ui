@@ -1,0 +1,30 @@
+.dropdown {
+  position: sticky;
+  top: 0;
+  width: 100% !important;
+  padding: 1rem;
+  padding-top: 0;
+  background-color: transparent;
+  border: none;
+}
+
+.item {
+  width: 100%;
+  font-family: "Inter", sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: var(--white);
+  border-radius: 0.8rem;
+
+  &:hover {
+    box-shadow: 0px 10px 20px rgba(251, 204, 100, 0.25);
+    background: linear-gradient(
+        0deg,
+        rgba(255, 255, 255, 0.2),
+        rgba(255, 255, 255, 0.2)
+      ),
+      linear-gradient(180deg, #ffd572 0%, #febd38 100%);
+    color: var(--black);
+  }
+}

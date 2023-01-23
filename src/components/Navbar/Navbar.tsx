@@ -1,18 +1,30 @@
-import React from "react";
 import styles from "./Navbar.module.scss";
-import Button from "~/components/Button/Button";
+import NavDropdownButton from "../NavDropdownButton/NavDropdownButton";
 type Props = {};
 
 const Navbar = (props: Props) => {
   return (
     <nav className={styles.navbar}>
-      <div className={styles.left}>
-        <h2 className={styles.title}>Trustlex</h2>
-        <p className={styles.tagLine}>Non custodial Bitcoin-Crypto exchange</p>
-      </div>
+      <div className={styles.left}></div>
       <div className={styles.right}>
-        <Button indicator> Bitcoin </Button>
-        <Button indicator> Ethereum </Button>
+        <NavDropdownButton
+          title="Bitcoin"
+          icon="/icons/bitcoin.svg"
+          dropdownItems={[
+            { title: " BTC RPC URL", href: "" },
+            { title: " RPC Password", href: "" },
+            { title: " RPC Username", href: "" },
+          ]}
+        />
+        <NavDropdownButton
+          title="Ethereum"
+          icon="/icons/etherium.svg"
+          dropdownItems={[
+            { title: " BTC RPC URL", href: "" },
+            { title: " RPC Password", href: "" },
+            { title: " RPC Username", href: "" },
+          ]}
+        />
       </div>
     </nav>
   );

@@ -5,7 +5,9 @@
 }
 
 :root {
-  --background: #fcf7ff;
+  --background: #161619;
+  --gray: #737375;
+  --darkGray: #1d1d20;
   --dark: #4a4453;
   --border: #4a445320;
   --white: #ffffff;

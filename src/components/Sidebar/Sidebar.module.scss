@@ -1,8 +1,9 @@
 .sidebar {
+  width: 27rem;
   padding: 2rem 2.5rem;
-  background-color: var(--white);
+  background-color: var(--background);
   height: 100%;
-  border-right: 1px solid var(--border);
+  border-right: 3px solid var(--black);
 
   .navList {
     display: flex;

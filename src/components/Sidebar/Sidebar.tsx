@@ -4,12 +4,14 @@ import styles from "./Sidebar.module.scss";
 import { NavLink } from "react-router-dom";
 import { clsx, Tooltip } from "@mantine/core";
 import { INavItem } from "~/interfaces/INavItem";
+import BrandLogo from "~/components/BrandLogo/BrandLogo";
 type Props = {};
 
 const Sidebar = (props: Props) => {
   return (
     <aside className={styles.sidebar}>
       <div className={styles.navList}>
+        <BrandLogo />
         <NavItem icon="ic:round-home" to="/" title="Home" />
         <NavItem
           icon="ic:twotone-currency-exchange"

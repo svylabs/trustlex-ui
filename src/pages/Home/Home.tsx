@@ -19,6 +19,11 @@ const data1 = [
     label: "ETH",
     icon: <ImageIcon image={"/icons/etherium.svg"} />,
   },
+  {
+    value: "solana",
+    label: "SOL",
+    icon: <ImageIcon image={"/icons/etherium.svg"} />,
+  },
 ];
 
 const data2 = [

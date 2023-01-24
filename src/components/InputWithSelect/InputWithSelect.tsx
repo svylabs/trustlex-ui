@@ -1,6 +1,6 @@
 import { Icon } from "@iconify/react";
 import { Menu, TextInput } from "@mantine/core";
-import React, { useState } from "react";
+import React, { forwardRef, useState } from "react";
 import Button from "../Button/Button";
 import ImageIcon from "../ImageIcon/ImageIcon";
 import styles from "./InputWithSelect.module.scss";
@@ -37,7 +37,7 @@ export function InputWithSelect({
 
   const disabled = options.length < 2;
   const select = (
-    <Menu closeOnClickOutside>
+    <Menu closeOnClickOutside classNames={styles}>
       <Menu.Target>
         <Button
           variant="default"
@@ -63,9 +63,7 @@ export function InputWithSelect({
               key={item.value}
               onClick={() => setSelectedOptionValue(item.value)}
             >
-              <Button variant="default" leftIcon={item.icon}>
-                {item.label}
-              </Button>
+              {item.icon} {item.label}
             </Menu.Item>
           ))}
       </Menu.Dropdown>
@@ -89,3 +87,7 @@ export function InputWithSelect({
     />
   );
 }
+
+// const SelectMenuTarget = forwardRef(() => {
+//   return
+// })

@@ -3,3 +3,21 @@
   gap: 2rem;
   align-items: center;
 }
+
+.buttonIcon {
+  width: 1.8rem;
+}
+
+.variant-primary {
+  background: linear-gradient(180deg, #ffd572 0%, #febd38 100%);
+  box-shadow: 0px 10px 20px rgba(251, 204, 100, 0.25);
+  border-radius: 1rem;
+}
+
+.variant-default {
+  background-color: transparent;
+
+  &:hover {
+    background: none;
+  }
+}

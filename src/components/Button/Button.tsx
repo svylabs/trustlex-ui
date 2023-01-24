@@ -1,15 +1,28 @@
 import React from "react";
-import { Button as MantineButton, ColorSwatch } from "@mantine/core";
+import { Button as MantineButton, clsx } from "@mantine/core";
 import styles from "./Button.module.scss";
 type Props = {
   children: React.ReactNode;
-  indicator?: boolean;
+  variant?: "default" | "primary";
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
 };
 
-const Button = ({ children, indicator }: Props) => {
+const Button = ({
+  children,
+  variant,
+  leftIcon,
+  rightIcon,
+  ...props
+}: Props) => {
   return (
-    <MantineButton className={styles.button}>
-      {children} {indicator && <ColorSwatch color={"lime"} size={15} ml={10} />}
+    <MantineButton
+      {...props}
+      className={clsx(styles.button, styles[`variant-${variant}`])}
+      leftIcon={leftIcon}
+      rightIcon={rightIcon}
+    >
+      {children}
     </MantineButton>
   );
 };

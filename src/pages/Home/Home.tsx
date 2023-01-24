@@ -36,6 +36,14 @@ const Home = (props: Props) => {
           value="$ 25 Million"
         />
       </div>
+
+      <GradientBackgroundContainer
+        colorRight="#FEBD38b3"
+        colorLeft="#FEBD3833"
+        bgImage="/images/Rectangle-large.png"
+      >
+        <div>Hello</div>
+      </GradientBackgroundContainer>
     </div>
   );
 };

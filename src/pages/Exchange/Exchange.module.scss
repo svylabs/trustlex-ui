@@ -19,7 +19,7 @@
 
   .exchangeForm {
     margin-top: 4rem;
-    height: 40rem;
+    height: 55rem;
     .exchangeFormContent {
       display: grid;
       grid-template-columns: 1fr 5rem 1fr;
@@ -27,4 +27,10 @@
       padding: 2rem;
     }
   }
+}
+
+.collateralLabel {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }

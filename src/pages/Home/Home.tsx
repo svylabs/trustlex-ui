@@ -1,4 +1,6 @@
 import React from "react";
+import GradientBackgroundContainer from "~/components/GradientBackgroundContainer/GradientBackgroundContainer";
+import HomepageCard from "~/components/HomepageCard/HomepageCard";
 import styles from "./Home.module.scss";
 
 type Props = {};
@@ -39,29 +41,3 @@ const Home = (props: Props) => {
 };
 
 export default Home;
-
-const HomepageCard = ({
-  color,
-  icon,
-  title,
-  value,
-}: {
-  icon: string;
-  title: string;
-  value: string;
-  color: string;
-}) => {
-  return (
-    <div className={styles.card}>
-      <div className={styles.content}>
-        <img src={icon} className={styles.icon} />
-        <div className={styles.details}>
-          <h4>{title}</h4>
-          <p>{value}</p>
-        </div>
-      </div>
-      <div className={styles.layer}></div>
-      <div className={styles.gradientLayer} style={{ background: color }}></div>
-    </div>
-  );
-};

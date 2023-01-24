@@ -14,16 +14,6 @@ const data1 = [
     label: "BTC",
     icon: <ImageIcon image={"/icons/bitcoin.svg"} />,
   },
-  {
-    value: "eth",
-    label: "ETH",
-    icon: <ImageIcon image={"/icons/etherium.svg"} />,
-  },
-  {
-    value: "solana",
-    label: "SOL",
-    icon: <ImageIcon image={"/icons/etherium.svg"} />,
-  },
 ];
 
 const data2 = [
@@ -34,6 +24,19 @@ const data2 = [
   {
     label: "No Limit",
     value: "no-limit",
+  },
+];
+
+const data3 = [
+  {
+    value: "eth",
+    label: "ETH",
+    icon: <ImageIcon image={"/icons/ethereum-2.svg"} />,
+  },
+  {
+    value: "solana",
+    label: "SOL",
+    icon: <ImageIcon image={"/icons/bitcoin.svg"} />,
   },
 ];
 
@@ -93,7 +96,12 @@ const Home = (props: Props) => {
                 </Button>
               </div>
               <div className={styles.right}>
-                <p>Pay</p>
+                <InputWithSelect
+                  options={data3}
+                  type="number"
+                  value={10.0}
+                  label={"Pay with (In your wallet: 10 Ethereum)"}
+                />
               </div>
             </div>
           </GradientBackgroundContainer>

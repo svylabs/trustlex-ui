@@ -1,0 +1,38 @@
+.input {
+  border: none;
+  border-bottom: 1px solid #ffffff50;
+  border-radius: 0;
+  background-color: transparent;
+  font-family: "Poppins", sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 4.8rem;
+  height: 6.4rem;
+  padding: 1rem 0;
+  color: var(--white);
+
+  &:focus {
+    border-bottom: 1px solid #ffffff50;
+  }
+
+  &::placeholder {
+    font-weight: 500;
+    font-size: 2.4rem;
+    color: #808080;
+  }
+}
+.label {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 500;
+  font-size: 1.3rem;
+  color: #808080;
+}
+.chevronIcon {
+  font-size: 2rem;
+}
+
+.dropdown {
+  background-color: var(--darkGray);
+  border-color: var(--gray);
+}

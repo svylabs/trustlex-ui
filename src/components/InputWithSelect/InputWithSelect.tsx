@@ -1,8 +1,9 @@
 import { Icon } from "@iconify/react";
-import { Menu, TextInput } from "@mantine/core";
+import { Menu, TextInput, TextInputProps } from "@mantine/core";
 import React, { forwardRef, useState } from "react";
 import Button from "../Button/Button";
 import ImageIcon from "../ImageIcon/ImageIcon";
+import Input from "../Input/Input";
 import styles from "./InputWithSelect.module.scss";
 
 interface ISelectOption {
@@ -26,7 +27,6 @@ export function InputWithSelect({
   placeholder,
   type = "text",
 }: Props) {
-  const [inputValue, setInputValue] = useState(value);
   const [selectedOptionValue, setSelectedOptionValue] = useState(
     options[0]?.value
   );
@@ -70,24 +70,14 @@ export function InputWithSelect({
     </Menu>
   );
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
-  };
-
   return (
-    <TextInput
-      classNames={styles}
+    <Input
       type={type}
       placeholder={placeholder}
-      value={inputValue}
-      onChange={handleChange}
       label={label}
+      value={value}
       rightSection={select}
       rightSectionWidth={100}
     />
   );
 }
-
-// const SelectMenuTarget = forwardRef(() => {
-//   return
-// })

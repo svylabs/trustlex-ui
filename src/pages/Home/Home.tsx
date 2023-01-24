@@ -1,9 +1,12 @@
 import React from "react";
 import Button from "~/components/Button/Button";
+import ExchangeGridLayout from "~/components/ExchangeGridLayout/ExchangeGridLayout";
+import ExchangeSwapGroup from "~/components/ExchangeSwapGroup/ExchangeSwapGroup";
 import GradientBackgroundContainer from "~/components/GradientBackgroundContainer/GradientBackgroundContainer";
 import HomepageCard from "~/components/HomepageCard/HomepageCard";
 import ImageIcon from "~/components/ImageIcon/ImageIcon";
 import { InputWithSelect } from "~/components/InputWithSelect/InputWithSelect";
+import SpanFullGridWidth from "~/components/SpanFullGridWidth/SpanFullGridWidth";
 import styles from "./Home.module.scss";
 
 type Props = {};
@@ -75,35 +78,50 @@ const Home = (props: Props) => {
             colorLeft="#FEBD3833"
             bgImage="/images/Rectangle-large.png"
           >
-            <div className={styles.buySection}>
-              <div className={styles.left}>
-                <InputWithSelect
-                  options={data1}
-                  type="number"
-                  value={0.0029}
-                  label={"Buy"}
-                />
-                <InputWithSelect
-                  options={data2}
-                  type="number"
-                  placeholder={"Limit price BTC/ETC"}
-                />
-                <Button variant="primary">Confirm</Button>
-              </div>
-              <div className={styles.middle}>
+            <div className={styles.bottomSectionContent}>
+              <SpanFullGridWidth>
+                <ExchangeSwapGroup />
+              </SpanFullGridWidth>
+              <InputWithSelect
+                options={data2}
+                type="number"
+                placeholder={"Limit price BTC/ETC"}
+              />
+              <div></div>
+              <div></div>
+              <Button variant="primary">Confirm</Button>
+            </div>
+            {/* <ExchangeGridLayout
+              left={
+                <div className={styles.left}>
+                  <InputWithSelect
+                    options={data1}
+                    type="number"
+                    value={0.0029}
+                    label={"Buy"}
+                  />
+                  <InputWithSelect
+                    options={data2}
+                    type="number"
+                    placeholder={"Limit price BTC/ETC"}
+                  />
+                  <Button variant="primary">Confirm</Button>
+                </div>
+              }
+              middle={
                 <Button variant="default">
                   <ImageIcon image="/icons/swap.svg" />
                 </Button>
-              </div>
-              <div className={styles.right}>
+              }
+              right={
                 <InputWithSelect
                   options={data3}
                   type="number"
                   value={10.0}
                   label={"Pay with (In your wallet: 10 Ethereum)"}
                 />
-              </div>
-            </div>
+              }
+            /> */}
           </GradientBackgroundContainer>
         </div>
       </div>

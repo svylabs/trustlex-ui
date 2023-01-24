@@ -3,6 +3,7 @@ import Layout from "./components/Layout/Layout";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Earn from "~/pages/Earn/Earn";
 import Home from "~/pages/Home/Home";
+import Exchange from "~/pages/Exchange/Exchange";
 
 export default function App() {
   return (
@@ -15,7 +16,7 @@ export default function App() {
         <Layout>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/exchange" element={<h1>Exchange</h1>} />
+            <Route path="/exchange" element={<Exchange />} />
             <Route path="/history" element={<h1>History</h1>} />
             <Route path="/earn" element={<Earn />} />
           </Routes>

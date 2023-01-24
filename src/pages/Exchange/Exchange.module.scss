@@ -1,0 +1,30 @@
+.root {
+  .pageTitle,
+  .pageDesc {
+    font-family: "Inter", sans-serif;
+    font-style: normal;
+  }
+  .pageTitle {
+    font-weight: 600;
+    font-size: 3.8rem;
+    color: var(--white);
+  }
+
+  .pageDesc {
+    font-weight: 500;
+    font-size: 1.4rem;
+    color: var(--white);
+    opacity: 0.5;
+  }
+
+  .exchangeForm {
+    margin-top: 4rem;
+    height: 40rem;
+    .exchangeFormContent {
+      display: grid;
+      grid-template-columns: 1fr 5rem 1fr;
+      gap: 3rem;
+      padding: 2rem;
+    }
+  }
+}

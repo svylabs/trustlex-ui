@@ -33,21 +33,23 @@
   .bottomSection {
     grid-area: main;
     height: 35rem;
+
+    .bottomSectionContent {
+      display: grid;
+      grid-template-columns: 1fr 5rem 1fr;
+      gap: 3rem;
+      padding: 2rem;
+    }
   }
 
-  .buySection {
-    display: grid;
-    grid-template-columns: 1fr 5rem 1fr;
-    gap: 2rem;
-    padding: 2rem;
-    .left {
-      display: flex;
-      flex-direction: column;
-      gap: 3.5rem;
-    }
-    .middle {
-      display: flex;
-      justify-content: center;
-    }
+  .left {
+    display: flex;
+    flex-direction: column;
+    gap: 3.5rem;
   }
+  .middle {
+    display: flex;
+    justify-content: center;
+  }
+  // }
 }

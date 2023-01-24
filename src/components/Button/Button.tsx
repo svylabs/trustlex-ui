@@ -6,6 +6,7 @@ type Props = {
   variant?: "default" | "primary";
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
+  disabled?: boolean;
 };
 
 const Button = ({
@@ -13,6 +14,7 @@ const Button = ({
   variant,
   leftIcon,
   rightIcon,
+  disabled,
   ...props
 }: Props) => {
   return (
@@ -21,6 +23,7 @@ const Button = ({
       className={clsx(styles.button, styles[`variant-${variant}`])}
       leftIcon={leftIcon}
       rightIcon={rightIcon}
+      disabled={disabled}
     >
       {children}
     </MantineButton>

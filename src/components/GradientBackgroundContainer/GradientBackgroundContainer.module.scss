@@ -4,6 +4,7 @@
   backdrop-filter: blur(8px);
   position: relative;
   overflow: hidden;
+  height: 100%;
   .layer {
     background-repeat: no-repeat;
     background-size: cover;
@@ -11,6 +12,7 @@
     opacity: 0.2;
     width: 100%;
     min-height: 13rem;
+    height: 100%;
     z-index: 2;
     filter: blur(2px);
   }

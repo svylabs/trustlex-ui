@@ -19,8 +19,8 @@ const Sidebar = (props: Props) => {
         <NavItem icon={"/icons/exchange.png"} to="/exchange">
           Exchange
         </NavItem>
-        <NavItem icon={"/icons/recent.png"} to="/history">
-          History
+        <NavItem icon={"/icons/recent.png"} to="/recent">
+          Recent
         </NavItem>
         <NavItem icon={"/icons/earn.png"} to="/earn">
           Earn

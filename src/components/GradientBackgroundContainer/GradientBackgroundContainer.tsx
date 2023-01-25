@@ -1,6 +1,5 @@
 import { clsx } from "@mantine/core";
-import { useElementSize } from "@mantine/hooks";
-import React, { useRef } from "react";
+import React from "react";
 import styles from "./GradientBackgroundContainer.module.scss";
 type Props = {
   children: React.ReactNode;
@@ -15,16 +14,8 @@ const GradientBackgroundContainer = ({
   colorRight,
   bgImage,
 }: Props) => {
-  const { ref } = useElementSize();
-
   return (
-    <div
-      className={styles.root}
-      style={{ height: `${ref.current?.scrollHeight / 10}rem` }}
-    >
-      <div className={styles.content} ref={ref}>
-        {children}
-      </div>
+    <div className={styles.root}>
       <div
         className={styles.layer}
         style={{
@@ -41,6 +32,7 @@ const GradientBackgroundContainer = ({
         className={clsx(styles.gradientLayer, styles.right)}
         style={{ background: colorRight }}
       ></div>
+      <div className={styles.content}>{children}</div>
     </div>
   );
 };

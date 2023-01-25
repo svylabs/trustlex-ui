@@ -46,6 +46,16 @@ const data3 = [
   },
 ];
 
+const cols = [
+  "# of order",
+  "Planning to sell",
+  "Planning to buy",
+  "Price per ETH in BTC",
+  "Left to buy",
+  "Offer valid for",
+  "Date",
+];
+
 // const tableData: IExchangeTableRow[] = [
 //   {
 //     orderNumber: 1211,
@@ -192,6 +202,7 @@ const Exchange = (props: Props) => {
           <div className={styles.innerWrapper}>
             <Table
               tableCaption="All offers"
+              cols={cols}
               data={tableData}
               verticalSpacing={"lg"}
             />

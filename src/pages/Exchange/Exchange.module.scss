@@ -24,14 +24,13 @@
       display: grid;
       grid-template-columns: 1fr 5rem 1fr;
       gap: 3rem;
-      padding: 1rem 2rem;
+      padding: 2rem;
     }
   }
   .offersTable {
     margin-top: 4rem;
     .innerWrapper {
       padding: 3rem;
-      // padding-bottom: 4rem;
     }
   }
 }

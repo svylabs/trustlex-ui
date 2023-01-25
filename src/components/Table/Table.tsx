@@ -4,27 +4,14 @@ import { Table as MantineTable, TableProps } from "@mantine/core";
 
 interface Props extends TableProps {
   tableCaption?: string;
+  cols: string[];
   data: (string | ReactNode)[][];
 }
 
-const cols = [
-  "# of order",
-  "Planning to sell",
-  "Planning to buy",
-  "Price per ETH in BTC",
-  "Left to buy",
-  "Offer valid for",
-  "Date",
-];
-
-// {row.planningToSell.amount}{" "}
-//                 <ImageIcon
-//                   image={getIconFromCurrencyType(row.planningToSell.type)}
-//                 />{" "}
-//                 {row.planningToSell.type}
 const Table = ({
   tableCaption,
   data,
+  cols,
   verticalSpacing = "md",
   ...props
 }: Props) => {

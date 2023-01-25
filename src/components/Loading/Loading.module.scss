@@ -2,21 +2,21 @@
   color: var(--darkGray);
   display: inline-block;
   position: relative;
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
 }
 .lds-spinner div {
-  transform-origin: 11px 11px;
+  transform-origin: 7.5px 7.5px;
   animation: lds-spinner 1.2s linear infinite;
 }
 .lds-spinner div:after {
   content: " ";
   display: block;
   position: absolute;
-  top: 0.825px;
-  left: 10.875px;
-  width: 1.65px;
-  height: 4.95px;
+  top: 0.5625px;
+  left: 7.414px;
+  width: 1.125px;
+  height: 3.375px;
   border-radius: 20%;
   background: #fff;
 }

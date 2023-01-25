@@ -34,7 +34,12 @@ const Button = forwardRef<HTMLButtonElement, Props>(
         rightIcon={rightIcon}
         disabled={disabled}
       >
-        {loading && <Loading />} &nbsp; {children}
+        {loading && (
+          <>
+            <Loading /> &nbsp;{" "}
+          </>
+        )}
+        {children}
       </MantineButton>
     );
   }

@@ -1,7 +1,6 @@
 import { Center } from "@mantine/core";
-import React from "react";
+import React, { useState } from "react";
 import Button from "~/components/Button/Button";
-import ExchangeGridLayout from "~/components/ExchangeGridLayout/ExchangeGridLayout";
 import ExchangeSwapGroup from "~/components/ExchangeSwapGroup/ExchangeSwapGroup";
 import GradientBackgroundContainer from "~/components/GradientBackgroundContainer/GradientBackgroundContainer";
 import ImageIcon from "~/components/ImageIcon/ImageIcon";
@@ -11,7 +10,6 @@ import Select from "~/components/Select/Select";
 import SpanFullGridWidth from "~/components/SpanFullGridWidth/SpanFullGridWidth";
 import Table from "~/components/Table/Table";
 import { CurrencyEnum } from "~/enums/CurrencyEnum";
-import { IExchangeTableRow } from "~/interfaces/IExchangeTableRow";
 import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";
 import styles from "./Exchange.module.scss";
 type Props = {};
@@ -70,7 +68,7 @@ const data3 = [
 //   },
 // ];
 
-const tableData = new Array(5).fill([
+const tableDummyData: string[][] = new Array(5).fill([
   1211,
   <>
     10 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />{" "}
@@ -93,6 +91,17 @@ const tableData = new Array(5).fill([
 ]);
 
 const Exchange = (props: Props) => {
+  const [tableData, setTableData] = useState<string[][]>(tableDummyData);
+  const [isMoreTableDataLoading, setMoreTableDataLoading] = useState(false);
+
+  const loadMoreOffers = () => {
+    setMoreTableDataLoading(true);
+    setTimeout(() => {
+      setTableData([...tableData, ...tableDummyData]);
+      setMoreTableDataLoading(false);
+    }, 2000);
+  };
+
   return (
     <div className={styles.root}>
       <h1 className={styles.pageTitle}>Exchange</h1>
@@ -188,7 +197,11 @@ const Exchange = (props: Props) => {
             />
             <br />
             <Center>
-              <Button variant="outlined" loading>
+              <Button
+                variant="outlined"
+                loading={isMoreTableDataLoading}
+                onClick={loadMoreOffers}
+              >
                 Load more
               </Button>
             </Center>

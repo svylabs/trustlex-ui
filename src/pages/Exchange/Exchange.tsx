@@ -9,74 +9,16 @@ import { InputWithSelect } from "~/components/InputWithSelect/InputWithSelect";
 import Select from "~/components/Select/Select";
 import SpanFullGridWidth from "~/components/SpanFullGridWidth/SpanFullGridWidth";
 import Table from "~/components/Table/Table";
+import {
+  data2,
+  exchangeTableCols,
+  minCollateral,
+  offerValidity,
+} from "~/data/exchangePage";
 import { CurrencyEnum } from "~/enums/CurrencyEnum";
 import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";
 import styles from "./Exchange.module.scss";
 type Props = {};
-
-const data1 = [
-  {
-    value: "btc",
-    label: "BTC",
-    icon: <ImageIcon image={"/icons/bitcoin.svg"} />,
-  },
-];
-
-const data2 = [
-  {
-    label: "Limit",
-    value: "limit",
-  },
-  {
-    label: "No Limit",
-    value: "no-limit",
-  },
-];
-
-const data3 = [
-  {
-    value: "eth",
-    label: "ETH",
-    icon: <ImageIcon image={"/icons/ethereum-2.svg"} />,
-  },
-  {
-    value: "solana",
-    label: "SOL",
-    icon: <ImageIcon image={"/icons/bitcoin.svg"} />,
-  },
-];
-
-const cols = [
-  "# of order",
-  "Planning to sell",
-  "Planning to buy",
-  "Price per ETH in BTC",
-  "Left to buy",
-  "Offer valid for",
-  "Date",
-];
-
-// const tableData: IExchangeTableRow[] = [
-//   {
-//     orderNumber: 1211,
-//     planningToSell: {
-//       amount: 10,
-//       type: CurrencyEnum.ETH,
-//     },
-//     planningToBuy: {
-//       amount: 0.078,
-//       type: CurrencyEnum.BTC,
-//     },
-//     rateInBTC: 0.078,
-//     leftToBuy: {
-//       left: 1,
-//       total: 10,
-//       type: CurrencyEnum.ETH,
-//     },
-//     validFor: "1h",
-//     date: new Date(),
-//   },
-// ];
 
 const tableDummyData: string[][] = new Array(5).fill([
   1211,
@@ -141,23 +83,7 @@ const Exchange = (props: Props) => {
                 placeholder="Type here"
               />
             </SpanFullGridWidth>
-            <Select
-              label="Offer valid for"
-              data={[
-                {
-                  label: "5 hours",
-                  value: "5hrs",
-                },
-                {
-                  label: "10 hours",
-                  value: "10hrs",
-                },
-                {
-                  label: "1 day",
-                  value: "1d",
-                },
-              ]}
-            />
+            <Select label="Offer valid for" data={offerValidity} />
             <div></div>
             <Select
               label={
@@ -165,28 +91,7 @@ const Exchange = (props: Props) => {
                   <ImageIcon image="/icons/info.svg" /> Minimum Collateral{" "}
                 </span>
               }
-              data={[
-                {
-                  label: "0%",
-                  value: "0",
-                },
-                {
-                  label: "5%",
-                  value: "5",
-                },
-                {
-                  label: "10%",
-                  value: "10",
-                },
-                {
-                  label: "15%",
-                  value: "15",
-                },
-                {
-                  label: "20%",
-                  value: "20",
-                },
-              ]}
+              data={minCollateral}
             />
             <Button variant="primary">Confirm</Button>
           </div>
@@ -202,7 +107,7 @@ const Exchange = (props: Props) => {
           <div className={styles.innerWrapper}>
             <Table
               tableCaption="All offers"
-              cols={cols}
+              cols={exchangeTableCols}
               data={tableData}
               verticalSpacing={"lg"}
             />

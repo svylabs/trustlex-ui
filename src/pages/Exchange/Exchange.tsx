@@ -184,6 +184,10 @@ const Exchange = (props: Props) => {
             data={tableData}
             verticalSpacing={"lg"}
           />
+          <br />
+          <Button variant="outlined" loading>
+            Load more
+          </Button>
         </GradientBackgroundContainer>
       </div>
     </div>

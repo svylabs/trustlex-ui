@@ -1,17 +1,28 @@
 import React, { forwardRef } from "react";
 import { Button as MantineButton, ButtonProps, clsx } from "@mantine/core";
 import styles from "./Button.module.scss";
+import ImageIcon from "../ImageIcon/ImageIcon";
+import Loading from "../Loading/Loading";
 interface Props extends React.ComponentPropsWithoutRef<"button"> {
   children: React.ReactNode;
-  variant?: "default" | "primary";
+  variant?: "default" | "primary" | "outlined";
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   disabled?: boolean;
+  loading?: boolean;
 }
 
 const Button = forwardRef<HTMLButtonElement, Props>(
   (
-    { children, variant, leftIcon, rightIcon, disabled, ...props }: Props,
+    {
+      children,
+      variant,
+      leftIcon,
+      rightIcon,
+      disabled,
+      loading,
+      ...props
+    }: Props,
     ref
   ) => {
     return (
@@ -23,7 +34,7 @@ const Button = forwardRef<HTMLButtonElement, Props>(
         rightIcon={rightIcon}
         disabled={disabled}
       >
-        {children}
+        {loading && <Loading />} &nbsp; {children}
       </MantineButton>
     );
   }

@@ -10,11 +10,14 @@
   color: var(--white);
   text-align: center;
   height: auto;
-  padding: 1.4rem 0;
+  padding: 1.4rem 1.8rem;
 
   &:disabled {
     color: var(--white);
     background-color: transparent;
+  }
+  &:hover {
+    background-color: unset;
   }
 }
 
@@ -34,6 +37,16 @@
   color: #161619;
 }
 
+.variant-outlined {
+  background: none;
+  border: 1px solid #4d5161;
+  filter: drop-shadow(0px 10px 20px rgba(251, 204, 100, 0.25));
+  border-radius: 1rem;
+  font-family: "Poppins", sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+}
 .variant-default {
   background-color: transparent;
 

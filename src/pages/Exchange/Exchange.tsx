@@ -1,3 +1,4 @@
+import { Center } from "@mantine/core";
 import React from "react";
 import Button from "~/components/Button/Button";
 import ExchangeGridLayout from "~/components/ExchangeGridLayout/ExchangeGridLayout";
@@ -69,7 +70,7 @@ const data3 = [
 //   },
 // ];
 
-const tableData = new Array(10).fill([
+const tableData = new Array(5).fill([
   1211,
   <>
     10 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />{" "}
@@ -179,15 +180,19 @@ const Exchange = (props: Props) => {
           colorLeft="#FEBD3833"
           bgImage="/images/Rectangle-large.png"
         >
-          <Table
-            tableCaption="All offers"
-            data={tableData}
-            verticalSpacing={"lg"}
-          />
-          <br />
-          <Button variant="outlined" loading>
-            Load more
-          </Button>
+          <div className={styles.innerWrapper}>
+            <Table
+              tableCaption="All offers"
+              data={tableData}
+              verticalSpacing={"lg"}
+            />
+            <br />
+            <Center>
+              <Button variant="outlined" loading>
+                Load more
+              </Button>
+            </Center>
+          </div>
         </GradientBackgroundContainer>
       </div>
     </div>

@@ -12,8 +12,14 @@
   --border: #4a445320;
   --white: #ffffff;
   --black: #000000;
-  --primary: #805ec2;
+  --primary: #febd38;
 }
+
+@font-face {
+  font-family: SFProText;
+  src: url("../public/fonts/SFProText-Medium.ttf");
+}
+
 html {
   font-size: 62.5%;
 }

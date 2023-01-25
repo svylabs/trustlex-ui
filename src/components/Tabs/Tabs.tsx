@@ -10,6 +10,7 @@ interface Props {
 const Tabs = ({ tabs, panels, defaultValue, ...props }: Props) => {
   return (
     <MantineTabs
+      variant="outline"
       classNames={styles}
       defaultValue={defaultValue || tabs[0].value}
       {...props}

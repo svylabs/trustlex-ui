@@ -7,6 +7,7 @@ import HomepageCard from "~/components/HomepageCard/HomepageCard";
 import ImageIcon from "~/components/ImageIcon/ImageIcon";
 import { InputWithSelect } from "~/components/InputWithSelect/InputWithSelect";
 import SpanFullGridWidth from "~/components/SpanFullGridWidth/SpanFullGridWidth";
+import { VariantsEnum } from "~/enums/VariantsEnum";
 import styles from "./Home.module.scss";
 
 type Props = {};
@@ -89,7 +90,9 @@ const Home = (props: Props) => {
               />
               <div></div>
               <div></div>
-              <Button variant="primary">Confirm</Button>
+              <Button variant={VariantsEnum.primary} radius="md">
+                Confirm
+              </Button>
             </div>
             {/* <ExchangeGridLayout
               left={

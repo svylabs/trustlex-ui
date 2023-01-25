@@ -1,4 +1,5 @@
 import React from "react";
+import { VariantsEnum } from "~/enums/VariantsEnum";
 import Button from "../Button/Button";
 import ExchangeGridLayout from "../ExchangeGridLayout/ExchangeGridLayout";
 import ImageIcon from "../ImageIcon/ImageIcon";
@@ -43,7 +44,7 @@ const ExchangeSwapGroup = (props: Props) => {
     <ExchangeGridLayout
       left={<InputWithSelect options={data1} label="Buy" value={0.0029} />}
       middle={
-        <Button variant="default">
+        <Button variant={VariantsEnum.default}>
           <ImageIcon image="/icons/swap.svg" />
         </Button>
       }

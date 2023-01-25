@@ -16,6 +16,7 @@ import {
   offerValidity,
 } from "~/data/exchangePage";
 import { CurrencyEnum } from "~/enums/CurrencyEnum";
+import { VariantsEnum } from "~/enums/VariantsEnum";
 import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";
 import styles from "./Exchange.module.scss";
 type Props = {};
@@ -93,7 +94,9 @@ const Exchange = (props: Props) => {
               }
               data={minCollateral}
             />
-            <Button variant="primary">Confirm</Button>
+            <Button variant={VariantsEnum.primary} radius={10}>
+              Confirm
+            </Button>
           </div>
         </GradientBackgroundContainer>
       </div>
@@ -114,7 +117,7 @@ const Exchange = (props: Props) => {
             <br />
             <Center>
               <Button
-                variant="outlined"
+                variant={VariantsEnum.outline}
                 loading={isMoreTableDataLoading}
                 onClick={loadMoreOffers}
               >

@@ -6,14 +6,14 @@
   font-family: "Inter", sans-serif;
   font-style: normal;
   font-weight: 500;
-  font-size: 2rem;
+  // font-size: 2rem;
   color: var(--white);
   text-align: center;
-  height: 5rem;
+  // height: 5rem;
 
   &:disabled {
     color: var(--white);
-    background-color: transparent;
+    background-color: transparent !important;
   }
   &:hover {
     background-color: unset;
@@ -27,30 +27,37 @@
 .variant-primary {
   background: linear-gradient(180deg, #ffd572 0%, #febd38 100%);
   box-shadow: 0px 10px 20px rgba(251, 204, 100, 0.25);
-  border-radius: 1rem;
+  // border-radius: 1rem;
   color: var(--dark);
   font-family: "Poppins";
   font-style: normal;
   font-weight: 600;
-  font-size: 1.8rem;
+  // font-size: 1.8rem;
   color: #161619;
-  padding: 1.4rem 1.8rem;
+  // padding: 1.4rem 1.8rem;
+  height: 4.5rem;
 }
 
-.variant-outlined {
+.variant-outline {
   background: none;
   border: 1px solid #4d5161;
   filter: drop-shadow(0px 10px 20px rgba(251, 204, 100, 0.25));
-  border-radius: 1rem;
+  // border-radius: 1rem;
   font-family: "Poppins", sans-serif;
   font-style: normal;
   font-weight: 500;
-  font-size: 1.4rem;
+  // font-size: 1.4rem;
 }
+
 .variant-default {
-  background-color: transparent;
+  background: transparent !important;
 
   &:hover {
     background: none;
   }
+}
+
+.variant-outline-primary {
+  background-color: rgba($color: #ffc54b, $alpha: 0.05);
+  border: 1px solid var(--primary);
 }

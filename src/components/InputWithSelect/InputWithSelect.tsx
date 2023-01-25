@@ -1,7 +1,9 @@
 import { Icon } from "@iconify/react";
 import { Menu, TextInput, TextInputProps } from "@mantine/core";
 import React, { forwardRef, useState } from "react";
+import { VariantsEnum } from "~/enums/VariantsEnum";
 import Button from "../Button/Button";
+import TargetButton from "../Button/TargetButton";
 import ImageIcon from "../ImageIcon/ImageIcon";
 import Input from "../Input/Input";
 import styles from "./InputWithSelect.module.scss";
@@ -39,8 +41,8 @@ export function InputWithSelect({
   const select = (
     <Menu closeOnClickOutside classNames={styles}>
       <Menu.Target>
-        <Button
-          variant="default"
+        <TargetButton
+          variant={VariantsEnum.default}
           leftIcon={selectedOption?.icon}
           disabled={disabled}
           rightIcon={
@@ -53,7 +55,7 @@ export function InputWithSelect({
           }
         >
           {selectedOption?.label}
-        </Button>
+        </TargetButton>
       </Menu.Target>
       <Menu.Dropdown>
         {options

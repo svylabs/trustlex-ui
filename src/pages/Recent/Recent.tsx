@@ -1,5 +1,11 @@
 import React from "react";
+import GradientBackgroundContainer from "~/components/GradientBackgroundContainer/GradientBackgroundContainer";
+import ImageIcon from "~/components/ImageIcon/ImageIcon";
+import RecentOngoingTable from "~/components/RecentOngoingTable/RecentOngoingTable";
+import Table from "~/components/Table/Table";
 import Tabs from "~/components/Tabs/Tabs";
+import { CurrencyEnum } from "~/enums/CurrencyEnum";
+import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";
 
 type Props = {};
 
@@ -14,7 +20,7 @@ const Recent = (props: Props) => {
         panels={[
           {
             value: "my-swaps",
-            children: <h1>My Swaps</h1>,
+            children: <MySwaps />,
           },
           {
             value: "all-swaps",
@@ -27,3 +33,79 @@ const Recent = (props: Props) => {
 };
 
 export default Recent;
+
+function MySwaps() {
+  return (
+    <div>
+      <GradientBackgroundContainer
+        colorLeft="#FFD572be"
+        bgImage="/images/Rectangle-large.png"
+      >
+        <RecentOngoingTable
+          tableCaption="Ongoing"
+          cols={[
+            "# of order",
+            "Planning to sell",
+            "Planning to buy",
+            "Price per ETH in BTC",
+            "Progress",
+            "Actions",
+          ]}
+          data={[
+            {
+              orderNumber: 123444,
+              planningToSell: {
+                amount: 10,
+                type: CurrencyEnum.ETH,
+              },
+              planningToBuy: {
+                amount: 0.078,
+                type: CurrencyEnum.BTC,
+              },
+              rateInBTC: 0.078,
+              progress: "Initiated 35m ago",
+              actions: {
+                cancel: () => {},
+                view: () => {},
+              },
+            },
+            {
+              orderNumber: 123444,
+              planningToSell: {
+                amount: 10,
+                type: CurrencyEnum.ETH,
+              },
+              planningToBuy: {
+                amount: 0.078,
+                type: CurrencyEnum.BTC,
+              },
+              rateInBTC: 0.078,
+              progress: "Initiated 35m ago",
+              actions: {
+                cancel: () => {},
+                view: () => {},
+              },
+            },
+            {
+              orderNumber: 123444,
+              planningToSell: {
+                amount: 10,
+                type: CurrencyEnum.ETH,
+              },
+              planningToBuy: {
+                amount: 0.078,
+                type: CurrencyEnum.BTC,
+              },
+              rateInBTC: 0.078,
+              progress: "Initiated 35m ago",
+              actions: {
+                cancel: () => {},
+                view: () => {},
+              },
+            },
+          ]}
+        />
+      </GradientBackgroundContainer>
+    </div>
+  );
+}

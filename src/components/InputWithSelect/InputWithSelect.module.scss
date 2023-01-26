@@ -1,3 +1,6 @@
+.root {
+  font-size: 5rem;
+}
 .input {
   border: none;
   border-bottom: 1px solid #ffffff50;
@@ -6,7 +9,7 @@
   font-family: "Poppins", sans-serif;
   font-style: normal;
   font-weight: 600;
-  font-size: 4.8rem;
+  font-size: 5.2rem;
   height: 6.4rem;
   padding: 1rem 0;
   color: var(--white);
@@ -17,7 +20,7 @@
 
   &::placeholder {
     font-weight: 500;
-    font-size: 2.4rem;
+    font-size: 2.8rem;
     color: #808080;
   }
 }
@@ -25,7 +28,7 @@
   font-family: "Inter";
   font-style: normal;
   font-weight: 500;
-  font-size: 1.3rem;
+  font-size: 1.8rem;
   color: #808080;
 }
 .chevronIcon {

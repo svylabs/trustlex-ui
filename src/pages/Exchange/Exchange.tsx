@@ -105,7 +105,6 @@ const Exchange = (props: Props) => {
         <GradientBackgroundContainer
           colorRight="#FEBD3863"
           colorLeft="#FEBD3833"
-          bgImage="/images/Rectangle.svg"
         >
           <div className={styles.innerWrapper}>
             <Table

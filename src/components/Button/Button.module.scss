@@ -9,6 +9,7 @@
   font-weight: 500;
   color: var(--white);
   text-align: center;
+  font-size: inherit;
 
   &:disabled {
     color: var(--white);
@@ -34,7 +35,7 @@
   font-style: normal;
   font-weight: 600;
   color: #161619;
-  height: 4.5rem;
+  height: 5.5rem;
 }
 
 .variant-outline {

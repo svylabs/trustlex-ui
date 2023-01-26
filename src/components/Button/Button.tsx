@@ -2,16 +2,6 @@ import { Button as MantineButton, ButtonProps, clsx } from "@mantine/core";
 import styles from "./Button.module.scss";
 import Loading from "../Loading/Loading";
 import { VariantsEnum } from "~/enums/VariantsEnum";
-// interface Props extends React.ComponentPropsWithoutRef<"button"> {
-//   children: React.ReactNode;
-//   // variant?: "default" | "primary" | "outlined";
-//   leftIcon?: React.ReactNode;
-//   rightIcon?: React.ReactNode;
-//   disabled?: boolean;
-//   loading?: boolean;
-//   size?: "sm" | "md" | "lg" | "xl";
-//   compact?: boolean;
-// }
 
 interface Props extends Omit<ButtonProps, "variant"> {
   variant: VariantsEnum;

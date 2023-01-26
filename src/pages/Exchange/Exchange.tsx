@@ -1,5 +1,6 @@
 import { Center } from "@mantine/core";
 import React, { useState } from "react";
+import ActionButton from "~/components/ActionButton/ActionButton";
 import Button from "~/components/Button/Button";
 import ExchangeSwapGroup from "~/components/ExchangeSwapGroup/ExchangeSwapGroup";
 import GradientBackgroundContainer from "~/components/GradientBackgroundContainer/GradientBackgroundContainer";
@@ -115,13 +116,13 @@ const Exchange = (props: Props) => {
             />
             <br />
             <Center>
-              <Button
-                variant={VariantsEnum.outline}
+              <ActionButton
+                variant={"transparent"}
                 loading={isMoreTableDataLoading}
                 onClick={loadMoreOffers}
               >
                 Load more
-              </Button>
+              </ActionButton>
             </Center>
           </div>
         </GradientBackgroundContainer>

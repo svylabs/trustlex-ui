@@ -1,0 +1,34 @@
+.root {
+  font-family: "Poppins", sans-serif;
+  font-style: normal;
+  font-weight: 500;
+
+  display: flex;
+  align-items: center;
+}
+
+.variant-default {
+  background: #4d516133;
+  border: 1px solid #4d5161;
+  border-radius: 8px;
+}
+.variant-transparent {
+  background: transparent;
+  border: 1px solid #4d5161;
+  border-radius: 8px;
+}
+
+.variant-primary {
+  background: rgba(255, 197, 75, 0.05);
+  border-radius: 10px;
+  border: 1px solid #ffd572;
+}
+
+.size-default {
+  font-size: 2.2rem;
+  padding: 1rem 2rem;
+}
+.size-compact {
+  font-size: 1.8rem;
+  padding: 0.5rem 1rem;
+}

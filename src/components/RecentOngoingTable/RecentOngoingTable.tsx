@@ -4,6 +4,7 @@ import { CurrencyEnum } from "~/enums/CurrencyEnum";
 import { VariantsEnum } from "~/enums/VariantsEnum";
 import { IPlanning } from "~/interfaces/IPlanning";
 import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";
+import ActionButton from "../ActionButton/ActionButton";
 import Button from "../Button/Button";
 import ImageIcon from "../ImageIcon/ImageIcon";
 import Table from "../Table/Table";
@@ -46,25 +47,16 @@ const RecentOngoingTable = ({ tableCaption, cols, data }: Props) => {
     </div>,
     row.progress,
     <div className={styles.actionsCell}>
-      <Button
-        variant={VariantsEnum.outline}
-        compact
-        size="sm"
-        onClick={() => {}}
-        radius={8}
-      >
+      <ActionButton size="compact" variant={"default"} onClick={() => {}}>
         Cancel
-      </Button>
-      <Button
-        compact
-        size="sm"
-        radius={8}
-        py={3}
-        variant={VariantsEnum.outlinePrimary}
+      </ActionButton>
+      <ActionButton
+        size="compact"
+        variant={"primary"}
         onClick={() => setViewOrderDrawerOpen(true)}
       >
         View
-      </Button>
+      </ActionButton>
     </div>,
   ]);
 

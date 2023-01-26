@@ -1,11 +1,12 @@
 .root {
   box-shadow: 0px 15px 24px rgba(0, 0, 0, 0.22);
-  border-radius: 20px;
+  // border-radius: 20px;
   backdrop-filter: blur(8px);
   position: relative;
   overflow: hidden;
   height: 100%;
   .layer {
+    background-image: url("../../../public/images/Rectangle.svg");
     position: absolute;
     inset: 0;
     background-repeat: no-repeat;
@@ -33,7 +34,7 @@
     }
 
     &.left {
-      top: -90%;
+      top: -70%;
       left: -55%;
     }
   }

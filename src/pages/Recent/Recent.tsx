@@ -1,5 +1,5 @@
 import { Box, Center } from "@mantine/core";
-import React from "react";
+import React, { useState } from "react";
 import Button from "~/components/Button/Button";
 import GradientBackgroundContainer from "~/components/GradientBackgroundContainer/GradientBackgroundContainer";
 import ImageIcon from "~/components/ImageIcon/ImageIcon";
@@ -7,6 +7,7 @@ import RecentHistoryTable from "~/components/RecentHistoryTable/RecentHistoryTab
 import RecentOngoingTable from "~/components/RecentOngoingTable/RecentOngoingTable";
 import Table from "~/components/Table/Table";
 import Tabs from "~/components/Tabs/Tabs";
+import ViewOrderDrawer from "~/components/ViewOrderDrawer/ViewOrderDrawer";
 import { HistoryTableData, OngoingTableData } from "~/data/recentPage";
 import { CurrencyEnum } from "~/enums/CurrencyEnum";
 import { VariantsEnum } from "~/enums/VariantsEnum";
@@ -42,7 +43,7 @@ function MySwaps() {
   return (
     <div className={styles.panelCont}>
       <GradientBackgroundContainer
-        colorLeft="#FFD572be"
+        colorLeft="#FFD57243"
         bgImage="/images/Rectangle-large.png"
       >
         <Box p={"lg"}>
@@ -67,7 +68,7 @@ function MySwaps() {
         </Box>
       </GradientBackgroundContainer>
       <GradientBackgroundContainer
-        colorLeft="#FFD572"
+        colorLeft="#FFD57243"
         bgImage="/images/Rectangle-large.png"
       >
         <Box p={"lg"}>

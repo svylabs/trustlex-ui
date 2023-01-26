@@ -24,6 +24,7 @@ const Button = ({
   loading,
   onClick,
   compact,
+  fullWidth,
   ...props
 }: Props) => {
   return (
@@ -31,7 +32,11 @@ const Button = ({
       onClick={onClick}
       compact={compact}
       {...props}
-      className={clsx(styles.button, styles[`variant-${variant}`])}
+      className={clsx(
+        styles.button,
+        styles[`variant-${variant}`],
+        fullWidth && styles.fullWidth
+      )}
     >
       {loading && (
         <>

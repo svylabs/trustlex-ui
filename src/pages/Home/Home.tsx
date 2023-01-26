@@ -90,7 +90,7 @@ const Home = (props: Props) => {
               />
               <div></div>
               <div></div>
-              <Button variant={VariantsEnum.primary} radius="md">
+              <Button variant={VariantsEnum.primary} radius="md" fullWidth>
                 Confirm
               </Button>
             </div>

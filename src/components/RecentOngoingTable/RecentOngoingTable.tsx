@@ -1,5 +1,5 @@
 import { TableProps } from "@mantine/core";
-import React from "react";
+import React, { useState } from "react";
 import { CurrencyEnum } from "~/enums/CurrencyEnum";
 import { VariantsEnum } from "~/enums/VariantsEnum";
 import { IPlanning } from "~/interfaces/IPlanning";
@@ -7,6 +7,7 @@ import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";
 import Button from "../Button/Button";
 import ImageIcon from "../ImageIcon/ImageIcon";
 import Table from "../Table/Table";
+import ViewOrderDrawer from "../ViewOrderDrawer/ViewOrderDrawer";
 import styles from "./RecentOngoingTable.module.scss";
 
 export interface ITableRow {
@@ -15,10 +16,6 @@ export interface ITableRow {
   planningToBuy: IPlanning;
   rateInBTC: number;
   progress: string;
-  actions: {
-    cancel: Function;
-    view: Function;
-  };
 }
 
 interface Props extends TableProps {
@@ -28,6 +25,8 @@ interface Props extends TableProps {
 }
 
 const RecentOngoingTable = ({ tableCaption, cols, data }: Props) => {
+  const [isViewOrderDrawerOpen, setViewOrderDrawerOpen] = useState(false);
+
   const tableData = data.map((row) => [
     row.orderNumber,
     <div className={styles.planningCell}>
@@ -51,7 +50,7 @@ const RecentOngoingTable = ({ tableCaption, cols, data }: Props) => {
         variant={VariantsEnum.outline}
         compact
         size="sm"
-        onClick={() => row.actions.cancel()}
+        onClick={() => {}}
         radius={8}
       >
         Cancel
@@ -62,7 +61,7 @@ const RecentOngoingTable = ({ tableCaption, cols, data }: Props) => {
         radius={8}
         py={3}
         variant={VariantsEnum.outlinePrimary}
-        onClick={() => row.actions.view()}
+        onClick={() => setViewOrderDrawerOpen(true)}
       >
         View
       </Button>
@@ -70,12 +69,18 @@ const RecentOngoingTable = ({ tableCaption, cols, data }: Props) => {
   ]);
 
   return (
-    <Table
-      verticalSpacing={"lg"}
-      tableCaption={tableCaption}
-      cols={cols}
-      data={tableData}
-    />
+    <>
+      <ViewOrderDrawer
+        isOpened={isViewOrderDrawerOpen}
+        onClose={() => setViewOrderDrawerOpen(false)}
+      />
+      <Table
+        verticalSpacing={"lg"}
+        tableCaption={tableCaption}
+        cols={cols}
+        data={tableData}
+      />
+    </>
   );
 };
 

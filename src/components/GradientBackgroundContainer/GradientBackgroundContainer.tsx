@@ -1,4 +1,4 @@
-import { clsx } from "@mantine/core";
+import { Box, clsx } from "@mantine/core";
 import React from "react";
 import styles from "./GradientBackgroundContainer.module.scss";
 type Props = {
@@ -6,6 +6,7 @@ type Props = {
   colorLeft?: string;
   colorRight?: string;
   bgImage?: string;
+  radius?: number;
 };
 
 const GradientBackgroundContainer = ({
@@ -13,17 +14,11 @@ const GradientBackgroundContainer = ({
   colorLeft,
   colorRight,
   bgImage,
+  radius = 20,
 }: Props) => {
   return (
-    <div className={styles.root}>
-      <div
-        className={styles.layer}
-        style={{
-          backgroundImage: `url(${
-            bgImage || "../../../public/images/Rectangle.png"
-          })`,
-        }}
-      ></div>
+    <Box className={styles.root} sx={{ borderRadius: radius }}>
+      <div className={styles.layer}></div>
       <div
         className={clsx(styles.gradientLayer, styles.left)}
         style={{ background: colorLeft }}
@@ -33,7 +28,7 @@ const GradientBackgroundContainer = ({
         style={{ background: colorRight }}
       ></div>
       <div className={styles.content}>{children}</div>
-    </div>
+    </Box>
   );
 };
 

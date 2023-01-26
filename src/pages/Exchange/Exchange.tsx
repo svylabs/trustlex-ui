@@ -66,7 +66,7 @@ const Exchange = (props: Props) => {
         <GradientBackgroundContainer
           colorRight="#FEBD3863"
           colorLeft="#FEBD3833"
-          bgImage="/images/Rectangle-large.png"
+          bgImage="/images/Rectangle.svg"
         >
           <div className={styles.exchangeFormContent}>
             <SpanFullGridWidth>
@@ -94,7 +94,7 @@ const Exchange = (props: Props) => {
               }
               data={minCollateral}
             />
-            <Button variant={VariantsEnum.primary} radius={10}>
+            <Button variant={VariantsEnum.primary} radius={10} fullWidth>
               Confirm
             </Button>
           </div>
@@ -105,7 +105,7 @@ const Exchange = (props: Props) => {
         <GradientBackgroundContainer
           colorRight="#FEBD3863"
           colorLeft="#FEBD3833"
-          bgImage="/images/Rectangle-large.png"
+          bgImage="/images/Rectangle.svg"
         >
           <div className={styles.innerWrapper}>
             <Table

@@ -1,0 +1,11 @@
+@import url("../RecentOngoingTable/RecentOngoingTable.module.scss");
+.statusCell {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 500;
+  font-size: 1.4rem;
+  color: var(--white);
+}

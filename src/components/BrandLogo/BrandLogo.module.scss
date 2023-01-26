@@ -1,18 +1,18 @@
 .root {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 2rem;
   text-decoration: none;
 
   .logo {
-    width: 5rem;
-    height: 5rem;
+    width: 6rem;
+    height: 6rem;
     border-radius: 1.5rem;
     background-color: var(--darkGray);
     display: grid;
     place-items: center;
     color: var(--white);
-    font-size: 1rem;
+    font-size: 1.5rem;
     font-family: "Poppins", sans-serif;
     font-weight: 500;
   }
@@ -21,6 +21,6 @@
     color: var(--white);
     font-family: "Poppins", sans-serif;
     font-weight: 500;
-    font-size: 1.8rem;
+    font-size: 2.5rem;
   }
 }

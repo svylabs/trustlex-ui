@@ -1,9 +1,9 @@
 .sidebar {
-  width: 27rem;
+  width: 33rem;
   max-height: 100vh;
   position: sticky;
   top: 0;
-  padding: 2rem 0;
+  padding: 3rem 0;
   background-color: var(--background);
   height: 100%;
   border-right: 3px solid var(--black);
@@ -16,7 +16,7 @@
 
     .brandLogo {
       padding-left: 3rem;
-      margin-bottom: 2rem;
+      margin-bottom: 3rem;
     }
 
     .sidebarUser {
@@ -42,7 +42,7 @@
           font-family: "Inter", sans-serif;
           font-style: normal;
           font-weight: 500;
-          font-size: 1.6rem;
+          font-size: 2rem;
         }
       }
     }
@@ -53,7 +53,7 @@
         display: flex;
         align-items: center;
         display: grid;
-        grid-template-columns: 3rem 1fr;
+        grid-template-columns: 4rem 1fr;
         gap: 1.5rem;
         text-decoration: none;
         padding: 0.5rem 0;
@@ -64,7 +64,7 @@
 
           &::before {
             content: "";
-            width: 0.6rem;
+            width: 0.8rem;
             height: 100%;
             position: absolute;
             background: linear-gradient(180deg, #ffd572 0%, #febd38 100%);
@@ -74,7 +74,7 @@
         }
 
         .icon {
-          width: 3rem;
+          width: 3.5rem;
           filter: drop-shadow(3px);
         }
 
@@ -83,7 +83,7 @@
           font-family: "Inter", sans-serif;
           font-style: normal;
           font-weight: 600;
-          font-size: 1.8rem;
+          font-size: 2.2rem;
           column-rule: var(--gray);
 
           padding: 1rem;

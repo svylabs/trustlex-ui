@@ -1,6 +1,5 @@
 import React from "react";
 import Button from "~/components/Button/Button";
-import ExchangeGridLayout from "~/components/ExchangeGridLayout/ExchangeGridLayout";
 import ExchangeSwapGroup from "~/components/ExchangeSwapGroup/ExchangeSwapGroup";
 import GradientBackgroundContainer from "~/components/GradientBackgroundContainer/GradientBackgroundContainer";
 import HomepageCard from "~/components/HomepageCard/HomepageCard";
@@ -77,7 +76,6 @@ const Home = (props: Props) => {
           <GradientBackgroundContainer
             colorRight="#FEBD38b3"
             colorLeft="#FEBD3833"
-            bgImage="/images/Rectangle-large.png"
           >
             <div className={styles.bottomSectionContent}>
               <SpanFullGridWidth>
@@ -94,37 +92,6 @@ const Home = (props: Props) => {
                 Confirm
               </Button>
             </div>
-            {/* <ExchangeGridLayout
-              left={
-                <div className={styles.left}>
-                  <InputWithSelect
-                    options={data1}
-                    type="number"
-                    value={0.0029}
-                    label={"Buy"}
-                  />
-                  <InputWithSelect
-                    options={data2}
-                    type="number"
-                    placeholder={"Limit price BTC/ETC"}
-                  />
-                  <Button variant="primary">Confirm</Button>
-                </div>
-              }
-              middle={
-                <Button variant="default">
-                  <ImageIcon image="/icons/swap.svg" />
-                </Button>
-              }
-              right={
-                <InputWithSelect
-                  options={data3}
-                  type="number"
-                  value={10.0}
-                  label={"Pay with (In your wallet: 10 Ethereum)"}
-                />
-              }
-            /> */}
           </GradientBackgroundContainer>
         </div>
       </div>

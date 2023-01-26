@@ -69,18 +69,20 @@ const ViewOrderDrawer = ({ isOpened, onClose }: Props) => {
               </Button>
             </Grid.Col>
           </Grid>
-          <GradientBackgroundContainer colorLeft="#FFD57243">
-            <ViewOrderDrawerHistoryTable
-              tableCaption="History"
-              cols={[
-                "# of order",
-                "Planning to sell",
-                "Planning to buy",
-                "Date",
-              ]}
-              data={viewOrderDrawerHistoryTableData}
-            />
-          </GradientBackgroundContainer>
+          <Box>
+            <GradientBackgroundContainer colorLeft="#FFD57243">
+              <ViewOrderDrawerHistoryTable
+                tableCaption="History"
+                cols={[
+                  "# of order",
+                  "Planning to sell",
+                  "Planning to buy",
+                  "Date",
+                ]}
+                data={viewOrderDrawerHistoryTableData}
+              />
+            </GradientBackgroundContainer>
+          </Box>
           <Button variant={VariantsEnum.primary} fullWidth={false}>
             Cancel order
           </Button>

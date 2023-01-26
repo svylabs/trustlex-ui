@@ -1,7 +1,9 @@
 .root {
+  height: 100vh;
   padding: 2rem;
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
   gap: 2rem;
   .title {
     font-family: "Inter", sans-serif;

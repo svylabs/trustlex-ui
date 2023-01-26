@@ -48,16 +48,19 @@ const RecentOngoingTable = ({ tableCaption, cols, data }: Props) => {
     row.progress,
     <div className={styles.actionsCell}>
       <Button
-        variant={VariantsEnum.default}
+        variant={VariantsEnum.outline}
         compact
         size="sm"
         onClick={() => row.actions.cancel()}
+        radius={8}
       >
         Cancel
       </Button>
       <Button
         compact
         size="sm"
+        radius={8}
+        py={3}
         variant={VariantsEnum.outlinePrimary}
         onClick={() => row.actions.view()}
       >

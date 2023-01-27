@@ -4,8 +4,9 @@
   width: 100% !important;
   padding: 1rem;
   padding-top: 0;
-  background-color: transparent;
+  background-color: var(--background);
   border: none;
+  border-radius: 1.4rem;
 }
 
 .item {

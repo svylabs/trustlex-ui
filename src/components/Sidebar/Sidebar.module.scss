@@ -1,5 +1,5 @@
 .sidebar {
-  width: 33rem;
+  // width: 33rem;
   max-height: 100vh;
   position: sticky;
   top: 0;
@@ -98,5 +98,11 @@
         }
       }
     }
+  }
+}
+
+@media only screen and (max-width: 1680px) {
+  .sidebar {
+    // width: 28rem;
   }
 }

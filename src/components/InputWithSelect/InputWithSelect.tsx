@@ -1,10 +1,8 @@
 import { Icon } from "@iconify/react";
-import { Menu, TextInput, TextInputProps } from "@mantine/core";
-import React, { forwardRef, useState } from "react";
+import { Menu } from "@mantine/core";
+import React, { useState } from "react";
 import { VariantsEnum } from "~/enums/VariantsEnum";
-import Button from "../Button/Button";
 import TargetButton from "../Button/TargetButton";
-import ImageIcon from "../ImageIcon/ImageIcon";
 import Input from "../Input/Input";
 import styles from "./InputWithSelect.module.scss";
 

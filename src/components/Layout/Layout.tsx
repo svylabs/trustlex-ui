@@ -10,10 +10,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         <Sidebar />
       </div>
       <div className={styles.main}>
-        <Stack>
-          <Navbar />
-          <main className={styles.content}>{children}</main>
-        </Stack>
+        <Navbar />
+        <main className={styles.content}>{children}</main>
       </div>
     </div>
   );

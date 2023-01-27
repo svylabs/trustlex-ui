@@ -5,17 +5,17 @@ import styles from "./Layout.module.scss";
 import Navbar from "~/components/Navbar/Navbar";
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <Grid className={styles.layout} gutter={0}>
-      <Grid.Col span={"content"}>
+    <div className={styles.layout}>
+      <div className={styles.sidebar}>
         <Sidebar />
-      </Grid.Col>
-      <Grid.Col span={"auto"}>
+      </div>
+      <div className={styles.main}>
         <Stack>
           <Navbar />
           <main className={styles.content}>{children}</main>
         </Stack>
-      </Grid.Col>
-    </Grid>
+      </div>
+    </div>
   );
 };
 

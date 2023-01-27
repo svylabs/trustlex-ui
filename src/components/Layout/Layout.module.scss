@@ -1,8 +1,30 @@
 .layout {
   background-color: var(--background);
   min-height: 100vh;
-
+  display: grid;
+  grid-template-columns: 33rem 1fr;
   .content {
     padding: 2rem 5rem;
+  }
+}
+
+@media only screen and (max-width: 1680px) {
+  .layout {
+    .content {
+      padding: 2rem 4rem;
+    }
+  }
+}
+@media only screen and (max-width: 1360px) {
+  .layout {
+    grid-template-columns: 28rem 1fr;
+  }
+}
+@media only screen and (max-width: 1006px) {
+  .layout {
+    grid-template-columns: 1fr;
+    .sidebar {
+      display: none;
+    }
   }
 }

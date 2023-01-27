@@ -46,3 +46,20 @@
     }
   }
 }
+
+@media only screen and (max-width: 768px) {
+  .content {
+    gap: 3rem;
+    .icon {
+      width: 7rem;
+    }
+    .details {
+      > h4 {
+        font-size: 2rem;
+      }
+      > p {
+        font-size: 2.5rem;
+      }
+    }
+  }
+}

@@ -6,7 +6,6 @@
   }
   .pageTitle {
     font-weight: 600;
-    font-size: 4.2rem;
     color: var(--white);
   }
 
@@ -39,7 +38,6 @@
       grid-template-columns: 1fr 5rem 1fr;
       gap: 5rem;
       padding: 3rem;
-      font-size: 2rem;
     }
   }
 
@@ -69,6 +67,15 @@
     .mainContent {
       .cards {
         grid-template-columns: 1fr 1fr;
+      }
+    }
+  }
+}
+@media only screen and (max-width: 768px) {
+  .root {
+    .mainContent {
+      .cards {
+        grid-template-columns: 1fr;
       }
     }
   }

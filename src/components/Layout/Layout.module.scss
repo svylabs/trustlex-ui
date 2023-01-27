@@ -28,3 +28,11 @@
     }
   }
 }
+
+@media only screen and (max-width: 768px) {
+  .layout {
+    .content {
+      padding: 2rem 3rem;
+    }
+  }
+}

@@ -3,12 +3,43 @@
   padding: 2rem 4rem;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  height: 10rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 
+  .left {
+    align-self: center;
+    // height: 7rem;
+    display: flex;
+    align-items: center;
+    .menuBtn {
+      align-self: center;
+      display: none;
+      .icon {
+        font-size: 3.5rem;
+      }
+    }
+  }
   .right {
-    height: 7rem;
+    // height: 7rem;
     display: flex;
     align-items: center;
     gap: 1.8rem;
+  }
+}
+
+@media only screen and (max-width: 1006px) {
+  .navbar {
+    padding: 2rem 3rem;
+    .left {
+      .menuBtn {
+        display: flex;
+      }
+    }
+    .right {
+      gap: 1.3rem;
+    }
   }
 }

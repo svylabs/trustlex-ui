@@ -1,11 +1,23 @@
 import styles from "./Navbar.module.scss";
 import NavDropdownButton from "../NavDropdownButton/NavDropdownButton";
+import { Icon } from "@iconify/react";
+import { VariantsEnum } from "~/enums/VariantsEnum";
+import { Button } from "@mantine/core";
 type Props = {};
 
 const Navbar = (props: Props) => {
   return (
     <nav className={styles.navbar}>
-      <div className={styles.left}></div>
+      <div className={styles.left}>
+        <Button
+          p={0}
+          variant={"subtle"}
+          color="gray"
+          className={styles.menuBtn}
+        >
+          <Icon icon="material-symbols:menu-rounded" className={styles.icon} />
+        </Button>
+      </div>
       <div className={styles.right}>
         <NavDropdownButton
           title="Bitcoin"

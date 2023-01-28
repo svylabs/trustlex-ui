@@ -36,7 +36,7 @@
     .bottomSectionContent {
       display: grid;
       grid-template-columns: 1fr 5rem 1fr;
-      gap: 2rem;
+      gap: 2.5rem;
       padding: 3rem;
     }
   }
@@ -51,6 +51,22 @@
     justify-content: center;
   }
   // }
+}
+
+.homeIndicator {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  height: 3rem;
+  background-color: transparent;
+
+  > span {
+    background-color: #f3f3f3;
+    width: 50%;
+    // padding: 1rem;
+    height: 1rem;
+    border-radius: 1rem;
+  }
 }
 
 @media only screen and (max-width: 1680px) {
@@ -87,6 +103,47 @@
     .mainContent {
       .cards {
         grid-template-columns: 1fr;
+      }
+      .bottomSection {
+        .bottomSectionContent {
+          grid-template-columns: 1fr;
+          gap: 4rem;
+
+          .temporary {
+            display: none;
+          }
+        }
+      }
+    }
+  }
+
+  .homeIndicator {
+    display: flex;
+  }
+}
+
+@media only screen and (max-width: 500px) {
+  .root {
+    .mainContent {
+      .bottomSection {
+        .bottomSectionContent {
+          padding: 2rem;
+          gap: 3rem;
+        }
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 330px) {
+  .root {
+    .mainContent {
+      .bottomSection {
+        padding: 0;
+        .bottomSectionContent {
+          gap: 2rem;
+          padding: 0rem;
+        }
       }
     }
   }

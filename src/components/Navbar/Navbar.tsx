@@ -3,7 +3,9 @@ import NavDropdownButton from "../NavDropdownButton/NavDropdownButton";
 import { Icon } from "@iconify/react";
 import { VariantsEnum } from "~/enums/VariantsEnum";
 import { Button } from "@mantine/core";
-type Props = {};
+type Props = {
+  toggleSidebar: () => void;
+};
 
 const Navbar = (props: Props) => {
   return (
@@ -14,6 +16,7 @@ const Navbar = (props: Props) => {
           variant={"subtle"}
           color="gray"
           className={styles.menuBtn}
+          onClick={props.toggleSidebar}
         >
           <Icon icon="material-symbols:menu-rounded" className={styles.icon} />
         </Button>

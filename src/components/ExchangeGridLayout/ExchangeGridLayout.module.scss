@@ -1,7 +1,7 @@
 .root {
   display: grid;
   grid-template-columns: 1fr 5rem 1fr;
-  gap: 2rem;
+  gap: 2.5rem;
   > * {
     height: 100%;
   }
@@ -16,5 +16,17 @@
 @media only screen and (max-width: 1300px) {
   .root {
     gap: 1rem;
+  }
+}
+
+
+
+@media only screen and (max-width: 768px) {
+  .root {
+    grid-template-columns: 1fr;
+    gap: 4rem;
+    .middle {
+      display: none;
+    }
   }
 }

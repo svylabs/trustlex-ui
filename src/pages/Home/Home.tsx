@@ -81,13 +81,19 @@ const Home = (props: Props) => {
               <SpanFullGridWidth>
                 <ExchangeSwapGroup />
               </SpanFullGridWidth>
-              <InputWithSelect
-                options={data2}
-                type="number"
-                placeholder={"Limit price BTC/ETC"}
-              />
-              <div></div>
-              <div></div>
+
+              <div>
+                <div className={styles.homeIndicator}>
+                  <span></span>
+                </div>
+                <InputWithSelect
+                  options={data2}
+                  type="number"
+                  placeholder={"Limit price BTC/ETC"}
+                />
+              </div>
+              <div className={styles.temporary}></div>
+              <div className={styles.temporary}></div>
               <Button variant={VariantsEnum.primary} radius="md" fullWidth>
                 Confirm
               </Button>

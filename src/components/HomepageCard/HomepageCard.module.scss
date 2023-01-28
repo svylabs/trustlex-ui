@@ -63,3 +63,20 @@
     }
   }
 }
+
+@media only screen and (max-width: 330px) {
+  .content {
+    gap: 2.5rem;
+    .icon {
+      width: 6.5rem;
+    }
+    .details {
+      > h4 {
+        font-size: 1.5rem;
+      }
+      > p {
+        font-size: 2rem;
+      }
+    }
+  }
+}

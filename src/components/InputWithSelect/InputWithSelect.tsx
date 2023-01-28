@@ -70,6 +70,7 @@ export function InputWithSelect({
     </Menu>
   );
 
+
   return (
     <Input
       type={type}

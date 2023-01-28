@@ -4,6 +4,7 @@
   border: 2px solid #4d5161;
   border-radius: 1.4rem;
   background-color: var(--background);
+  // position: relative;
 
   .navButton {
     display: flex;
@@ -26,6 +27,40 @@
     > .chevronIcon {
       font-size: 2.5rem;
       color: var(--white);
+    }
+  }
+}
+
+@media screen and (max-width: 372px) {
+  .root {
+    margin-top: 0.5rem;
+    .navButton {
+      .icon {
+        width: 2rem;
+      }
+      .title {
+        font-size: 1.5rem;
+      }
+      > .chevronIcon {
+        font-size: 2rem;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 330px) {
+  .root {
+    margin-top: 1rem;
+    .navButton {
+      .icon {
+        width: 1.5rem;
+      }
+      .title {
+        font-size: 1rem;
+      }
+      > .chevronIcon {
+        font-size: 1.5rem;
+      }
     }
   }
 }

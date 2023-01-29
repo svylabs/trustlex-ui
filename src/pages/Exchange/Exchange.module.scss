@@ -21,10 +21,13 @@
     margin-top: 4rem;
     .exchangeFormContent {
       display: grid;
-      grid-template-columns: 1fr 6rem 1fr;
-      gap: 4rem;
-      padding: 3rem;
+      // grid-template-columns: 1fr 6rem 1fr;
+      // gap: 4rem;
+      // padding: 3rem;
       font-size: 2rem;
+      grid-template-columns: 1fr 5rem 1fr;
+      gap: 2.5rem;
+      padding: 3rem;
     }
   }
   .offersTable {
@@ -39,4 +42,41 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+}
+
+@media only screen and (max-width: 1300px) {
+  .root {
+    .exchangeForm {
+      .exchangeFormContent {
+        grid-template-columns: 1fr;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .root {
+    .exchangeForm {
+      .exchangeFormContent {
+        gap: 3rem;
+        padding: 0;
+      }
+    }
+    .offersTable {
+      .innerWrapper {
+        padding: 0;
+      }
+    }
+  }
+}
+@media only screen and (max-width: 330px) {
+  .root {
+    .exchangeForm {
+      padding: 0;
+      .exchangeFormContent {
+        gap: 2rem;
+        padding: 0;
+      }
+    }
+  }
 }

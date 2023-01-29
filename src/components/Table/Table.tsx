@@ -18,30 +18,32 @@ const Table = ({
   return (
     <div className={styles.root}>
       <h2 className={styles.caption}>{tableCaption}</h2>
-      <MantineTable
-        verticalSpacing={verticalSpacing}
-        highlightOnHover
-        {...props}
-      >
-        <thead>
-          <tr>
-            {cols.map((col) => (
-              <th className={styles.cols} key={col}>
-                {col}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className={styles.tbody}>
-          {data.map((row, index) => (
-            <tr className={styles.tr} key={index}>
-              {row.map((item) => (
-                <td className={styles.td}>{item}</td>
+      <div className={styles.tableContainer}>
+        <MantineTable
+          verticalSpacing={verticalSpacing}
+          highlightOnHover
+          {...props}
+        >
+          <thead>
+            <tr>
+              {cols.map((col) => (
+                <th className={styles.cols} key={col}>
+                  {col}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </MantineTable>
+          </thead>
+          <tbody className={styles.tbody}>
+            {data.map((row, index) => (
+              <tr className={styles.tr} key={index}>
+                {row.map((item) => (
+                  <td className={styles.td}>{item}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </MantineTable>
+      </div>
     </div>
   );
 };

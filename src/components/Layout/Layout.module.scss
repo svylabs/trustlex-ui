@@ -64,8 +64,19 @@
 
 @media only screen and (max-width: 768px) {
   .layout {
+   .main{
     .content {
       padding: 2rem 3rem;
+    }
+   }
+  }
+}
+@media only screen and (max-width: 500px) {
+  .layout {
+    .main{
+      .content {
+        padding: 1rem 2rem;
+      }
     }
   }
 }

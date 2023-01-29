@@ -36,6 +36,13 @@
 .rightSection {
   position: relative;
   font-size: 2rem;
+  margin: 0;
+  padding: 0;
+  width: fit-content;
+  >button{
+    padding-left: 0;
+    padding-right: 1rem;
+  }
 }
 .wrapper {
   display: flex;
@@ -68,5 +75,14 @@
   }
   .label {
     font-size: 1.3rem;
+  }
+  .rightSection {
+    font-size: 1.6rem;
+    // >button{
+    //   padding-left: 0;
+    //   padding-right: 3rem;
+    //   // font-size: 1.6rem;
+    //   // width: 100%;
+    // }
   }
 }

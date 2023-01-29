@@ -29,8 +29,23 @@ html {
     font-size: 58%;
   }
 }
+
 @media only screen and (max-width: 768px) {
   html {
     font-size: 50%;
   }
+}
+
+.autoSccroll::-webkit-scrollbar,
+.autoSccroll::-webkit-scrollbar-track,
+.autoSccroll::-webkit-scrollbar-thumb,
+.autoSccroll::-webkit-scrollbar-thumb:hover {
+  visibility: hidden;
+}
+
+.showScrollbar::-webkit-scrollbar,
+.showScrollbar::-webkit-scrollbar-track,
+.showScrollbar::-webkit-scrollbar-thumb,
+.showScrollbar::-webkit-scrollbar-thumb:hover {
+  visibility: visible !important;
 }

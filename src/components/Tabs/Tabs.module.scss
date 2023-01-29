@@ -29,3 +29,25 @@
     border-radius: 4rem;
   }
 }
+
+@media screen and (max-width: 500px) {
+  .tabsList {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+  }
+
+  .tab {
+    flex: 1;
+  }
+}
+
+@media screen and (max-width: 330px) {
+ 
+
+  .tab {
+    padding: 0 1rem;
+  }
+}

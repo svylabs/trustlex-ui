@@ -8,6 +8,7 @@ import Tabs from "~/components/Tabs/Tabs";
 import { HistoryTableData, OngoingTableData } from "~/data/recentPage";
 import { VariantsEnum } from "~/enums/VariantsEnum";
 import styles from "./Recent.module.scss";
+import { useState } from "react";
 type Props = {};
 
 const Recent = (props: Props) => {
@@ -36,45 +37,92 @@ const Recent = (props: Props) => {
 export default Recent;
 
 function MySwaps() {
+  const [isMoreOngoingLoading, setMoreOngoingDataLoading] = useState(false);
+  const [isMoreHistoryLoading, setMoreHistoryLoading] = useState(false);
+  const loadMoreOngoing = () => {
+    setMoreOngoingDataLoading(true);
+    setTimeout(() => {
+      setMoreOngoingDataLoading(false);
+    }, 2000);
+  };
+  const loadMoreHistory = () => {
+    setMoreHistoryLoading(true);
+    setTimeout(() => {
+      setMoreHistoryLoading(false);
+    }, 2000);
+  };
+
   return (
     <div className={styles.panelCont}>
       <GradientBackgroundContainer colorLeft="#FFD57243">
-        <Box p={"lg"}>
-          <RecentOngoingTable
-            tableCaption="Ongoing"
-            cols={[
-              "# of order",
-              "Planning to sell",
-              "Planning to buy",
-              "Price per ETH in BTC",
-              "Progress",
-              "Actions",
-            ]}
-            data={OngoingTableData}
-          />
+        <Box p={"lg"} className={styles.box}>
+          <div className={styles.recentTable}>
+            <RecentOngoingTable
+              tableCaption="Ongoing"
+              cols={[
+                "# of order",
+                "Planning to sell",
+                "Planning to buy",
+                "Price per ETH in BTC",
+                "Progress",
+                "Actions",
+              ]}
+              data={OngoingTableData}
+            />
+          </div>
+          <div className={styles.recentMobileTable}>
+            <RecentOngoingTable
+              tableCaption="Ongoing"
+              cols={["Sell", "Buy", "Progress", ""]}
+              data={OngoingTableData}
+              mobile={true}
+            />
+          </div>
           <br />
           <Center>
-            <ActionButton variant={"transparent"}>Load more</ActionButton>
+            <ActionButton
+              variant={"transparent"}
+              loading={isMoreOngoingLoading}
+              onClick={loadMoreOngoing}
+            >
+              Load more
+            </ActionButton>
           </Center>
         </Box>
       </GradientBackgroundContainer>
       <GradientBackgroundContainer colorLeft="#FFD57243">
-        <Box p={"lg"}>
-          <RecentHistoryTable
-            tableCaption="History"
-            cols={[
-              "# of order",
-              "Planning to sell",
-              "Planning to buy",
-              "Price per ETH in BTC",
-              "Date",
-              "Status",
-            ]}
-            data={HistoryTableData}
-          />
+        <Box p={"lg"} className={styles.box}>
+          <div className={styles.historyTable}>
+            <RecentHistoryTable
+              tableCaption="History"
+              cols={[
+                "# of order",
+                "Planning to sell",
+                "Planning to buy",
+                "Price per ETH in BTC",
+                "Date",
+                "Status",
+              ]}
+              data={HistoryTableData}
+            />
+          </div>
+          <div className={styles.mobileHistoryTable}>
+            <RecentHistoryTable
+              tableCaption="History"
+              cols={["# of order", "Date", "More Details"]}
+              mobile={true}
+              data={HistoryTableData}
+            />
+          </div>
           <br />
           <Center>
-            <ActionButton variant={"transparent"}>Load more</ActionButton>{" "}
+            <ActionButton
+              variant={"transparent"}
+              loading={isMoreHistoryLoading}
+              onClick={loadMoreHistory}
+            >
+              Load more
+            </ActionButton>{" "}
           </Center>
         </Box>
       </GradientBackgroundContainer>

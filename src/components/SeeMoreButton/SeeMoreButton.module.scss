@@ -1,0 +1,17 @@
+.seeMore {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1rem;
+height: 100%;
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 500;
+  font-size: 12px;
+
+  background: linear-gradient(180deg, #ffd572 0%, #febd38 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+}

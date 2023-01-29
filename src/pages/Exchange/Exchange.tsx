@@ -12,6 +12,7 @@ import SpanFullGridWidth from "~/components/SpanFullGridWidth/SpanFullGridWidth"
 import Table from "~/components/Table/Table";
 import {
   data2,
+  exchangeMobileTableCols,
   exchangeTableCols,
   minCollateral,
   offerValidity,
@@ -20,6 +21,7 @@ import { CurrencyEnum } from "~/enums/CurrencyEnum";
 import { VariantsEnum } from "~/enums/VariantsEnum";
 import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";
 import styles from "./Exchange.module.scss";
+import SeeMoreButton from "~/components/SeeMoreButton/SeeMoreButton";
 type Props = {};
 
 const tableDummyData: string[][] = new Array(5).fill([
@@ -44,14 +46,32 @@ const tableDummyData: string[][] = new Array(5).fill([
   "09 Jan, 13:45pm",
 ]);
 
+const mobileTableDummyData: string[][] = new Array(5).fill([
+  1211,
+
+  "09 Jan, 13:45pm",
+  <>
+    <SeeMoreButton
+      onClick={(e) => {
+        // e.preventDefault();
+        // e.stopPropagation();
+        console.log("button clicked");
+      }}
+    />
+  </>,
+]);
+
 const Exchange = (props: Props) => {
   const [tableData, setTableData] = useState<string[][]>(tableDummyData);
+  const [mobileTableData, setMobileTableData] =
+    useState<string[][]>(mobileTableDummyData);
   const [isMoreTableDataLoading, setMoreTableDataLoading] = useState(false);
 
   const loadMoreOffers = () => {
     setMoreTableDataLoading(true);
     setTimeout(() => {
       setTableData([...tableData, ...tableDummyData]);
+      setMobileTableData([...mobileTableData, ...mobileTableDummyData]);
       setMoreTableDataLoading(false);
     }, 2000);
   };
@@ -86,7 +106,7 @@ const Exchange = (props: Props) => {
               />
             </SpanFullGridWidth>
             <Select label="Offer valid for" data={offerValidity} />
-            <div></div>
+            <div className={styles.temporary}></div>
             <Select
               label={
                 <span className={styles.collateralLabel}>
@@ -108,12 +128,23 @@ const Exchange = (props: Props) => {
           colorLeft="#FEBD3833"
         >
           <div className={styles.innerWrapper}>
-            <Table
-              tableCaption="All offers"
-              cols={exchangeTableCols}
-              data={tableData}
-              verticalSpacing={"lg"}
-            />
+            <div className={styles.tableInner}>
+              <Table
+                tableCaption="All offers"
+                cols={exchangeTableCols}
+                data={tableData}
+                verticalSpacing={"lg"}
+              />
+            </div>
+            <div className={styles.mobileTableInner}>
+              <Table
+                tableCaption="All offers"
+                cols={exchangeMobileTableCols}
+                data={mobileTableData}
+                verticalSpacing={"lg"}
+                horizontalSpacing={"xs"}
+              />
+            </div>
             <br />
             <Center>
               <ActionButton

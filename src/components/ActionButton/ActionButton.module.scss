@@ -2,7 +2,6 @@
   font-family: "Poppins", sans-serif;
   font-style: normal;
   font-weight: 500;
-
   display: flex;
   align-items: center;
 }
@@ -31,4 +30,13 @@
 .size-compact {
   font-size: 1.8rem;
   padding: 0.5rem 1rem;
+}
+
+@media screen and (max-width: 500px) {
+  .root {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }

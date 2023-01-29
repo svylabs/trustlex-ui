@@ -9,6 +9,7 @@ export const exchangeTableCols = [
   "Offer valid for",
   "Date",
 ];
+export const exchangeMobileTableCols = ["# of order", "Date", "More options"];
 
 export const minCollateral = [
   {

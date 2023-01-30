@@ -1,20 +1,21 @@
 .root {
-  height: 100vh;
   padding: 2.5rem;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   gap: 2.5rem;
-  .title {
-    font-family: "Inter", sans-serif;
-    font-style: normal;
-    font-weight: 700;
-    font-size: 2.5rem;
-    letter-spacing: 0.5px;
+  height: 100vh;
 
-    color: var(--white);
+  .heading {
+    .title {
+      font-family: "Inter", sans-serif;
+      font-style: normal;
+      font-weight: 700;
+      font-size: 2.5rem;
+      letter-spacing: 0.5px;
+      color: var(--white);
+    }
   }
-
   .label {
     font-family: "Inter", sans-serif;
     font-style: normal;
@@ -31,9 +32,70 @@
     font-size: 1.8rem;
     color: #ffffff;
   }
+  .offerExpire {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    .data {
+      flex: 1;
+    }
+    .button {
+      width: fit-content;
+    }
+  }
+  .table {
+    margin-top: 2rem;
+  }
+  .cancel {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 120%;
+    background: linear-gradient(180deg, #ffd572 0%, #febd38 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+  }
 }
 
 .closeIcon {
   font-size: 2.5rem;
   color: #616575;
+}
+.buttonContainer {
+  padding: 0 0 4rem 0;
+}
+
+@media screen and (max-width: 500px) {
+  .root {
+    padding: 0;
+    margin: 0;
+    padding-right: 0;
+
+    .heading {
+      margin: 0;
+      .title {
+        font-size: 2rem;
+        font-weight: 400;
+        .buy {
+          margin-right: 2.5rem;
+          font-size: 2rem;
+          font-weight: 400;
+        }
+
+        .for {
+          font-size: 1.5rem;
+          margin: 0 1rem;
+        }
+      }
+    }
+
+    .value {
+      font-weight: 400;
+      letter-spacing: 1px;
+    }
+  }
 }

@@ -79,7 +79,12 @@ const RecentOngoingTable = ({ tableCaption, cols, data, mobile }: Props) => {
           ? "Done"
           : row.progress.substring(0, row.progress.indexOf(" ")),
         <div className={styles.actionsCell}>
-          <SeeMoreButton buttonText="" onClick={(e) => {}} />
+          <SeeMoreButton
+            buttonText=""
+            onClick={(e) => {
+              setViewOrderDrawerOpen(true);
+            }}
+          />
         </div>,
       ]);
 

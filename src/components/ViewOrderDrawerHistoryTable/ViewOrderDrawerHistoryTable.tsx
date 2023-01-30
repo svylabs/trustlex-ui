@@ -1,11 +1,11 @@
 import { Center, TableProps } from "@mantine/core";
-import React from "react";
-import { VariantsEnum } from "~/enums/VariantsEnum";
+import { useState } from "react";
 import { IPlanning } from "~/interfaces/IPlanning";
-import Button from "../Button/Button";
 import CurrencyDisplay from "../CurrencyDisplay/CurrencyDisplay";
 import Table from "../Table/Table";
-
+import ActionButton from "../ActionButton/ActionButton";
+import styles from "./ViewOrderDrawerHistoryTable.module.scss";
+import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 export interface ITableRow {
   orderNumber: string | number;
   planningToSell: IPlanning;
@@ -20,6 +20,16 @@ interface Props extends TableProps {
 }
 
 const ViewOrderDrawerHistoryTable = ({ tableCaption, cols, data }: Props) => {
+  const [isMoreTableDataLoading, setIsMoreTableDataLoading] = useState(false);
+  const { height, width } = useWindowDimensions();
+  let mobileView: boolean = width !== null && width < 500 ? true : false;
+
+  const loadMoreData = () => {
+    setIsMoreTableDataLoading(true);
+    setTimeout(() => {
+      setIsMoreTableDataLoading(false);
+    }, 2000);
+  };
   const tableData = data.map((item) => [
     item.orderNumber,
     <CurrencyDisplay {...item.planningToSell} />,
@@ -27,17 +37,26 @@ const ViewOrderDrawerHistoryTable = ({ tableCaption, cols, data }: Props) => {
     item.date,
   ]);
   return (
-    <div>
+    <div className={styles.root}>
       <Table
         verticalSpacing={"lg"}
         tableCaption={tableCaption}
         cols={cols}
         data={tableData}
+        vertical={mobileView ? true : false}
       />
       <br />
-      <Center>
-        <Button variant={VariantsEnum.outline}>Load more</Button>
-      </Center>
+      {!mobileView && (
+        <Center>
+          <ActionButton
+            variant={"transparent"}
+            loading={isMoreTableDataLoading}
+            onClick={loadMoreData}
+          >
+            Load more
+          </ActionButton>
+        </Center>
+      )}
     </div>
   );
 };

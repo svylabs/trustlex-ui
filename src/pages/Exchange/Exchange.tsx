@@ -1,5 +1,5 @@
 import { Center } from "@mantine/core";
-import React, { useState } from "react";
+import React, { ReactNode, useState } from "react";
 import ActionButton from "~/components/ActionButton/ActionButton";
 import Button from "~/components/Button/Button";
 import ExchangeSwapGroup from "~/components/ExchangeSwapGroup/ExchangeSwapGroup";
@@ -22,6 +22,7 @@ import { VariantsEnum } from "~/enums/VariantsEnum";
 import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";
 import styles from "./Exchange.module.scss";
 import SeeMoreButton from "~/components/SeeMoreButton/SeeMoreButton";
+import ExchangeOfferDrawer from "~/components/ExchangeOfferDrawer/ExchangeOfferDrawer";
 type Props = {};
 
 const tableDummyData: string[][] = new Array(5).fill([
@@ -50,15 +51,11 @@ const mobileTableDummyData: string[][] = new Array(5).fill([
   1211,
 
   "09 Jan, 13:45pm",
-  <>
-    <SeeMoreButton
-      onClick={(e) => {
-        // e.preventDefault();
-        // e.stopPropagation();
-        console.log("button clicked");
-      }}
-    />
-  </>,
+  <SeeMoreButton
+    onClick={(e) => {
+      console.log("button clicked");
+    }}
+  />,
 ]);
 
 const Exchange = (props: Props) => {
@@ -75,7 +72,8 @@ const Exchange = (props: Props) => {
       setMoreTableDataLoading(false);
     }, 2000);
   };
-
+  const [activeExchange, setActiveExchange] = useState("btc");
+  const [rowData, setRowData] = useState<(string | ReactNode)[] | null>(null);
   return (
     <div className={styles.root}>
       <h1 className={styles.pageTitle}>Exchange</h1>
@@ -91,30 +89,37 @@ const Exchange = (props: Props) => {
         >
           <div className={styles.exchangeFormContent}>
             <SpanFullGridWidth>
-              <ExchangeSwapGroup />
-            </SpanFullGridWidth>
-            <InputWithSelect
-              options={data2}
-              type="number"
-              placeholder={"Limit price BTC/ETC"}
-            />
-            <SpanFullGridWidth>
-              <Input
-                type={"text"}
-                label="Address to receive Bitcoin"
-                placeholder="Type here"
+              <ExchangeSwapGroup
+                activeExchange={activeExchange}
+                setActiveExchange={setActiveExchange}
               />
             </SpanFullGridWidth>
-            <Select label="Offer valid for" data={offerValidity} />
-            <div className={styles.temporary}></div>
-            <Select
-              label={
-                <span className={styles.collateralLabel}>
-                  <ImageIcon image="/icons/info.svg" /> Minimum Collateral{" "}
-                </span>
-              }
-              data={minCollateral}
-            />
+            {activeExchange !== "eth" && (
+              <>
+                <InputWithSelect
+                  options={data2}
+                  type="number"
+                  placeholder={"Limit price BTC/ETC"}
+                />
+                <SpanFullGridWidth>
+                  <Input
+                    type={"text"}
+                    label="Address to receive Bitcoin"
+                    placeholder="Type here"
+                  />
+                </SpanFullGridWidth>
+                <Select label="Offer valid for" data={offerValidity} />
+                <div className={styles.temporary}></div>
+                <Select
+                  label={
+                    <span className={styles.collateralLabel}>
+                      <ImageIcon image="/icons/info.svg" /> Minimum Collateral{" "}
+                    </span>
+                  }
+                  data={minCollateral}
+                />
+              </>
+            )}
             <Button variant={VariantsEnum.primary} radius={10} fullWidth>
               Confirm
             </Button>
@@ -134,6 +139,7 @@ const Exchange = (props: Props) => {
                 cols={exchangeTableCols}
                 data={tableData}
                 verticalSpacing={"lg"}
+                onRowClick={(data) => setRowData(data)}
               />
             </div>
             <div className={styles.mobileTableInner}>
@@ -143,6 +149,7 @@ const Exchange = (props: Props) => {
                 data={mobileTableData}
                 verticalSpacing={"lg"}
                 horizontalSpacing={"xs"}
+                onRowClick={(data) => setRowData(data)}
               />
             </div>
             <br />
@@ -158,6 +165,13 @@ const Exchange = (props: Props) => {
           </div>
         </GradientBackgroundContainer>
       </div>
+      {rowData !== null && (
+        <ExchangeOfferDrawer
+          onClose={() => setRowData(null)}
+          isOpened={rowData !== null ? true : false}
+          data={rowData}
+        />
+      )}
     </div>
   );
 };

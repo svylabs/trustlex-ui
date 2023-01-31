@@ -14,7 +14,7 @@
   .actions {
     display: flex;
     gap: 1rem;
-    .icon{
+    .icon {
       font-size: 4rem;
       cursor: pointer;
     }
@@ -34,6 +34,9 @@
     td {
       border-top: none !important;
     }
+  }
+  .pointer {
+    cursor: pointer;
   }
 }
 

@@ -6,7 +6,6 @@
   }
   .pageTitle {
     font-weight: 600;
-    font-size: 4.2rem;
     color: var(--white);
   }
 
@@ -18,17 +17,17 @@
   }
 
   .exchangeForm {
-    margin-top: 4rem;
+    margin-top: 3rem;
     .exchangeFormContent {
       display: grid;
       font-size: 2rem;
       grid-template-columns: 1fr 5rem 1fr;
-      gap: 2.5rem;
+      gap: 2rem;
       padding: 3rem;
     }
   }
   .offersTable {
-    margin-top: 5rem;
+    margin-top: 3rem;
     .innerWrapper {
       padding: 3rem;
       white-space: nowrap;

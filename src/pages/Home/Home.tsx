@@ -44,6 +44,7 @@ const data3 = [
 ];
 
 const Home = (props: Props) => {
+  const [activeExchange, setActiveExchange] = React.useState("btc");
   return (
     <div className={styles.root}>
       <h1 className={styles.pageTitle}>Home</h1>
@@ -79,7 +80,10 @@ const Home = (props: Props) => {
           >
             <div className={styles.bottomSectionContent}>
               <SpanFullGridWidth>
-                <ExchangeSwapGroup />
+                <ExchangeSwapGroup
+                  activeExchange={activeExchange}
+                  setActiveExchange={setActiveExchange}
+                />
               </SpanFullGridWidth>
 
               <div>

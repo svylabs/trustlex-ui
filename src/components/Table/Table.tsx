@@ -8,15 +8,15 @@ interface Props extends TableProps {
   tableCaption?: string;
   cols: string[];
   data: (string | ReactNode)[][];
-  vertical?: boolean;
+  onRowClick?: (data: (string | ReactNode)[]) => void;
 }
 
 const Table = ({
   tableCaption,
   data,
   cols,
-  vertical,
   verticalSpacing = "md",
+  onRowClick,
   ...props
 }: Props) => {
   const tableContainerRef = React.useRef(null);
@@ -34,21 +34,6 @@ const Table = ({
     <div className={styles.root}>
       <div className={styles.heading}>
         <h2 className={styles.caption}>{tableCaption}</h2>
-
-        {vertical && (
-          <div className={styles.actions}>
-            <Icon
-              icon={"material-symbols:chevron-left-rounded"}
-              className={styles.icon}
-              onClick={previousData}
-            />
-            <Icon
-              icon={"material-symbols:chevron-right-rounded"}
-              className={styles.icon}
-              onClick={nextData}
-            />
-          </div>
-        )}
       </div>
       <div className={styles.tableContainer} ref={tableContainerRef}>
         <MantineTable
@@ -69,7 +54,15 @@ const Table = ({
           </thead>
           <tbody className={styles.tbody}>
             {data.map((row, index) => (
-              <tr className={styles.tr} key={index}>
+              <tr
+                className={`${styles.tr} ${
+                  onRowClick !== undefined && styles.pointer
+                }`}
+                key={index}
+                onClick={() => {
+                  if (onRowClick !== undefined) onRowClick(row);
+                }}
+              >
                 {row.map((item, index) => (
                   <td className={styles.td} key={index}>
                     {item}

@@ -15,7 +15,7 @@
 
 @media only screen and (max-width: 1300px) {
   .root {
-    gap: 1rem;
+    gap:2rem;
   }
 }
 
@@ -24,7 +24,7 @@
 @media only screen and (max-width: 768px) {
   .root {
     grid-template-columns: 1fr;
-    gap: 4rem;
+    // gap: 2rem;
     .middle {
       display: none;
     }

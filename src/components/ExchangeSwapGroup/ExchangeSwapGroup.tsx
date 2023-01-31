@@ -37,26 +37,76 @@ const data3 = [
   },
 ];
 
-type Props = {};
+type Props = {
+  activeExchange?: string;
+  setActiveExchange?: React.Dispatch<React.SetStateAction<string>>;
+};
 
 const ExchangeSwapGroup = (props: Props) => {
   return (
-    <ExchangeGridLayout
-      left={<InputWithSelect options={data1} label="Buy" value={0.0029} />}
-      middle={
-        <Button variant={VariantsEnum.default}>
-          <ImageIcon image="/icons/swap.svg" />
-        </Button>
-      }
-      right={
-        <InputWithSelect
-          options={data3}
-          type="number"
-          value={10.0}
-          label={"Pay with (In your wallet: 10 Ethereum)"}
+    <>
+      {props.activeExchange === "btc" && (
+        <ExchangeGridLayout
+          left={<InputWithSelect options={data1} label="Buy" value={0.0029} />}
+          middle={
+            <Button
+              variant={VariantsEnum.default}
+              onClick={() => {
+                if (
+                  props.setActiveExchange !== undefined &&
+                  props.activeExchange !== undefined
+                )
+                  props.setActiveExchange("eth");
+              }}
+            >
+              <ImageIcon image="/icons/swap.svg" />
+            </Button>
+          }
+          right={
+            <InputWithSelect
+              options={data3}
+              type="number"
+              value={10.0}
+              label={"Pay with (In your wallet: 10 Ethereum)"}
+            />
+          }
         />
-      }
-    />
+      )}
+
+      {props.activeExchange !== undefined && props.activeExchange === "eth" && (
+        <ExchangeGridLayout
+          left={
+            <InputWithSelect
+              options={data3}
+              type="number"
+              value={10.0}
+              label={"Buy"}
+            />
+          }
+          middle={
+            <Button
+              variant={VariantsEnum.default}
+              onClick={() => {
+                if (
+                  props.setActiveExchange !== undefined &&
+                  props.activeExchange !== undefined
+                )
+                  props.setActiveExchange("btc");
+              }}
+            >
+              <ImageIcon image="/icons/swap.svg" />
+            </Button>
+          }
+          right={
+            <InputWithSelect
+              options={data1}
+              label="Pay with (In your wallet: 10 Bitcoin)"
+              value={0.0029}
+            />
+          }
+        />
+      )}
+    </>
   );
 };
 

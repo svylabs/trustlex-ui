@@ -6,6 +6,7 @@ import Table from "../Table/Table";
 import ActionButton from "../ActionButton/ActionButton";
 import styles from "./ViewOrderDrawerHistoryTable.module.scss";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
+import MobileHistoryTable from "../MoblieComponents/MobileHistoryTable/MobileHistoryTable";
 export interface ITableRow {
   orderNumber: string | number;
   planningToSell: IPlanning;
@@ -38,13 +39,22 @@ const ViewOrderDrawerHistoryTable = ({ tableCaption, cols, data }: Props) => {
   ]);
   return (
     <div className={styles.root}>
-      <Table
-        verticalSpacing={"lg"}
-        tableCaption={tableCaption}
-        cols={cols}
-        data={tableData}
-        vertical={mobileView ? true : false}
-      />
+      {!mobileView ? (
+        <Table
+          verticalSpacing={"lg"}
+          tableCaption={tableCaption}
+          cols={cols}
+          data={tableData}
+        />
+      ) : (
+        <MobileHistoryTable
+          verticalSpacing={"lg"}
+          tableCaption={tableCaption}
+          cols={cols}
+          data={tableData}
+        />
+      )}
+
       <br />
       {!mobileView && (
         <Center>

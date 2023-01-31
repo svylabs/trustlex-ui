@@ -7,22 +7,23 @@ import Button from "../Button/Button";
 import CurrencyDisplay from "../CurrencyDisplay/CurrencyDisplay";
 import GradientBackgroundContainer from "../GradientBackgroundContainer/GradientBackgroundContainer";
 import ViewOrderDrawerHistoryTable from "../ViewOrderDrawerHistoryTable/ViewOrderDrawerHistoryTable";
-import styles from "./ViewOrderDrawer.module.scss";
+import styles from "./ExchangeOfferDrawer.module.scss";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
-import ActionButton from "../ActionButton/ActionButton";
-import { useState, useRef } from "react";
+import { ReactNode, useRef } from "react";
 import useAutoHideScrollbar from "~/hooks/useAutoHideScrollBar";
 type Props = {
   isOpened: boolean;
   onClose: () => void;
+  data: (string | ReactNode)[];
 };
 
-const ViewOrderDrawer = ({ isOpened, onClose }: Props) => {
+const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
   const { height, width } = useWindowDimensions();
   let mobileView: boolean = width !== null && width < 500 ? true : false;
   const rootRef = useRef(null);
 
   useAutoHideScrollbar(rootRef);
+  console.log(data);
 
   return (
     <Drawer
@@ -41,26 +42,19 @@ const ViewOrderDrawer = ({ isOpened, onClose }: Props) => {
         bgImage="/images/Rectangle.svg"
       >
         <div className={styles.root} ref={rootRef}>
-          {mobileView && (
-            <span className={styles.cancel} onClick={onClose}>
-              Cancel
-            </span>
-          )}
           <Grid className={styles.heading}>
-            <Grid.Col span={11}>
-              {!mobileView ? (
-                <Text component="h1" className={styles.title}>
-                  Buy <CurrencyDisplay amount={1} type={CurrencyEnum.BTC} /> for
-                  <CurrencyDisplay amount={10} type={CurrencyEnum.ETH} />
-                </Text>
-              ) : (
-                <Text component="h1" className={styles.title}>
-                  <span className={styles.buy}>Buy:</span>
-                  <CurrencyDisplay amount={1} type={CurrencyEnum.BTC} />
-                  <span className={styles.for}> for </span>
-                  <CurrencyDisplay amount={10} type={CurrencyEnum.ETH} />
-                </Text>
-              )}
+            {mobileView && (
+              <Grid.Col span={3} p={0} pb={1}>
+                <span className={styles.cancel} onClick={onClose}>
+                  Cancel
+                </span>
+              </Grid.Col>
+            )}
+
+            <Grid.Col span={!mobileView ? 11 : 8}>
+              <Text component="h1" className={styles.title}>
+                Initiate your order
+              </Text>
             </Grid.Col>
             {!mobileView && (
               <Grid.Col span={1}>
@@ -73,7 +67,17 @@ const ViewOrderDrawer = ({ isOpened, onClose }: Props) => {
               </Grid.Col>
             )}
           </Grid>
-          <Box>
+          <Grid className={styles.heading}>
+            <Grid.Col span={11}>
+              <Text component="h1" className={styles.title}>
+                <span className={styles.buy}>Buy:</span>{" "}
+                <CurrencyDisplay amount={10} type={CurrencyEnum.ETH} />
+                <span className={styles.for}>with</span>
+                <CurrencyDisplay amount={0.5} type={CurrencyEnum.BTC} />{" "}
+              </Text>
+            </Grid.Col>
+          </Grid>
+          {/* <Box>
             <Text className={styles.label}>Address to receive Bitcoin</Text>
             <Text className={styles.value}>
               1BoatSLRHtKNngkdXEeobR76b53LETtpyT
@@ -109,7 +113,7 @@ const ViewOrderDrawer = ({ isOpened, onClose }: Props) => {
                 data={viewOrderDrawerHistoryTableData}
               />
             </GradientBackgroundContainer>
-          </Box>
+          </Box> */}
           <div className={styles.buttonContainer}>
             <Button
               variant={VariantsEnum.primary}
@@ -117,7 +121,7 @@ const ViewOrderDrawer = ({ isOpened, onClose }: Props) => {
               radius={10}
               onClick={onClose}
             >
-              Cancel order
+              Confirm payment
             </Button>
           </div>
         </div>
@@ -126,4 +130,4 @@ const ViewOrderDrawer = ({ isOpened, onClose }: Props) => {
   );
 };
 
-export default ViewOrderDrawer;
+export default ExchangeOfferDrawer;

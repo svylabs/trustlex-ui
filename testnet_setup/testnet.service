@@ -1,0 +1,16 @@
+[Unit]
+Description=Ethereum Testnet
+After=network.target
+StartLimitBurst=5
+StartLimitIntervalSec=10
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+Environment=PATH=/root/.nvm/versions/node/v19.5.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+ExecStart=/usr/bin/bash -c /root/start_testnet.sh
+
+[Install]
+WantedBy=multi-user.target

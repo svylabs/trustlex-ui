@@ -1,16 +1,16 @@
 import { Icon } from "@iconify/react";
-import { Box, Center, Drawer, Grid, ScrollArea, Text } from "@mantine/core";
-import { viewOrderDrawerHistoryTableData } from "~/data/recentPage";
+import { Drawer, Grid, Text } from "@mantine/core";
 import { CurrencyEnum } from "~/enums/CurrencyEnum";
 import { VariantsEnum } from "~/enums/VariantsEnum";
 import Button from "../Button/Button";
 import CurrencyDisplay from "../CurrencyDisplay/CurrencyDisplay";
 import GradientBackgroundContainer from "../GradientBackgroundContainer/GradientBackgroundContainer";
-import ViewOrderDrawerHistoryTable from "../ViewOrderDrawerHistoryTable/ViewOrderDrawerHistoryTable";
 import styles from "./ExchangeOfferDrawer.module.scss";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
-import { ReactNode, useRef } from "react";
+import { ReactNode, useRef, useState } from "react";
 import useAutoHideScrollbar from "~/hooks/useAutoHideScrollBar";
+import StepSvg, { StepFilledSvg } from "./StepSvg";
+
 type Props = {
   isOpened: boolean;
   onClose: () => void;
@@ -24,6 +24,25 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
 
   useAutoHideScrollbar(rootRef);
   console.log(data);
+
+  const [isInitiatng, setIsInitating] = useState(false);
+  const handleInitate = () => {
+    setIsInitating(true);
+    setTimeout(() => {
+      setIsInitating(false);
+    }, 2000);
+  };
+  const [checked, setChecked] = useState("allow");
+  const [activeStep, setActiveStep] = useState(1);
+  const [verified, setVerified] = useState(false);
+  const [confirmed, setConfirmed] = useState("");
+
+  const handleConfirmClick = () => {
+    setConfirmed("loading");
+    setTimeout(() => {
+      setConfirmed("confirmed");
+    }, 5000);
+  };
 
   return (
     <Drawer
@@ -52,7 +71,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
             )}
 
             <Grid.Col span={!mobileView ? 11 : 8}>
-              <Text component="h1" className={styles.title}>
+              <Text component="h1" className={styles.headTitle}>
                 Initiate your order
               </Text>
             </Grid.Col>
@@ -70,59 +89,213 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
           <Grid className={styles.heading}>
             <Grid.Col span={11}>
               <Text component="h1" className={styles.title}>
-                <span className={styles.buy}>Buy:</span>{" "}
+                <span className={styles.buy}>Buy:</span>
                 <CurrencyDisplay amount={10} type={CurrencyEnum.ETH} />
                 <span className={styles.for}>with</span>
                 <CurrencyDisplay amount={0.5} type={CurrencyEnum.BTC} />{" "}
               </Text>
             </Grid.Col>
           </Grid>
-          {/* <Box>
-            <Text className={styles.label}>Address to receive Bitcoin</Text>
-            <Text className={styles.value}>
-              1BoatSLRHtKNngkdXEeobR76b53LETtpyT
-            </Text>
-          </Box>
-          <Box>
-            <Text className={styles.label}>Order status</Text>
-            <Text className={styles.value}>95% filled </Text>
-          </Box>
-          <Grid className={styles.offerExpire}>
-            <Grid.Col span={"auto"} className={styles.data}>
-              <Box>
-                <Text className={styles.label}>Offer Expiry</Text>
-                <Text className={styles.value}>In 23 hours </Text>
-              </Box>
-            </Grid.Col>
-            <Grid.Col span={"content"} className={styles.button}>
-              <Button radius={10} variant={VariantsEnum.outlinePrimary}>
-                Extend offer
-              </Button>
-            </Grid.Col>
-          </Grid>
-          <Box className={styles.table}>
-            <GradientBackgroundContainer colorLeft="#FFD57243">
-              <ViewOrderDrawerHistoryTable
-                tableCaption="History"
-                cols={[
-                  "# of order",
-                  "Planning to sell",
-                  "Planning to buy",
-                  "Date",
-                ]}
-                data={viewOrderDrawerHistoryTableData}
-              />
-            </GradientBackgroundContainer>
-          </Box> */}
-          <div className={styles.buttonContainer}>
-            <Button
-              variant={VariantsEnum.primary}
-              fullWidth={mobileView ? true : false}
-              radius={10}
-              onClick={onClose}
-            >
-              Confirm payment
-            </Button>
+
+          <div className={styles.stepsConatiner}>
+            <div className={styles.step}>
+              <div className={styles.stepTitle}>
+                <div className={styles.svg}>
+                  {activeStep === 1 ? <StepFilledSvg /> : <StepSvg />}
+                </div>
+                <h2 className={styles.stepCount}>Step 1</h2>
+              </div>
+              <div className={styles.stepsContentsContainer}>
+                <div className={styles.stepContent}>
+                  <br />
+                  <div
+                    className={`${styles.stepItem} ${
+                      checked === "allow" && styles.activeStepItem
+                    }`}
+                    onClick={() => setChecked("allow")}
+                  >
+                    <div className={styles.checkboxContainer}>
+                      <input
+                        type="radio"
+                        className={styles.checkbox}
+                        checked={checked === "allow" ? true : false}
+                      />
+                    </div>
+                    <span>
+                      Allow anyone to post payment proof for 0.05% fee
+                    </span>
+                  </div>
+
+                  <div
+                    className={`${styles.stepItem} ${
+                      checked !== "allow" && styles.activeStepItem
+                    }`}
+                    onClick={() => setChecked("notAllow")}
+                  >
+                    <div className={styles.checkboxContainer}>
+                      <input
+                        type="radio"
+                        className={styles.checkbox}
+                        checked={checked !== "allow" ? true : false}
+                      />
+                    </div>
+                    <span>I'll do it myself(0% transaction fees)</span>
+                  </div>
+                  <div className={styles.actionButton}>
+                    <Button
+                      variant={VariantsEnum.outlinePrimary}
+                      loading={isInitiatng}
+                      onClick={handleInitate}
+                      style={{ background: "transparent" }}
+                      radius={10}
+                    >
+                      Initiate
+                    </Button>
+                    <span className={styles.rightText}>
+                      It will take approximately 1-3 mins
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.step}>
+              <div className={styles.stepTitle}>
+                <div className={styles.svg}>
+                  {activeStep === 2 ? <StepFilledSvg /> : <StepSvg />}
+                </div>
+                <h2 className={styles.stepCount}>Step 2</h2>
+              </div>
+              <div className={styles.stepsContentsContainer}>
+                <div className={styles.stepContent}>
+                  <br />
+                  <div className={styles.sendToContainer}>
+                    <img src="/images/qr-code.png" />
+                    <div className={styles.sendTo}>
+                      <span>Send 0.5 Bitcoins to:</span>
+                      <span>1BoatSLRHtKNngkdXEeobR76b53LETtpyT</span>
+                    </div>
+                  </div>
+                  <div className={styles.colletaralTextContainer}>
+                    <span
+                      className={styles.colletaralText}
+                    >{`Colletaral (optional)`}</span>
+                    <span className={styles.colletaralText}>
+                      Post 10% collateral to increase the payment confirmation
+                      time by 3 more hours
+                    </span>
+                  </div>
+
+                  <div className={styles.actionButton}>
+                    <Button
+                      variant={VariantsEnum.outlinePrimary}
+                      style={{ background: "transparent" }}
+                      radius={10}
+                    >
+                      Add Collateral
+                    </Button>
+                    <span className={styles.rightText}>
+                      5% collateral posted already
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className={styles.step}>
+              <div className={styles.stepTitle}>
+                <div className={styles.svg}>
+                  {activeStep === 3 ? <StepFilledSvg /> : <StepSvg />}
+                </div>
+                <h2 className={styles.stepCount}>Step 3</h2>
+              </div>
+              <div className={styles.stepsContentsContainer}>
+                <div className={`${styles.stepContent} ${styles.lastContent}`}>
+                  <div className={styles.submitProof}>
+                    <h3>Submit Proof</h3>
+                    <p>
+                      Submit Proof of payment before 01 January, 2023 23:45 or
+                      add more collateral to increase payment confirmation time
+                      in order to have the ability to withdraw ETH from smart
+                      contract
+                    </p>
+                  </div>
+                  <div
+                    className={`${styles.stepItem} ${styles.proofCheckbox} ${
+                      verified && styles.activeStepItem
+                    }`}
+                    onClick={() => setVerified(!verified)}
+                  >
+                    <div className={styles.checkboxContainer}>
+                      <input
+                        type="radio"
+                        className={styles.checkbox}
+                        checked={verified}
+                      />
+                    </div>
+                    <span>I've verified the transaction details</span>
+                  </div>
+
+                  <div className={styles.buttonContainer}>
+                    {confirmed !== "confirmed" && (
+                      <Button
+                        variant={
+                          confirmed === "loading"
+                            ? VariantsEnum.outline
+                            : VariantsEnum.primary
+                        }
+                        fullWidth={mobileView ? true : false}
+                        radius={10}
+                        style={{
+                          height: "4.5rem",
+                          backgroundColor:
+                            confirmed === "loading"
+                              ? "unset"
+                              : "linear-gradient(180deg, #ffd572 0%, #febd38 100%)",
+                        }}
+                        loading={confirmed === "loading" ? true : false}
+                        onClick={handleConfirmClick}
+                      >
+                        {confirmed === "loading"
+                          ? "Confirmation"
+                          : "Confirm payment"}
+                      </Button>
+                    )}
+                    {confirmed === "loading" && <span>0:26</span>}
+
+                    {confirmed === "confirmed" && (
+                      <div className={styles.confirmed}>
+                        <Button
+                          variant={VariantsEnum.outline}
+                          radius={10}
+                          style={{
+                            borderColor: "#53C07F",
+                            background: "unset",
+                            color: "#53C07F",
+                          }}
+                          leftIcon={
+                            <Icon icon={"charm:circle-tick"} color="#53C07F" />
+                          }
+                        >
+                          Confirmed
+                        </Button>
+                        <div className={styles.transactionLink}>
+                          <h6>Link to your transaction</h6>
+                          <div className={styles.linkBox}>
+                            <span>trustlex.so/5aa2342esd2...</span>
+                            <div className={styles.iconBox}>
+                              <Icon
+                                icon={"tabler:copy"}
+                                className={styles.icon}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </GradientBackgroundContainer>

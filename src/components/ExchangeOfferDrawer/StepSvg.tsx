@@ -21,9 +21,9 @@ export const StepFilledSvg = () => {
           width="46"
           height="46"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -55,9 +55,9 @@ export const StepFilledSvg = () => {
           width="56"
           height="56"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -90,8 +90,8 @@ export const StepFilledSvg = () => {
           y2="21"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stop-color="#FFD572" />
-          <stop offset="1" stop-color="#FEBD38" />
+          <stop stopColor="#FFD572" />
+          <stop offset="1" stopColor="#FEBD38" />
         </linearGradient>
         <linearGradient
           id="paint1_linear_291_1822"
@@ -101,8 +101,8 @@ export const StepFilledSvg = () => {
           y2="26"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stop-color="#FFD572" />
-          <stop offset="1" stop-color="#FEBD38" />
+          <stop stopColor="#FFD572" />
+          <stop offset="1" stopColor="#FEBD38" />
         </linearGradient>
       </defs>
     </svg>

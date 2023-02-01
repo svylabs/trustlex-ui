@@ -1,5 +1,5 @@
 import { Icon } from "@iconify/react";
-import { Drawer, Grid, Text } from "@mantine/core";
+import { Center, Drawer, Grid, Text } from "@mantine/core";
 import { CurrencyEnum } from "~/enums/CurrencyEnum";
 import { VariantsEnum } from "~/enums/VariantsEnum";
 import Button from "../Button/Button";
@@ -10,6 +10,7 @@ import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 import { ReactNode, useRef, useState } from "react";
 import useAutoHideScrollbar from "~/hooks/useAutoHideScrollBar";
 import StepSvg, { StepFilledSvg } from "./StepSvg";
+import useDetectScrollUpDown from "~/hooks/useDetectScrollUpDown";
 
 type Props = {
   isOpened: boolean;
@@ -18,12 +19,11 @@ type Props = {
 };
 
 const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
-  const { height, width } = useWindowDimensions();
-  let mobileView: boolean = width !== null && width < 500 ? true : false;
+  const { mobileView } = useWindowDimensions();
   const rootRef = useRef(null);
 
   useAutoHideScrollbar(rootRef);
-  console.log(data);
+  // console.log(data);
 
   const [isInitiatng, setIsInitating] = useState(false);
   const handleInitate = () => {
@@ -44,15 +44,22 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
     }, 5000);
   };
 
+  const { scrollDirection } = useDetectScrollUpDown();
+
   return (
     <Drawer
       opened={isOpened}
       onClose={onClose}
-      position="right"
+      position={!mobileView ? "right" : "bottom"}
       overlayBlur={2.5}
       overlayOpacity={0.5}
       withCloseButton={false}
-      size={800}
+      size={!mobileView ? 800 : scrollDirection === "down" ? "full" : 600}
+      closeOnClickOutside={true}
+      closeOnEscape={true}
+      transition="fade"
+      transitionDuration={800}
+      transitionTimingFunction="ease"
     >
       <GradientBackgroundContainer
         radius={0}
@@ -63,7 +70,12 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
         <div className={styles.root} ref={rootRef}>
           <Grid className={styles.heading}>
             {mobileView && (
-              <Grid.Col span={3} p={0} pb={1}>
+              <Grid.Col
+                span={3}
+                p={0}
+                pb={1}
+                className={styles.cancelContainer}
+              >
                 <span className={styles.cancel} onClick={onClose}>
                   Cancel
                 </span>
@@ -119,6 +131,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                         type="radio"
                         className={styles.checkbox}
                         checked={checked === "allow" ? true : false}
+                        onChange={() => setChecked("allow")}
                       />
                     </div>
                     <span>
@@ -137,6 +150,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                         type="radio"
                         className={styles.checkbox}
                         checked={checked !== "allow" ? true : false}
+                        onChange={() => setChecked("notAllow")}
                       />
                     </div>
                     <span>I'll do it myself(0% transaction fees)</span>
@@ -230,6 +244,9 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                         type="radio"
                         className={styles.checkbox}
                         checked={verified}
+                        onChange={() => {
+                          setVerified(true);
+                        }}
                       />
                     </div>
                     <span>I've verified the transaction details</span>

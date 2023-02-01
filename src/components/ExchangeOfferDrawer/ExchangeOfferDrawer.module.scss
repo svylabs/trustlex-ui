@@ -6,6 +6,8 @@
   gap: 2.5rem;
   height: calc(100vh - 2vh);
   overflow-y: scroll;
+  overflow-x: hidden;
+  border-radius: 20px;
 
   .heading {
     .headTitle {
@@ -269,17 +271,21 @@
   .table {
     margin-top: 2rem;
   }
-  .cancel {
-    font-family: "Inter";
-    font-style: normal;
-    font-weight: 400;
-    font-size: 16px;
-    line-height: 120%;
-    background: linear-gradient(180deg, #ffd572 0%, #febd38 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-fill-color: transparent;
+  .cancelContainer {
+    display: flex;
+    align-items: center;
+    .cancel {
+      font-family: "Inter";
+      font-style: normal;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 120%;
+      background: linear-gradient(180deg, #ffd572 0%, #febd38 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-fill-color: transparent;
+    }
   }
 }
 

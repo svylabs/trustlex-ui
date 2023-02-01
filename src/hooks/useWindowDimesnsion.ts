@@ -31,5 +31,12 @@ export default function useWindowDimensions() {
     }
   }, [hasWindow]);
 
-  return windowDimensions;
+  return {
+    width: windowDimensions.width,
+    height: windowDimensions.height,
+    mobileView:
+      windowDimensions.width !== null && windowDimensions.width < 500
+        ? true
+        : false,
+  };
 }

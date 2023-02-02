@@ -8,32 +8,28 @@
   overflow-y: scroll;
   overflow-x: hidden;
   border-radius: 20px;
+  font-family: "Inter", sans-serif;
+  font-style: normal;
+  letter-spacing: 0.5px;
+  color: var(--white);
 
   .heading {
     .headTitle {
-      font-family: "Inter", sans-serif;
-      font-style: normal;
       font-weight: 700;
-      font-size: 2.5rem;
-      letter-spacing: 0.5px;
-      color: var(--white);
+      font-size: 22px;
     }
     .title {
-      font-family: "Inter", sans-serif;
-      font-style: normal;
       font-weight: 600;
-      font-size: 2rem;
-      letter-spacing: 0.5px;
-      color: var(--white);
+      font-size: 16px;
 
       .buy {
         margin-right: 1rem;
-        font-size: 2rem;
+        font-size: 16px;
         font-weight: 400;
       }
 
       .for {
-        font-size: 1.5rem;
+        font-size: 14px;
         padding: 0 1rem;
         opacity: 0.5;
         font-weight: 400;
@@ -63,12 +59,8 @@
           top: -0.5rem;
         }
         .stepCount {
-          font-family: "Inter";
-          font-style: normal;
           font-weight: 700;
-          font-size: 2rem;
-          letter-spacing: 0.5px;
-          color: var(--white);
+          font-size: 16px;
           padding-left: 3rem;
         }
       }
@@ -138,12 +130,8 @@
             }
 
             > span {
-              font-family: "Inter";
-              font-style: normal;
               font-weight: 500;
-              font-size: 1.5rem;
-              letter-spacing: 0.5px;
-              color: var(--white);
+              font-size: 14px;
               opacity: 0.5;
             }
           }
@@ -168,28 +156,24 @@
               flex-direction: column;
 
               > span {
-                font-family: "Inter";
-                font-style: normal;
                 font-weight: 500;
-                font-size: 2rem;
-                letter-spacing: 0.5px;
-                color: var(--white);
+                font-size: 16px;
               }
             }
           }
 
           .colletaralTextContainer {
-            padding: 2rem 0;
+            padding: 2rem 0 1rem 0;
             display: flex;
             flex-direction: column;
-            .colletaralText {
-              font-family: "Inter";
-              font-style: normal;
-              font-weight: 500;
-              font-size: 1.5rem;
-              letter-spacing: 0.5px;
-              color: var(--white);
+            font-weight: 500;
+            .colletaralText:nth-child(1) {
+              font-size: 14px;
               padding: 0 0 0.4rem 0;
+            }
+            .colletaralText:nth-child(2) {
+              font-size: 12px;
+              opacity: 0.5;
             }
           }
           .submitProof {
@@ -198,20 +182,12 @@
             margin: 1rem 0 0 0;
             gap: 0.5rem;
             > h3 {
-              font-family: "Inter";
-              font-style: normal;
               font-weight: 500;
-              font-size: 1.5rem;
-              letter-spacing: 0.5px;
-              color: var(--white);
+              font-size: 14px;
             }
             > p {
-              font-family: "Inter";
-              font-style: normal;
               font-weight: 500;
-              font-size: 1.5rem;
-              letter-spacing: 0.5px;
-              color: var(--white);
+              font-size: 12px;
               opacity: 0.5;
             }
           }
@@ -223,14 +199,15 @@
             display: flex;
             align-items: center;
             gap: 1rem;
+
             .rightText {
-              font-family: "Inter";
-              font-style: normal;
               font-weight: 500;
-              letter-spacing: 0.5px;
-              font-size: 1.5rem;
+              font-size: 12px;
               opacity: 0.5;
             }
+          }
+          .actionButton {
+            margin-top: 1rem;
           }
         }
         .lastContent {
@@ -240,46 +217,43 @@
     }
   }
 
-  .label {
-    font-family: "Inter", sans-serif;
-    font-style: normal;
-    font-weight: 500;
-    font-size: 1.8rem;
-    letter-spacing: 1px;
-    color: #a3a3a3;
-    margin-bottom: 0.5rem;
-  }
-  .value {
-    font-family: "Inter";
-    font-style: normal;
-    font-weight: 500;
-    font-size: 1.8rem;
-    color: #ffffff;
-  }
-  .offerExpire {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    .data {
-      flex: 1;
-    }
-    .button {
-      width: fit-content;
-    }
-  }
-  .table {
-    margin-top: 2rem;
-  }
+  // .label {
+  //   font-family: "Inter", sans-serif;
+  //   font-style: normal;
+  //   font-weight: 500;
+  //   font-size: 1.8rem;
+  //   letter-spacing: 1px;
+  //   color: #a3a3a3;
+  //   margin-bottom: 0.5rem;
+  // }
+  // .value {
+  //   font-family: "Inter";
+  //   font-style: normal;
+  //   font-weight: 500;
+  //   font-size: 1.8rem;
+  //   color: #ffffff;
+  // }
+  // .offerExpire {
+  //   width: 100%;
+  //   display: flex;
+  //   align-items: center;
+  //   justify-content: space-between;
+  //   .data {
+  //     flex: 1;
+  //   }
+  //   .button {
+  //     width: fit-content;
+  //   }
+  // }
+  // .table {
+  //   margin-top: 2rem;
+  // }
   .cancelContainer {
     display: flex;
     align-items: center;
     .cancel {
-      font-family: "Inter";
-      font-style: normal;
       font-weight: 400;
       font-size: 16px;
-      line-height: 120%;
       background: linear-gradient(180deg, #ffd572 0%, #febd38 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -297,25 +271,6 @@
   display: flex;
   gap: 1rem;
   align-items: center;
-  > span {
-    font-family: "Poppins";
-    font-style: normal;
-    font-weight: 500;
-    font-size: 1.5rem;
-
-    background: linear-gradient(
-        0deg,
-        rgba(255, 255, 255, 0.2),
-        rgba(255, 255, 255, 0.2)
-      ),
-      linear-gradient(180deg, #ffd572 0%, #febd38 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-fill-color: transparent;
-
-    text-shadow: 0px 10px 20px rgba(251, 204, 100, 0.25);
-  }
 }
 
 .confirmed {
@@ -329,11 +284,8 @@
     position: relative;
 
     > h6 {
-      font-family: "Inter";
-      font-style: normal;
       font-weight: 600;
-      font-size: 1.2rem;
-      color: var(--white);
+      font-size: 10px;
       opacity: 0.5;
       position: absolute;
       top: -2rem;
@@ -347,11 +299,10 @@
       gap: 1rem;
       border-radius: 8px;
       > span {
-        font-family: "Inter";
-        font-style: normal;
         font-weight: 700;
-        font-size: 1.5rem;
-        color: var(--white);
+        font-size: 12px;
+        flex: 1;
+        text-overflow: ellipsis;
       }
       .iconBox {
         height: 100%;
@@ -370,6 +321,81 @@
         .icon {
           color: #febd38;
         }
+      }
+    }
+  }
+}
+
+.timer {
+  font-family: "Poppins";
+  font-style: normal;
+  font-weight: 500;
+  font-size: 12px;
+
+  background: linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.2),
+      rgba(255, 255, 255, 0.2)
+    ),
+    linear-gradient(180deg, #ffd572 0%, #febd38 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+
+  text-shadow: 0px 10px 20px rgba(251, 204, 100, 0.25);
+}
+
+.spacing {
+  width: 100%;
+  padding: 1rem 0;
+}
+@media screen and (max-width: 768px) {
+  .root {
+    .stepsConatiner {
+      .step {
+        .stepTitle {
+          width: 100%;
+          .svg {
+            left: -3.4rem;
+            top: -0.7rem;
+          }
+        }
+        .stepsContentsContainer {
+          .stepContent {
+            .sendToContainer {
+              .qrImage {
+                width: 60px;
+                height: 62px;
+              }
+
+              .sendTo {
+                > span {
+                  font-weight: 400;
+                  font-size: 14px;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .confirmed{
+    flex-direction: column;
+    gap: 3rem;
+    align-items: flex-start;
+    .transactionLink{
+      width: 100%;
+      >h6{
+        width: 100%;
+      }
+      .linkBox{
+        width: 100%;
+        justify-content: space-between;
       }
     }
   }

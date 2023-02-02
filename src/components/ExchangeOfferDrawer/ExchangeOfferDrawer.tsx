@@ -25,11 +25,11 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
   useAutoHideScrollbar(rootRef);
   // console.log(data);
 
-  const [isInitiatng, setIsInitating] = useState(false);
+  const [isInitiatng, setIsInitating] = useState("false");
   const handleInitate = () => {
-    setIsInitating(true);
+    setIsInitating("loading");
     setTimeout(() => {
-      setIsInitating(false);
+      setIsInitating("initiated");
     }, 2000);
   };
   const [checked, setChecked] = useState("allow");
@@ -82,7 +82,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
               </Grid.Col>
             )}
 
-            <Grid.Col span={!mobileView ? 11 : 8}>
+            <Grid.Col span={!mobileView ? 11 : 9}>
               <Text component="h1" className={styles.headTitle}>
                 Initiate your order
               </Text>
@@ -119,7 +119,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
               </div>
               <div className={styles.stepsContentsContainer}>
                 <div className={styles.stepContent}>
-                  <br />
+                  <div className={styles.spacing} />
                   <div
                     className={`${styles.stepItem} ${
                       checked === "allow" && styles.activeStepItem
@@ -156,18 +156,48 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                     <span>I'll do it myself(0% transaction fees)</span>
                   </div>
                   <div className={styles.actionButton}>
-                    <Button
-                      variant={VariantsEnum.outlinePrimary}
-                      loading={isInitiatng}
-                      onClick={handleInitate}
-                      style={{ background: "transparent" }}
-                      radius={10}
-                    >
-                      Initiate
-                    </Button>
-                    <span className={styles.rightText}>
-                      It will take approximately 1-3 mins
-                    </span>
+                    {isInitiatng === "initiated" ? (
+                      <Button
+                        variant={VariantsEnum.outline}
+                        radius={10}
+                        style={{
+                          borderColor: "#53C07F",
+                          background: "unset",
+                          color: "#53C07F",
+                        }}
+                        leftIcon={
+                          <Icon icon={"charm:circle-tick"} color="#53C07F" />
+                        }
+                      >
+                        Initiated
+                      </Button>
+                    ) : (
+                      <Button
+                        variant={
+                          isInitiatng === "loading"
+                            ? VariantsEnum.outline
+                            : VariantsEnum.outlinePrimary
+                        }
+                        radius={10}
+                        style={{
+                          backgroundColor:
+                            isInitiatng === "loading" ? "unset" : "transparent",
+                        }}
+                        loading={isInitiatng === "loading" ? true : false}
+                        onClick={handleInitate}
+                      >
+                        {isInitiatng === "loading" ? "Initiating" : "Initiate"}
+                      </Button>
+                    )}
+                    {isInitiatng === "loading" ? (
+                      <span className={styles.timer}>0:26</span>
+                    ) : (
+                      isInitiatng !== "initiated" && (
+                        <span className={styles.rightText}>
+                          It will take approximately 1-3 mins
+                        </span>
+                      )
+                    )}
                   </div>
                 </div>
               </div>
@@ -182,12 +212,16 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
               </div>
               <div className={styles.stepsContentsContainer}>
                 <div className={styles.stepContent}>
-                  <br />
+                  <div className={styles.spacing} />
                   <div className={styles.sendToContainer}>
-                    <img src="/images/qr-code.png" />
+                    <img src="/images/qr-code.png" className={styles.qrImage} />
                     <div className={styles.sendTo}>
                       <span>Send 0.5 Bitcoins to:</span>
-                      <span>1BoatSLRHtKNngkdXEeobR76b53LETtpyT</span>
+                      {mobileView ? (
+                        <span>1BoatSLRHtKNngkdXEeobR76b53</span>
+                      ) : (
+                        <span>1BoatSLRHtKNngkdXEeobR76b53LETtpyT</span>
+                      )}
                     </div>
                   </div>
                   <div className={styles.colletaralTextContainer}>
@@ -260,7 +294,9 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                             ? VariantsEnum.outline
                             : VariantsEnum.primary
                         }
-                        fullWidth={mobileView ? true : false}
+                        fullWidth={
+                          mobileView && confirmed !== "loading" ? true : false
+                        }
                         radius={10}
                         style={{
                           height: "4.5rem",
@@ -277,7 +313,9 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                           : "Confirm payment"}
                       </Button>
                     )}
-                    {confirmed === "loading" && <span>0:26</span>}
+                    {confirmed === "loading" && (
+                      <span className={styles.timer}>0:26</span>
+                    )}
 
                     {confirmed === "confirmed" && (
                       <div className={styles.confirmed}>
@@ -289,6 +327,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                             background: "unset",
                             color: "#53C07F",
                           }}
+                          fullWidth={mobileView ? true : false}
                           leftIcon={
                             <Icon icon={"charm:circle-tick"} color="#53C07F" />
                           }

@@ -34,9 +34,6 @@ export default function useWindowDimensions() {
   return {
     width: windowDimensions.width,
     height: windowDimensions.height,
-    mobileView:
-      windowDimensions.width !== null && windowDimensions.width < 500
-        ? true
-        : false,
+    mobileView: windowDimensions.width !== null && windowDimensions.width < 500,
   };
 }

@@ -32,7 +32,7 @@ const ViewOrderDrawer = ({ isOpened, onClose }: Props) => {
       overlayBlur={2.5}
       overlayOpacity={0.5}
       withCloseButton={false}
-      size={800}
+      size={700}
     >
       <GradientBackgroundContainer
         radius={0}

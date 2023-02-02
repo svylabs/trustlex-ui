@@ -88,7 +88,8 @@
           display: flex;
           justify-content: center;
           flex-direction: column;
-          padding-bottom: 4rem;
+          padding-bottom: 3rem;
+          gap: 0.5rem;
 
           .stepItem {
             width: fit-content;
@@ -97,7 +98,7 @@
             align-items: center;
             justify-content: flex-start;
             gap: 1rem;
-            padding-bottom: 1rem;
+            // padding-bottom: 1rem;
 
             .checkboxContainer {
               border-radius: 50%;
@@ -106,18 +107,18 @@
               min-height: 1.5rem;
               max-width: 1.5rem;
               max-height: 1.5rem;
-              vertical-align: middle;
-
               position: relative;
+              // line-height: 18px;
               .checkbox {
                 position: absolute;
+                // margin: 1px;
+
                 top: 1px;
                 bottom: 1px;
                 right: 1px;
                 left: 1px;
                 background-color: transparent;
                 border-radius: 50%;
-                vertical-align: middle;
                 appearance: none;
                 -webkit-appearance: none;
                 outline: none;
@@ -133,6 +134,7 @@
               font-weight: 500;
               font-size: 14px;
               opacity: 0.5;
+              // line-height: 15px;
             }
           }
           .activeStepItem {
@@ -179,7 +181,7 @@
           .submitProof {
             display: flex;
             flex-direction: column;
-            margin: 1rem 0 0 0;
+            // margin: 1rem 0 0 0;
             gap: 0.5rem;
             > h3 {
               font-weight: 500;
@@ -193,7 +195,7 @@
           }
           .proofCheckbox {
             width: fit-content;
-            margin: 2rem 0;
+            // margin:2rem 0;
           }
           .actionButton {
             display: flex;
@@ -206,9 +208,6 @@
               opacity: 0.5;
             }
           }
-          .actionButton {
-            margin-top: 1rem;
-          }
         }
         .lastContent {
           padding-bottom: 0;
@@ -217,37 +216,6 @@
     }
   }
 
-  // .label {
-  //   font-family: "Inter", sans-serif;
-  //   font-style: normal;
-  //   font-weight: 500;
-  //   font-size: 1.8rem;
-  //   letter-spacing: 1px;
-  //   color: #a3a3a3;
-  //   margin-bottom: 0.5rem;
-  // }
-  // .value {
-  //   font-family: "Inter";
-  //   font-style: normal;
-  //   font-weight: 500;
-  //   font-size: 1.8rem;
-  //   color: #ffffff;
-  // }
-  // .offerExpire {
-  //   width: 100%;
-  //   display: flex;
-  //   align-items: center;
-  //   justify-content: space-between;
-  //   .data {
-  //     flex: 1;
-  //   }
-  //   .button {
-  //     width: fit-content;
-  //   }
-  // }
-  // .table {
-  //   margin-top: 2rem;
-  // }
   .cancelContainer {
     display: flex;
     align-items: center;
@@ -348,7 +316,7 @@
 
 .spacing {
   width: 100%;
-  padding: 1rem 0;
+  padding: 0.5rem 0;
 }
 @media screen and (max-width: 768px) {
   .root {
@@ -384,16 +352,16 @@
 }
 
 @media screen and (max-width: 500px) {
-  .confirmed{
+  .confirmed {
     flex-direction: column;
     gap: 3rem;
     align-items: flex-start;
-    .transactionLink{
+    .transactionLink {
       width: 100%;
-      >h6{
+      > h6 {
         width: 100%;
       }
-      .linkBox{
+      .linkBox {
         width: 100%;
         justify-content: space-between;
       }

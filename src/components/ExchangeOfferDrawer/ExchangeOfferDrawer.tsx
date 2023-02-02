@@ -7,15 +7,16 @@ import CurrencyDisplay from "../CurrencyDisplay/CurrencyDisplay";
 import GradientBackgroundContainer from "../GradientBackgroundContainer/GradientBackgroundContainer";
 import styles from "./ExchangeOfferDrawer.module.scss";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
-import { ReactNode, useRef, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import useAutoHideScrollbar from "~/hooks/useAutoHideScrollBar";
 import StepSvg, { StepFilledSvg } from "./StepSvg";
 import useDetectScrollUpDown from "~/hooks/useDetectScrollUpDown";
+import Countdown from "~/utils/Countdown";
 
 type Props = {
   isOpened: boolean;
   onClose: () => void;
-  data: (string | ReactNode)[];
+  data: (string | ReactNode)[] | null;
 };
 
 const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
@@ -25,12 +26,12 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
   useAutoHideScrollbar(rootRef);
   // console.log(data);
 
-  const [isInitiatng, setIsInitating] = useState("false");
+  const [isInitiatng, setIsInitating] = useState("");
   const handleInitate = () => {
     setIsInitating("loading");
     setTimeout(() => {
       setIsInitating("initiated");
-    }, 2000);
+    }, 1000 * 120);
   };
   const [checked, setChecked] = useState("allow");
   const [activeStep, setActiveStep] = useState(1);
@@ -41,8 +42,13 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
     setConfirmed("loading");
     setTimeout(() => {
       setConfirmed("confirmed");
-    }, 5000);
+    }, 1000 * 120);
   };
+  useEffect(() => {
+    if (data === null) {
+      onClose();
+    }
+  }, [data]);
 
   const { scrollDirection } = useDetectScrollUpDown();
 
@@ -54,12 +60,9 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
       overlayBlur={2.5}
       overlayOpacity={0.5}
       withCloseButton={false}
-      size={!mobileView ? 800 : scrollDirection === "down" ? "full" : 600}
+      size={!mobileView ? 700 : scrollDirection === "down" ? "full" : 600}
       closeOnClickOutside={true}
       closeOnEscape={true}
-      transition="fade"
-      transitionDuration={800}
-      transitionTimingFunction="ease"
     >
       <GradientBackgroundContainer
         radius={0}
@@ -155,6 +158,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                     </div>
                     <span>I'll do it myself(0% transaction fees)</span>
                   </div>
+                  <div className={styles.spacing} />
                   <div className={styles.actionButton}>
                     {isInitiatng === "initiated" ? (
                       <Button
@@ -190,7 +194,9 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                       </Button>
                     )}
                     {isInitiatng === "loading" ? (
-                      <span className={styles.timer}>0:26</span>
+                      <span className={styles.timer}>
+                        <Countdown />
+                      </span>
                     ) : (
                       isInitiatng !== "initiated" && (
                         <span className={styles.rightText}>
@@ -258,6 +264,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
               </div>
               <div className={styles.stepsContentsContainer}>
                 <div className={`${styles.stepContent} ${styles.lastContent}`}>
+                  <div className={styles.spacing} />
                   <div className={styles.submitProof}>
                     <h3>Submit Proof</h3>
                     <p>
@@ -267,6 +274,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                       contract
                     </p>
                   </div>
+                  <div className={styles.spacing} />
                   <div
                     className={`${styles.stepItem} ${styles.proofCheckbox} ${
                       verified && styles.activeStepItem
@@ -285,7 +293,8 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                     </div>
                     <span>I've verified the transaction details</span>
                   </div>
-
+                  <div className={styles.spacing} />
+                  <div className={styles.spacing} />
                   <div className={styles.buttonContainer}>
                     {confirmed !== "confirmed" && (
                       <Button
@@ -314,7 +323,9 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                       </Button>
                     )}
                     {confirmed === "loading" && (
-                      <span className={styles.timer}>0:26</span>
+                      <span className={styles.timer}>
+                        <Countdown />
+                      </span>
                     )}
 
                     {confirmed === "confirmed" && (

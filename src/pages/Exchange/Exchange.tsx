@@ -165,13 +165,11 @@ const Exchange = (props: Props) => {
           </div>
         </GradientBackgroundContainer>
       </div>
-      {rowData !== null && (
-        <ExchangeOfferDrawer
-          onClose={() => setRowData(null)}
-          isOpened={rowData !== null ? true : false}
-          data={rowData}
-        />
-      )}
+      <ExchangeOfferDrawer
+        onClose={() => setRowData(null)}
+        isOpened={rowData !== null ? true : false}
+        data={rowData}
+      />
     </div>
   );
 };

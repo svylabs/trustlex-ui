@@ -18,6 +18,7 @@
   color: var(--white);
   border-radius: 0.8rem;
   margin: 0.5rem 0;
+  white-space: nowrap;
 
   &:hover {
     box-shadow: 0px 10px 20px rgba(251, 204, 100, 0.25);

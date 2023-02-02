@@ -35,9 +35,9 @@ const Navbar = (props: Props) => {
           title="Ethereum"
           icon="/icons/etherium.svg"
           dropdownItems={[
-            { title: " BTC RPC URL", href: "" },
-            { title: " RPC Password", href: "" },
-            { title: " RPC Username", href: "" },
+            { title: " Connect to Metamask", href: "" },
+            // { title: " RPC Password", href: "" },
+            // { title: " RPC Username", href: "" },
           ]}
         />
       </div>

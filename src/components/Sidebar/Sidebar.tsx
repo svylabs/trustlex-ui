@@ -25,13 +25,13 @@ const Sidebar = (props: Props) => {
         <NavItem icon={"/icons/earn.png"} to="/earn">
           Earn
         </NavItem>
-
+        {/* 
         <div className={styles.sidebarUser}>
           <Avatar src="/images/user.png" className={styles.avatar} />
           <div className={styles.userDetails}>
             <b className={styles.userFullName}>Dmytro H.</b>
           </div>
-        </div>
+        </div> */}
       </div>
     </aside>
   );

@@ -8,6 +8,10 @@ import { InputWithSelect } from "~/components/InputWithSelect/InputWithSelect";
 import SpanFullGridWidth from "~/components/SpanFullGridWidth/SpanFullGridWidth";
 import { VariantsEnum } from "~/enums/VariantsEnum";
 import styles from "./Home.module.scss";
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 
 type Props = {};
 
@@ -45,6 +49,18 @@ const data3 = [
 
 const Home = (props: Props) => {
   const [activeExchange, setActiveExchange] = React.useState("btc");
+  const { width } = useWindowDimensions();
+  const settings = {
+    dots: false,
+    arrow: false,
+    infinite: false,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    rows: 1,
+    initialSlide: 1,
+  };
+
   return (
     <div className={styles.root}>
       <h1 className={styles.pageTitle}>Home</h1>
@@ -53,26 +69,52 @@ const Home = (props: Props) => {
       </p>
 
       <div className={styles.mainContent}>
-        <div className={styles.cards}>
-          <HomepageCard
-            color="#fd90d1b3"
-            icon="/icons/Activity.png"
-            title="Supported networks / assets"
-            value="5 networks, 25 pairs"
-          />
-          <HomepageCard
-            color="#67D558b3"
-            icon="/icons/Lock.png"
-            title="Total Value Locked"
-            value="$ 1.6 Billion"
-          />
-          <HomepageCard
-            color="#78CEF9b3"
-            icon="/icons/Chart.png"
-            title="Total Transaction Volume (last 24h)"
-            value="$ 25 Million"
-          />
-        </div>
+        {width !== null && width < 1360 ? (
+          <div className={styles.slider}>
+            <Slider {...settings}>
+              <HomepageCard
+                color="#fd90d1b3"
+                icon="/icons/Activity.png"
+                title="Supported networks / assets"
+                value="5 networks, 25 pairs"
+              />
+              <HomepageCard
+                color="#67D558b3"
+                icon="/icons/Lock.png"
+                title="Total Value Locked"
+                value="$ 1.6 Billion"
+              />
+              <HomepageCard
+                color="#78CEF9b3"
+                icon="/icons/Chart.png"
+                title="Total Transaction Volume (last 24h)"
+                value="$ 25 Million"
+              />
+            </Slider>
+          </div>
+        ) : (
+          <div className={styles.cards}>
+            <HomepageCard
+              color="#fd90d1b3"
+              icon="/icons/Activity.png"
+              title="Supported networks / assets"
+              value="5 networks, 25 pairs"
+            />
+            <HomepageCard
+              color="#67D558b3"
+              icon="/icons/Lock.png"
+              title="Total Value Locked"
+              value="$ 1.6 Billion"
+            />
+            <HomepageCard
+              color="#78CEF9b3"
+              icon="/icons/Chart.png"
+              title="Total Transaction Volume (last 24h)"
+              value="$ 25 Million"
+            />
+          </div>
+        )}
+
         <div className={styles.bottomSection}>
           <GradientBackgroundContainer
             colorRight="#FEBD38b3"

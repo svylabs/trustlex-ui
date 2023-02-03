@@ -6,7 +6,7 @@ import navDropdownStyles from "./NavDropdownStyles.module.scss";
 interface INavDropdown {
   icon: string;
   title: string;
-  dropdownItems: { title: string; href: string }[];
+  dropdownItems: { title: string; href: string; onClick?: () => void }[];
 }
 
 const NavDropdownButton = ({ icon, title, dropdownItems }: INavDropdown) => {
@@ -25,7 +25,9 @@ const NavDropdownButton = ({ icon, title, dropdownItems }: INavDropdown) => {
         </Menu.Target>
         <Menu.Dropdown>
           {dropdownItems.map((item, index) => (
-            <Menu.Item key={index}>{item.title}</Menu.Item>
+            <Menu.Item key={index} onClick={item.onClick}>
+              {item.title}
+            </Menu.Item>
           ))}
         </Menu.Dropdown>
       </Menu>

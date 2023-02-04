@@ -7,10 +7,56 @@ import Exchange from "~/pages/Exchange/Exchange";
 import Recent from "./pages/Recent/Recent";
 import { AppContext } from "./Context/AppContext";
 import { useState, useEffect } from "react";
-import { findMetaMaskAccount } from "./service/AppService";
+import { findMetaMaskAccount, getOffers } from "./service/AppService";
+import IUserInputData from "./interfaces/IUserInputData";
+import swapArrayElements from "./utils/swapArray";
 
 export default function App() {
   const [account, setAccount] = useState("");
+  const [userInputData, setUserInputData] = useState<IUserInputData>({
+    setLimit: true,
+    limit: "0",
+    activeExchange: [
+      { currency: "btc", value: "0" },
+      { currency: "eth", value: "0" },
+      { currency: "sol", value: "0" },
+      { currency: "doge", value: "0" },
+    ],
+  });
+  const swapChange = () => {
+    setUserInputData((prev) => {
+      return {
+        ...prev,
+        activeExchange: swapArrayElements(prev.activeExchange, 0, 1),
+      };
+    });
+  };
+  const dropDownChange = (from: string, to: string) => {
+    const findIndex = userInputData.activeExchange.findIndex(
+      (item) => item.currency === (from || to)
+    );
+    if (findIndex === -1) {
+      return;
+    }
+    setUserInputData((prev) => {
+      const fromIndex = prev.activeExchange.findIndex(
+        (item) => item.currency === from
+      );
+      const toIndex = prev.activeExchange.findIndex(
+        (item) => item.currency === to
+      );
+      let fromItem = prev.activeExchange[fromIndex];
+      fromItem.value = "0";
+      let toItem = prev.activeExchange[toIndex];
+      toItem.value = "0";
+
+      let activeExchangeData = prev.activeExchange;
+      activeExchangeData[fromIndex] = toItem;
+      activeExchangeData[toIndex] = fromItem;
+
+      return { ...prev, activeExchange: activeExchangeData };
+    });
+  };
 
   useEffect(() => {
     findMetaMaskAccount().then((account) => {
@@ -19,7 +65,11 @@ export default function App() {
       }
     });
   }, []);
-  console.log(account);
+  useEffect(() => {
+    if (account !== null) {
+      getOffers();
+    }
+  }, []);
 
   return (
     <MantineProvider
@@ -28,7 +78,16 @@ export default function App() {
       withNormalizeCSS
     >
       <BrowserRouter>
-        <AppContext.Provider value={{ account, setAccount }}>
+        <AppContext.Provider
+          value={{
+            account,
+            setAccount,
+            userInputData,
+            setUserInputData,
+            swapChange,
+            dropDownChange,
+          }}
+        >
           <Layout>
             <Routes>
               <Route path="/" element={<Home />} />

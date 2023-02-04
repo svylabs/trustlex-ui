@@ -1,25 +1,21 @@
+import abi from "../files/contract.json";
+import { ethers } from "ethers";
 const getEthereumObject = () => window.ethereum;
 
 export const findMetaMaskAccount = async () => {
   try {
-    const ethereum = await getEthereumObject();
-    if (!ethereum) {
-      console.log("Make sure you have metamask");
+    const ethereum = getEthereumObject();
+    if (!ethereum || ethereum.request === undefined) {
       return false;
     }
-    console.log("We have the ethereum object", ethereum);
     const accounts = await ethereum.request({ method: "eth_accounts" });
-    console.log(accounts);
     if (accounts.length !== 0) {
       const account = accounts[0];
-      console.log("Found an authorized account", account);
       return account;
     } else {
-      console.error("No authorized account found");
       return false;
     }
   } catch (error) {
-    console.error(error);
     return false;
   }
 };
@@ -27,7 +23,7 @@ export const findMetaMaskAccount = async () => {
 export const connectToMetamask = async () => {
   try {
     const ethereum = getEthereumObject();
-    if (!ethereum) {
+    if (!ethereum || ethereum.request === undefined) {
       alert("Get MetaMast!");
       return false;
     }
@@ -36,10 +32,31 @@ export const connectToMetamask = async () => {
       method: "eth_requestAccounts",
     });
 
-    console.log("Connected", accounts[0]);
     return accounts[0];
   } catch (error) {
-    console.log(error);
     return false;
+  }
+};
+
+export const getOffers = async () => {
+  try {
+    const { ethereum } = window;
+    if (ethereum) {
+      const provider = new ethers.providers.Web3Provider(ethereum);
+      const signer = provider.getSigner();
+      const trustLex = new ethers.Contract(
+        `0x5078d53e9347ca2Ee42b6cFfC01C04b69ff9420A`,
+        abi.abi,
+        signer
+      );
+      // let count = await trustLex.offers(0);
+      let count = await trustLex.tokenContract();
+
+      console.log(count);
+    } else {
+      console.log("Ethereum object doesn't exists!");
+    }
+  } catch (error) {
+    console.log(error);
   }
 };

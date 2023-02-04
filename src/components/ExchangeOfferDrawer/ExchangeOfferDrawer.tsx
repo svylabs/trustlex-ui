@@ -24,7 +24,6 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
   const rootRef = useRef(null);
 
   useAutoHideScrollbar(rootRef);
-  // console.log(data);
 
   const [isInitiatng, setIsInitating] = useState("");
   const handleInitate = () => {

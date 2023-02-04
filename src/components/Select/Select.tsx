@@ -10,7 +10,6 @@ const Select = ({ label, data, ...props }: SelectProps) => {
       classNames={styles}
       label={label}
       data={data}
-      defaultValue={defaultValue}
       rightSection={
         <Icon
           icon={"ic:round-keyboard-arrow-down"}

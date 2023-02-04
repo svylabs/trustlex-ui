@@ -5,6 +5,7 @@ import { VariantsEnum } from "~/enums/VariantsEnum";
 import TargetButton from "../Button/TargetButton";
 import Input from "../Input/Input";
 import styles from "./InputWithSelect.module.scss";
+import { AppContext } from "~/Context/AppContext";
 
 interface ISelectOption {
   value: string;
@@ -18,6 +19,8 @@ type Props = {
   options: ISelectOption[];
   value?: number | string;
   type?: "number" | "text";
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  disabled?: boolean;
 };
 
 export function InputWithSelect({
@@ -26,25 +29,29 @@ export function InputWithSelect({
   label,
   placeholder,
   type = "text",
+  disabled,
+  onChange,
 }: Props) {
-  const [selectedOptionValue, setSelectedOptionValue] = useState(
-    options[0]?.value
-  );
+  const [selectedOptionValue, setSelectedOptionValue] = useState(options[0]);
+  const context = React.useContext(AppContext);
+  if (context === null) {
+    return <>Loading...</>;
+  }
 
-  const selectedOption = options.find(
-    (item) => item.value === selectedOptionValue
-  );
-
-  const disabled = options.length < 2;
+  const { setUserInputData, dropDownChange } = context;
+  React.useEffect(() => {
+    setSelectedOptionValue(options[0]);
+  }, [options]);
+  const itemDisabled = options.length < 2;
   const select = (
     <Menu closeOnClickOutside classNames={styles}>
       <Menu.Target>
         <TargetButton
           variant={VariantsEnum.default}
-          leftIcon={selectedOption?.icon}
-          disabled={disabled}
+          leftIcon={selectedOptionValue.icon}
+          disabled={itemDisabled}
           rightIcon={
-            !disabled && (
+            !itemDisabled && (
               <Icon
                 icon={"ic:round-keyboard-arrow-down"}
                 className={styles.chevronIcon}
@@ -52,16 +59,34 @@ export function InputWithSelect({
             )
           }
         >
-          {selectedOption?.label}
+          {selectedOptionValue.label}
         </TargetButton>
       </Menu.Target>
       <Menu.Dropdown>
         {options
-          .filter((item) => item.value !== selectedOptionValue)
+          .filter((item) => item.value !== selectedOptionValue.value)
           .map((item) => (
             <Menu.Item
               key={item.value}
-              onClick={() => setSelectedOptionValue(item.value)}
+              onClick={() => {
+                setSelectedOptionValue(item);
+                if (item.value === "limit" || item.value === "no-limit") {
+                  if (item.value === "limit") {
+                    setUserInputData((prev) => {
+                      return { ...prev, setLimit: true };
+                    });
+                  } else {
+                    setUserInputData((prev) => {
+                      return { ...prev, setLimit: false };
+                    });
+                  }
+                } else {
+                  dropDownChange(
+                    selectedOptionValue.label.toLowerCase(),
+                    item.label.toLowerCase()
+                  );
+                }
+              }}
             >
               {item.icon} {item.label}
             </Menu.Item>
@@ -78,6 +103,8 @@ export function InputWithSelect({
       value={value}
       rightSection={select}
       rightSectionWidth={100}
+      onChange={onChange}
+      disabled={disabled}
     />
   );
 }

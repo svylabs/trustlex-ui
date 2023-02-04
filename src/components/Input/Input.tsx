@@ -10,13 +10,14 @@ const Input = ({
   label,
   rightSection,
   type,
+  onChange,
   ...props
 }: Props) => {
-  const [inputValue, setInputValue] = useState(value);
+  // const [inputValue, setInputValue] = useState(value);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
-  };
+  // const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   setInputValue(e.target.value);
+  // };
 
   return (
     <TextInput
@@ -24,11 +25,11 @@ const Input = ({
       classNames={styles}
       type={type}
       placeholder={placeholder}
-      value={inputValue}
-      onChange={handleChange}
+      value={value}
       label={label}
       rightSection={rightSection}
       rightSectionWidth={100}
+      onChange={onChange}
     />
   );
 };

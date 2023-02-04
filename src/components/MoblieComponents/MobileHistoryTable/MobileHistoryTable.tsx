@@ -18,7 +18,6 @@ const MobileHistoryTable = ({
   verticalSpacing = "md",
   ...props
 }: Props) => {
-  console.log(data);
   const totalIndex = data.length - 1;
   const [currentIndex, setCurrentIndex] = useState(0);
   const previousData = () => {
@@ -32,7 +31,6 @@ const MobileHistoryTable = ({
   };
   const nextData = () => {
     setCurrentIndex((prevIndex) => {
-      console.log("nextprevIndex:", prevIndex);
       if (totalIndex > prevIndex) {
         return prevIndex + 1;
       } else {
@@ -40,8 +38,6 @@ const MobileHistoryTable = ({
       }
     });
   };
-  console.log("Total index:", totalIndex);
-  console.log("Current index:", currentIndex);
 
   return (
     <div className={styles.root}>

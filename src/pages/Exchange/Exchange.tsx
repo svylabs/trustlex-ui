@@ -23,6 +23,7 @@ import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";
 import styles from "./Exchange.module.scss";
 import SeeMoreButton from "~/components/SeeMoreButton/SeeMoreButton";
 import ExchangeOfferDrawer from "~/components/ExchangeOfferDrawer/ExchangeOfferDrawer";
+import { AppContext } from "~/Context/AppContext";
 type Props = {};
 
 const tableDummyData: string[][] = new Array(5).fill([
@@ -53,7 +54,7 @@ const mobileTableDummyData: string[][] = new Array(5).fill([
   "09 Jan, 13:45pm",
   <SeeMoreButton
     onClick={(e) => {
-      console.log("button clicked");
+      // console.log("button clicked");
     }}
   />,
 ]);
@@ -72,8 +73,46 @@ const Exchange = (props: Props) => {
       setMoreTableDataLoading(false);
     }, 2000);
   };
-  const [activeExchange, setActiveExchange] = useState("btc");
   const [rowData, setRowData] = useState<(string | ReactNode)[] | null>(null);
+
+  const context = React.useContext(AppContext);
+  if (context === null) {
+    return <>Loading...</>;
+  }
+
+  const { userInputData, setUserInputData } = context;
+  const [exchangeData, setExchangeData] = useState({
+    address: "",
+    valid:
+      typeof offerValidity[0] === "string"
+        ? offerValidity[0]
+        : offerValidity[0].value,
+    collateral:
+      typeof minCollateral[0] === "string"
+        ? minCollateral[0]
+        : minCollateral[0].value,
+  });
+
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setExchangeData((prev) => {
+      return { ...prev, address: e.target.value };
+    });
+
+  const handleOfferChange = (value: string) =>
+    setExchangeData((prev) => {
+      return { ...prev, valid: value || "" };
+    });
+
+  const handleLimitChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setUserInputData((prev) => {
+      return { ...prev, limit: e.target.value };
+    });
+
+  const handleCollateralChange = (value: string) =>
+    setExchangeData((prev) => {
+      return { ...prev, collateral: value || "" };
+    });
+
   return (
     <div className={styles.root}>
       <h1 className={styles.pageTitle}>Exchange</h1>
@@ -89,26 +128,33 @@ const Exchange = (props: Props) => {
         >
           <div className={styles.exchangeFormContent}>
             <SpanFullGridWidth>
-              <ExchangeSwapGroup
-                activeExchange={activeExchange}
-                setActiveExchange={setActiveExchange}
-              />
+              <ExchangeSwapGroup />
             </SpanFullGridWidth>
-            {activeExchange !== "eth" && (
+            {userInputData.activeExchange[0].currency === "btc" && (
               <>
                 <InputWithSelect
                   options={data2}
                   type="number"
+                  value={userInputData.limit}
+                  onChange={handleLimitChange}
                   placeholder={"Limit price BTC/ETC"}
+                  disabled={userInputData.setLimit ? false : true}
                 />
                 <SpanFullGridWidth>
                   <Input
-                    type={"text"}
+                    type="text"
                     label="Address to receive Bitcoin"
                     placeholder="Type here"
+                    value={exchangeData.address}
+                    onChange={handleAddressChange}
                   />
                 </SpanFullGridWidth>
-                <Select label="Offer valid for" data={offerValidity} />
+                <Select
+                  onChange={handleOfferChange}
+                  label="Offer valid for"
+                  data={offerValidity}
+                  value={exchangeData.valid}
+                />
                 <div className={styles.temporary}></div>
                 <Select
                   label={
@@ -116,6 +162,8 @@ const Exchange = (props: Props) => {
                       <ImageIcon image="/icons/info.svg" /> Minimum Collateral{" "}
                     </span>
                   }
+                  onChange={handleCollateralChange}
+                  value={exchangeData.collateral}
                   data={minCollateral}
                 />
               </>

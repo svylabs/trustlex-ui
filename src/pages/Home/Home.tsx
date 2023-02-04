@@ -12,6 +12,8 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
+import { AppContext } from "~/Context/AppContext";
+import { useNavigate } from "react-router-dom";
 
 type Props = {};
 
@@ -48,7 +50,13 @@ const data3 = [
 ];
 
 const Home = (props: Props) => {
-  const [activeExchange, setActiveExchange] = React.useState("btc");
+  const navigate = useNavigate();
+  const context = React.useContext(AppContext);
+  if (context === null) {
+    return <>Loading...</>;
+  }
+
+  const { userInputData, setUserInputData } = context;
   const { width } = useWindowDimensions();
   const settings = {
     dots: false,
@@ -60,6 +68,13 @@ const Home = (props: Props) => {
     rows: 1,
     initialSlide: 1,
   };
+
+  const handleLimitChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setUserInputData((prev) => {
+      return { ...prev, limit: e.target.value };
+    });
+
+  const handleConfirmClick = () => navigate("/exchange");
 
   return (
     <div className={styles.root}>
@@ -122,10 +137,7 @@ const Home = (props: Props) => {
           >
             <div className={styles.bottomSectionContent}>
               <SpanFullGridWidth>
-                <ExchangeSwapGroup
-                  activeExchange={activeExchange}
-                  setActiveExchange={setActiveExchange}
-                />
+                <ExchangeSwapGroup />
               </SpanFullGridWidth>
 
               <div>
@@ -136,11 +148,19 @@ const Home = (props: Props) => {
                   options={data2}
                   type="number"
                   placeholder={"Limit price BTC/ETC"}
+                  value={userInputData.limit}
+                  onChange={handleLimitChange}
+                  disabled={userInputData.setLimit ? false : true}
                 />
               </div>
               <div className={styles.temporary}></div>
               <div className={styles.temporary}></div>
-              <Button variant={VariantsEnum.primary} radius="md" fullWidth>
+              <Button
+                variant={VariantsEnum.primary}
+                radius="md"
+                fullWidth
+                onClick={handleConfirmClick}
+              >
                 Confirm
               </Button>
             </div>

@@ -22,7 +22,7 @@
         {
           "indexed": true,
           "internalType": "uint256",
-          "name": "requestId",
+          "name": "offerId",
           "type": "uint256"
         },
         {
@@ -47,7 +47,7 @@
         {
           "indexed": true,
           "internalType": "uint256",
-          "name": "requestId",
+          "name": "offerId",
           "type": "uint256"
         }
       ],
@@ -66,7 +66,7 @@
         {
           "indexed": true,
           "internalType": "uint256",
-          "name": "requestId",
+          "name": "offerId",
           "type": "uint256"
         },
         {
@@ -85,19 +85,98 @@
           "internalType": "uint256",
           "name": "",
           "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "initializedFulfillments",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "fulfillmentBy",
+          "type": "address"
+        },
+        {
+          "internalType": "uint64",
+          "name": "quantityRequested",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint32",
+          "name": "expiryTime",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "totalCollateralAdded",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "collateralAddedBy",
+          "type": "address"
+        },
+        {
+          "internalType": "uint32",
+          "name": "fulfilledTime",
+          "type": "uint32"
+        },
+        {
+          "internalType": "bool",
+          "name": "allowAnyoneToSubmitPaymentProofForFee",
+          "type": "bool"
+        },
+        {
+          "internalType": "bool",
+          "name": "allowAnyoneToAddCollateralForFee",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "name": "offers",
       "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "offerQuantity",
+          "type": "uint256"
+        },
         {
           "internalType": "address",
           "name": "offeredBy",
           "type": "address"
         },
         {
-          "internalType": "uint256",
-          "name": "offerQuantity",
-          "type": "uint256"
+          "internalType": "uint32",
+          "name": "offerValidTill",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint32",
+          "name": "orderedTime",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint32",
+          "name": "offeredBlockNumber",
+          "type": "uint32"
+        },
+        {
+          "internalType": "bytes20",
+          "name": "bitcoinAddress",
+          "type": "bytes20"
         },
         {
           "internalType": "uint64",
@@ -115,29 +194,9 @@
           "type": "uint64"
         },
         {
-          "internalType": "bytes20",
-          "name": "bitcoinAddress",
-          "type": "bytes20"
-        },
-        {
-          "internalType": "uint32",
-          "name": "offerValidTill",
-          "type": "uint32"
-        },
-        {
           "internalType": "uint8",
           "name": "collateralPer3Hours",
           "type": "uint8"
-        },
-        {
-          "internalType": "uint32",
-          "name": "orderedTime",
-          "type": "uint32"
-        },
-        {
-          "internalType": "uint32",
-          "name": "offeredBlockNumber",
-          "type": "uint32"
         }
       ],
       "stateMutability": "view",
@@ -227,6 +286,26 @@
               "type": "uint64"
             },
             {
+              "internalType": "uint32",
+              "name": "expiryTime",
+              "type": "uint32"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalCollateralAdded",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "collateralAddedBy",
+              "type": "address"
+            },
+            {
+              "internalType": "uint32",
+              "name": "fulfilledTime",
+              "type": "uint32"
+            },
+            {
               "internalType": "bool",
               "name": "allowAnyoneToSubmitPaymentProofForFee",
               "type": "bool"
@@ -235,26 +314,6 @@
               "internalType": "bool",
               "name": "allowAnyoneToAddCollateralForFee",
               "type": "bool"
-            },
-            {
-              "internalType": "uint256",
-              "name": "totalCollateralAdded",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint32",
-              "name": "expiryTime",
-              "type": "uint32"
-            },
-            {
-              "internalType": "uint32",
-              "name": "fulfilledTime",
-              "type": "uint32"
-            },
-            {
-              "internalType": "address",
-              "name": "collateralAddedBy",
-              "type": "address"
             }
           ],
           "internalType": "struct TrustlexPerAssetOrderBook.FulfillmentRequest",

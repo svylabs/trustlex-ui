@@ -49,10 +49,12 @@ export const getOffers = async () => {
         abi.abi,
         signer
       );
-      // let count = await trustLex.offers(0);
-      let count = await trustLex.tokenContract();
+      let offers = await trustLex.offers(0);
+      let tokenContract = await trustLex.tokenContract();
 
-      console.log(count);
+      console.log("Offers", offers);
+      console.log("TokenContracts", tokenContract);
+      
     } else {
       console.log("Ethereum object doesn't exists!");
     }

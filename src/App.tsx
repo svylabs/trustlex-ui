@@ -65,11 +65,11 @@ export default function App() {
       }
     });
   }, []);
-  useEffect(() => {
-    if (account !== null) {
-      getOffers();
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (account !== null) {
+  //     getOffers();
+  //   }
+  // }, []);
 
   return (
     <MantineProvider

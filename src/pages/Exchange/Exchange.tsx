@@ -24,6 +24,7 @@ import styles from "./Exchange.module.scss";
 import SeeMoreButton from "~/components/SeeMoreButton/SeeMoreButton";
 import ExchangeOfferDrawer from "~/components/ExchangeOfferDrawer/ExchangeOfferDrawer";
 import { AppContext } from "~/Context/AppContext";
+import { AddOfferWithEth } from "~/service/AppService";
 type Props = {};
 
 const tableDummyData: string[][] = new Array(5).fill([
@@ -113,6 +114,8 @@ const Exchange = (props: Props) => {
       return { ...prev, collateral: value || "" };
     });
 
+  const handleOfferConfirm = async () => {};
+
   return (
     <div className={styles.root}>
       <h1 className={styles.pageTitle}>Exchange</h1>
@@ -168,7 +171,12 @@ const Exchange = (props: Props) => {
                 />
               </>
             )}
-            <Button variant={VariantsEnum.primary} radius={10} fullWidth>
+            <Button
+              variant={VariantsEnum.primary}
+              radius={10}
+              fullWidth
+              onClick={handleOfferConfirm}
+            >
               Confirm
             </Button>
           </div>

@@ -14,6 +14,7 @@ import "slick-carousel/slick/slick-theme.css";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 import { AppContext } from "~/Context/AppContext";
 import { useNavigate } from "react-router-dom";
+import { AddOfferWithEth, AddOfferWithToken } from "~/service/AppService";
 
 type Props = {};
 
@@ -74,7 +75,33 @@ const Home = (props: Props) => {
       return { ...prev, limit: e.target.value };
     });
 
-  const handleConfirmClick = () => navigate("/exchange");
+  const handleConfirmClick = async () => {
+    console.log("Offer confirmed");
+    if (userInputData.activeExchange[0].currency === "eth") {
+      const data = {
+        satoshis: 1,
+        bitcoinAddress: `0x5078d53e9347ca2Ee42b6cFfC01C04b69ff9420A`,
+        offerValidTill: 1,
+      };
+      const addedOffer = await AddOfferWithEth(data);
+      if (addedOffer.hash !== "") {
+        navigate("/exchange");
+        console.log(addedOffer.hash);
+      }
+    } else {
+      const data = {
+        value: 1,
+        satoshis: 1,
+        bitcoinAddress: `0x5078d53e9347ca2Ee42b6cFfC01C04b69ff9420A`,
+        offerValidTill: 1,
+      };
+      const addedOffer = await AddOfferWithToken(data);
+      if (addedOffer.hash !== "") {
+        console.log(addedOffer.hash);
+        navigate("/exchange");
+      }
+    }
+  };
 
   return (
     <div className={styles.root}>

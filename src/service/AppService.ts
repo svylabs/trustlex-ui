@@ -45,12 +45,11 @@ export const connectToMetamask = async () => {
     return false;
   }
 };
-export const getBalance = async () => {
+export const getBalance = async (address: string) => {
   try {
     if (typeof window.ethereum !== undefined) {
       const { ethereum } = window;
       const provider = new ethers.providers.Web3Provider(ethereum);
-      const address = `0x5078d53e9347ca2Ee42b6cFfC01C04b69ff9420A`;
       const balance = await provider.getBalance(address);
       return ethers.utils.formatEther(balance);
     } else {
@@ -89,6 +88,7 @@ export const connect = async () => {
     if (typeof window.ethereum !== undefined) {
       const { ethereum } = window;
       const provider = new ethers.providers.Web3Provider(ethereum);
+      await provider.send("eth_requestAccounts", []);
       const signer = provider.getSigner();
       const trustLex = new ethers.Contract(
         `0x5078d53e9347ca2Ee42b6cFfC01C04b69ff9420A`,

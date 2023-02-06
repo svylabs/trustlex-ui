@@ -30,63 +30,48 @@ import {
   connect,
   getOffers,
 } from "~/service/AppService";
-import EthtoSatoshiConverter from "~/utils/EthtoSatoshiConverter";
 import BtcToSatoshiConverter from "~/utils/BtcToSatoshiConverter";
-import { ethers } from "ethers";
-import {
-  IFullfillmentEvent,
-  INewOfferEvent,
-  IOfferdata,
-} from "~/interfaces/IOfferdata";
+import { IListenedOfferData } from "~/interfaces/IOfferdata";
+import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
+import { NumberToTime, TimeToNumber } from "~/utils/TimeConverter";
 type Props = {};
 
-const tableDummyData: string[][] = new Array(5).fill([
-  1211,
-  <>
-    10 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />{" "}
-    {CurrencyEnum.ETH}
-  </>,
-  <>
-    0.078 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
-    {CurrencyEnum.BTC}
-  </>,
-  <>
-    0.078 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
-    {CurrencyEnum.BTC}
-  </>,
-  <>
-    1 out of 10 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />{" "}
-    {CurrencyEnum.ETH}
-  </>,
-  "1h",
-  "09 Jan, 13:45pm",
-]);
+// const tableDummyData: string[][] = new Array(5).fill([
+//   1211,
+//   <>
+//     10 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />{" "}
+//     {CurrencyEnum.ETH}
+//   </>,
+//   <>
+//     0.078 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
+//     {CurrencyEnum.BTC}
+//   </>,
+//   <>
+//     0.078 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
+//     {CurrencyEnum.BTC}
+//   </>,
+//   <>
+//     1 out of 10 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />{" "}
+//     {CurrencyEnum.ETH}
+//   </>,
+//   "1h",
+//   "09 Jan, 13:45pm",
+// ]);
 
-const mobileTableDummyData: string[][] = new Array(5).fill([
-  1211,
+// const mobileTableDummyData: string[][] = new Array(5).fill([
+//   1211,
 
-  "09 Jan, 13:45pm",
-  <SeeMoreButton
-    onClick={(e) => {
-      // console.log("button clicked");
-    }}
-  />,
-]);
+//   "09 Jan, 13:45pm",
+//   <SeeMoreButton
+//     onClick={(e) => {
+//       // console.log("button clicked");
+//     }}
+//   />,
+// ]);
 
 const Exchange = (props: Props) => {
-  const [tableData, setTableData] = useState<string[][]>(tableDummyData);
-  const [mobileTableData, setMobileTableData] =
-    useState<string[][]>(mobileTableDummyData);
   const [isMoreTableDataLoading, setMoreTableDataLoading] = useState(false);
 
-  const loadMoreOffers = () => {
-    setMoreTableDataLoading(true);
-    setTimeout(() => {
-      setTableData([...tableData, ...tableDummyData]);
-      setMobileTableData([...mobileTableData, ...mobileTableDummyData]);
-      setMoreTableDataLoading(false);
-    }, 2000);
-  };
   const [rowData, setRowData] = useState<(string | ReactNode)[] | null>(null);
 
   const context = React.useContext(AppContext);
@@ -94,7 +79,12 @@ const Exchange = (props: Props) => {
     return <>Loading...</>;
   }
 
-  const { userInputData, setUserInputData } = context;
+  const {
+    listenedOfferData,
+    setListenedOfferData,
+    userInputData,
+    setUserInputData,
+  } = context;
   const [exchangeData, setExchangeData] = useState({
     address: "",
     valid:
@@ -106,6 +96,54 @@ const Exchange = (props: Props) => {
         ? minCollateral[0]
         : minCollateral[0].value,
   });
+
+  const mobileData = listenedOfferData.map((offer: IListenedOfferData) => {
+    return [
+      offer.offerDetailsInJson.offeredBlockNumber,
+      "09 Jan, 13:45pm",
+      <SeeMoreButton onClick={(e) => {}} />,
+    ];
+  });
+
+  const [mobileTableData, setMobileTableData] =
+    useState<(string | JSX.Element)[][]>(mobileData);
+
+  const data = listenedOfferData.map((offer: IListenedOfferData) => {
+    return [
+      offer.offerDetailsInJson.offeredBlockNumber,
+      <>
+        10 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />
+        {CurrencyEnum.ETH}
+      </>,
+      <>
+        {SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)}{" "}
+        <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
+        {CurrencyEnum.BTC}
+      </>,
+      <>
+        0.078 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
+        {CurrencyEnum.BTC}
+      </>,
+      <>
+        1 out of 10
+        <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />{" "}
+        {CurrencyEnum.ETH}
+      </>,
+      NumberToTime(offer.offerDetailsInJson.offerValidTill),
+      "09 Jan, 13:45pm",
+    ];
+  });
+
+  const [tableData, setTableData] = useState<(string | JSX.Element)[][]>(data);
+
+  const loadMoreOffers = () => {
+    setMoreTableDataLoading(true);
+    setTimeout(() => {
+      // setTableData([...tableData, ...tableDummyData]);
+      // setMobileTableData([...mobileTableData, ...mobileTableDummyData]);
+      setMoreTableDataLoading(false);
+    }, 2000);
+  };
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setExchangeData((prev) => {
@@ -130,49 +168,17 @@ const Exchange = (props: Props) => {
   const [hashedOfferData, setHashedOfferData] = useState("");
   const handleOfferConfirm = async () => {
     console.log("Offer confirmed");
-    // if (userInputData.activeExchange[0].currency === "btc") {
-    //   const wei = ethers.utils.parseUnits(
-    //     userInputData.activeExchange[1].value,
-    //     "ether"
-    //   );
-    //   const data = {
-    //     value: wei,
-    //     satoshis: BtcToSatoshiConverter(userInputData.activeExchange[0].value),
-    //     bitcoinAddress: `0x5078d53e9347ca2Ee42b6cFfC01C04b69ff9420A`,
-    //     offerValidTill: 24 * 60 * 60,
-    //   };
-    //   const addedOffer = await AddOfferWithToken(data);
-    //   if (addedOffer.hash !== "") {
-    //     console.log(addedOffer.hash);
-    //   }
-    // } else {
-    console.log(exchangeData.valid);
-
-    let validTill;
-
-    validTill =
-      exchangeData.valid === "1d"
-        ? 24 * 60 * 60 * 60
-        : exchangeData.valid === "10hrs"
-        ? 10 * 60 * 60 * 60
-        : 5 * 60 * 60 * 60;
 
     const data = {
       satoshis: BtcToSatoshiConverter(userInputData.activeExchange[0].value),
       bitcoinAddress: exchangeData.address,
-      offerValidTill: validTill,
+      offerValidTill: TimeToNumber(exchangeData.valid),
     };
     const addedOffer = await AddOfferWithEth(data);
     if (addedOffer.hash !== "") {
       setHashedOfferData(addedOffer.hash);
     }
-    // }
   };
-
-  const [listenedOfferData, setListenedOfferData] = useState<{
-    offerEvent: INewOfferEvent;
-    offerDetailsInJson: IOfferdata;
-  } | null>(null);
 
   const listentotheEvent = async () => {
     try {
@@ -199,7 +205,71 @@ const Exchange = (props: Props) => {
           satoshisReserved: offerData[8].toString(),
           collateralPer3Hours: offerData[9].toString(),
         };
-        setListenedOfferData({ offerEvent, offerDetailsInJson });
+
+        const exists = listenedOfferData.find(
+          (offer) =>
+            offer.offerDetailsInJson.offeredBlockNumber ===
+            offerDetailsInJson.offeredBlockNumber
+        );
+        if (exists === undefined) {
+          setListenedOfferData([
+            ...listenedOfferData,
+            { offerEvent, offerDetailsInJson },
+          ]);
+          setTableData((prev) => {
+            return [
+              ...prev,
+
+              [
+                offerDetailsInJson.offeredBlockNumber,
+                <>
+                  10{" "}
+                  <ImageIcon
+                    image={getIconFromCurrencyType(CurrencyEnum.ETH)}
+                  />
+                  {CurrencyEnum.ETH}
+                </>,
+                <>
+                  {SatoshiToBtcConverter(offerDetailsInJson.satoshisToReceive)}{" "}
+                  <ImageIcon
+                    image={getIconFromCurrencyType(CurrencyEnum.BTC)}
+                  />{" "}
+                  {CurrencyEnum.BTC}
+                </>,
+                <>
+                  0.078{" "}
+                  <ImageIcon
+                    image={getIconFromCurrencyType(CurrencyEnum.BTC)}
+                  />{" "}
+                  {CurrencyEnum.BTC}
+                </>,
+                <>
+                  1 out of 10
+                  <ImageIcon
+                    image={getIconFromCurrencyType(CurrencyEnum.ETH)}
+                  />{" "}
+                  {CurrencyEnum.ETH}
+                </>,
+                NumberToTime(offerDetailsInJson.offerValidTill),
+                "09 Jan, 13:45pm",
+              ],
+            ];
+          });
+          setMobileTableData((prev) => {
+            return [
+              ...prev,
+              offerDetailsInJson.offeredBlockNumber,
+              "09 Jan, 13:45pm",
+              <SeeMoreButton
+                onClick={(e) => {
+                  // console.log("button clicked");
+                }}
+              />,
+            ];
+          });
+        } else {
+          console.log("already exists");
+        }
       });
     } catch (error) {
       console.log(error);
@@ -207,42 +277,11 @@ const Exchange = (props: Props) => {
   };
 
   const listenEvent = async () => {
-    console.log("Listening to event");
     await listentotheEvent();
   };
-
-  const initiateFullFillMent = async () => {
-    if (!listenedOfferData || listenedOfferData === undefined) return;
-    console.log(listenedOfferData);
-    const _fulfillment: IFullfillmentEvent = {
-      fulfillmentBy: listenedOfferData.offerEvent.from,
-      quantityRequested: listenedOfferData.offerDetailsInJson.satoshisToReceive,
-      allowAnyoneToSubmitPaymentProofForFee: true,
-      allowAnyoneToAddCollateralForFee: true,
-      totalCollateralAdded:
-        listenedOfferData.offerDetailsInJson.collateralPer3Hours,
-      expiryTime: listenedOfferData.offerDetailsInJson.offerValidTill,
-      fulfilledTime: 10,
-      collateralAddedBy: listenedOfferData.offerEvent.from,
-    };
-
-    console.log("Initalizing fullfillment");
-
-    const data = await InitializeFullfillment(
-      listenedOfferData.offerEvent.to,
-      _fulfillment
-    );
-    console.log(data);
-  };
-
   useEffect(() => {
     listenEvent();
   }, [hashedOfferData]);
-
-  // useEffect(() => {
-  //   if (!listenedOfferData || listenedOfferData === undefined) return;
-  //   initiateFullFillMent();
-  // }, [listenedOfferData]);
 
   return (
     <div className={styles.root}>
@@ -323,7 +362,10 @@ const Exchange = (props: Props) => {
                 cols={exchangeTableCols}
                 data={tableData}
                 verticalSpacing={"lg"}
-                onRowClick={(data) => setRowData(data)}
+                onRowClick={(data) => {
+                  console.log(data);
+                  setRowData(data);
+                }}
               />
             </div>
             <div className={styles.mobileTableInner}>

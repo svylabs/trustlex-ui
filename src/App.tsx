@@ -10,10 +10,15 @@ import { useState, useEffect } from "react";
 import { findMetaMaskAccount, getBalance } from "./service/AppService";
 import IUserInputData from "./interfaces/IUserInputData";
 import swapArrayElements from "./utils/swapArray";
+import { IListenedOfferData } from "./interfaces/IOfferdata";
 
 export default function App() {
   const [account, setAccount] = useState("");
   const [balance, setBalance] = useState("");
+  const [listenedOfferData, setListenedOfferData] = useState<
+    IListenedOfferData[] | []
+  >([]);
+
   const [userInputData, setUserInputData] = useState<IUserInputData>({
     setLimit: true,
     limit: "0",
@@ -93,6 +98,8 @@ export default function App() {
             setUserInputData,
             swapChange,
             dropDownChange,
+            listenedOfferData,
+            setListenedOfferData,
           }}
         >
           <Layout>

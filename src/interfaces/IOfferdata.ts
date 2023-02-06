@@ -26,3 +26,9 @@ export interface IFullfillmentEvent {
   fulfilledTime: number | string | Date;
   collateralAddedBy: string;
 }
+
+
+export interface IListenedOfferData {
+  offerEvent: INewOfferEvent;
+  offerDetailsInJson: IOfferdata;
+}

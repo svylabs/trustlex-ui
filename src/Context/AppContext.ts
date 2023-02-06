@@ -1,4 +1,6 @@
 import { createContext } from "react";
+import { IListenedOfferData } from "~/interfaces/IOfferdata";
+
 import IUserInputData from "~/interfaces/IUserInputData";
 
 export const AppContext = createContext<null | {
@@ -9,4 +11,8 @@ export const AppContext = createContext<null | {
   setUserInputData: React.Dispatch<React.SetStateAction<IUserInputData>>;
   swapChange: Function;
   dropDownChange: (from: string, to: string) => void;
+  listenedOfferData: IListenedOfferData[] | [];
+  setListenedOfferData: React.Dispatch<
+    React.SetStateAction<[] | IListenedOfferData[]>
+  >;
 }>(null);

@@ -1,5 +1,5 @@
 import { Icon } from "@iconify/react";
-import { Center, Drawer, Grid, Text } from "@mantine/core";
+import { Drawer, Grid, Text } from "@mantine/core";
 import { CurrencyEnum } from "~/enums/CurrencyEnum";
 import { VariantsEnum } from "~/enums/VariantsEnum";
 import Button from "../Button/Button";
@@ -7,11 +7,14 @@ import CurrencyDisplay from "../CurrencyDisplay/CurrencyDisplay";
 import GradientBackgroundContainer from "../GradientBackgroundContainer/GradientBackgroundContainer";
 import styles from "./ExchangeOfferDrawer.module.scss";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useRef, useState, useContext } from "react";
 import useAutoHideScrollbar from "~/hooks/useAutoHideScrollBar";
 import StepSvg, { StepFilledSvg } from "./StepSvg";
 import useDetectScrollUpDown from "~/hooks/useDetectScrollUpDown";
 import Countdown from "~/utils/Countdown";
+import { AppContext } from "~/Context/AppContext";
+import { IFullfillmentEvent } from "~/interfaces/IOfferdata";
+import { InitializeFullfillment } from "~/service/AppService";
 
 type Props = {
   isOpened: boolean;
@@ -22,15 +25,35 @@ type Props = {
 const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
   const { mobileView } = useWindowDimensions();
   const rootRef = useRef(null);
+  const context = useContext(AppContext);
 
+  useEffect(() => {
+    if (data === null) {
+      onClose();
+    }
+  }, [data]);
+
+  if (context === null) {
+    return <>Loading...</>;
+  }
+
+  const { listenedOfferData } = context;
+
+  const foundOffer = listenedOfferData.find(
+    (offer) => offer.offerDetailsInJson.offeredBlockNumber === data![0]
+  );
+  console.log(foundOffer);
   useAutoHideScrollbar(rootRef);
 
   const [isInitiatng, setIsInitating] = useState("");
-  const handleInitate = () => {
+  const handleInitate = async () => {
     setIsInitating("loading");
-    setTimeout(() => {
-      setIsInitating("initiated");
-    }, 1000 * 120);
+    await initiateFullFillMent();
+    setIsInitating("initiated");
+
+    // setTimeout(() => {
+    //   setIsInitating("initiated");
+    // }, 1000 * 120);
   };
   const [checked, setChecked] = useState("allow");
   const [activeStep, setActiveStep] = useState(1);
@@ -43,13 +66,36 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
       setConfirmed("confirmed");
     }, 1000 * 120);
   };
-  useEffect(() => {
-    if (data === null) {
-      onClose();
-    }
-  }, [data]);
 
   const { scrollDirection } = useDetectScrollUpDown();
+
+  const initiateFullFillMent = async () => {
+    if (!foundOffer || foundOffer === undefined) return;
+    console.log(foundOffer);
+    const _fulfillment: IFullfillmentEvent = {
+      fulfillmentBy: foundOffer.offerEvent.from,
+      quantityRequested: foundOffer.offerDetailsInJson.satoshisToReceive,
+      allowAnyoneToSubmitPaymentProofForFee: true,
+      allowAnyoneToAddCollateralForFee: true,
+      totalCollateralAdded: foundOffer.offerDetailsInJson.collateralPer3Hours,
+      expiryTime: foundOffer.offerDetailsInJson.offerValidTill,
+      fulfilledTime: 10,
+      collateralAddedBy: foundOffer.offerEvent.from,
+    };
+
+    console.log("Initalizing fullfillment");
+
+    const data = await InitializeFullfillment(
+      foundOffer.offerEvent.to,
+      _fulfillment
+    );
+    console.log(data);
+  };
+
+  // useEffect(() => {
+  //   if (!listenedOfferData || listenedOfferData === undefined) return;
+  //   initiateFullFillMent();
+  // }, [listenedOfferData]);
 
   return (
     <Drawer

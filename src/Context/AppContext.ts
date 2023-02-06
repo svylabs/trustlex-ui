@@ -4,6 +4,7 @@ import IUserInputData from "~/interfaces/IUserInputData";
 export const AppContext = createContext<null | {
   account: string;
   setAccount: React.Dispatch<React.SetStateAction<string>>;
+  balance: string;
   userInputData: IUserInputData;
   setUserInputData: React.Dispatch<React.SetStateAction<IUserInputData>>;
   swapChange: Function;

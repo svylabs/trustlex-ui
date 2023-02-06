@@ -1,5 +1,5 @@
 export interface IAddOfferWithEth {
-  satoshis: number;
+  satoshis: number | string;
   bitcoinAddress: string;
   offerValidTill: number;
 }

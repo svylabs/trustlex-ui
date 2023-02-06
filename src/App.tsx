@@ -7,12 +7,13 @@ import Exchange from "~/pages/Exchange/Exchange";
 import Recent from "./pages/Recent/Recent";
 import { AppContext } from "./Context/AppContext";
 import { useState, useEffect } from "react";
-import { findMetaMaskAccount, getOffers } from "./service/AppService";
+import { findMetaMaskAccount, getBalance } from "./service/AppService";
 import IUserInputData from "./interfaces/IUserInputData";
 import swapArrayElements from "./utils/swapArray";
 
 export default function App() {
   const [account, setAccount] = useState("");
+  const [balance, setBalance] = useState("");
   const [userInputData, setUserInputData] = useState<IUserInputData>({
     setLimit: true,
     limit: "0",
@@ -64,12 +65,17 @@ export default function App() {
         setAccount(account);
       }
     });
+    getBalance().then((balance) => {
+      if (balance) {
+        setBalance(balance);
+      }
+    });
+
+    return () => {
+      setAccount("");
+      setBalance("");
+    };
   }, []);
-  // useEffect(() => {
-  //   if (account !== null) {
-  //     getOffers();
-  //   }
-  // }, []);
 
   return (
     <MantineProvider
@@ -80,6 +86,7 @@ export default function App() {
       <BrowserRouter>
         <AppContext.Provider
           value={{
+            balance,
             account,
             setAccount,
             userInputData,

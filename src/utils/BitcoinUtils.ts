@@ -39,7 +39,7 @@ export const decryptWallet = (walletJSON: string, password: string): Wallet => {
     const wallet = JSON.parse(walletJSON) as OfflineWallet;
     const decryptedKey = bip38.decrypt(wallet.encryptedPrivateKey, password);
     return {
-        privateKey: decryptedKey,
+        privateKey: decryptedKey.privateKey,
         publicKey: Buffer.from(wallet.publicKey, 'hex'),
         pubkeyHash: bitcoin.crypto.hash160(Buffer.from(wallet.publicKey, 'hex'))
     };

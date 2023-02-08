@@ -8,4 +8,5 @@ export enum VariantsEnum {
   gradient = "gradient",
   primary = "primary",
   outlinePrimary = "outline-primary",
+  outlinePrimaryFilledText = "outline-primary-filled-text",
 }

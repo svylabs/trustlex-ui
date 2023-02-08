@@ -1,0 +1,75 @@
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  .caption {
+    font-family: "Inter", sans-serif;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 24px;
+    color: var(--white);
+    flex: 1;
+  }
+  .actions {
+    display: flex;
+    gap: 1rem;
+    .icon {
+      font-size: 4rem;
+      cursor: pointer;
+    }
+  }
+}
+
+.cols {
+  font-family: "Inter", sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 12px !important;
+  color: #8f8f90;
+}
+
+.thead {
+  tr {
+    th {
+      border-bottom: none !important;
+      padding: 8px !important;
+    }
+  }
+}
+.tbody {
+  tr {
+    td {
+      border-top: none !important;
+      padding: 8px !important;
+    }
+  }
+  .pointer {
+    cursor: pointer;
+  }
+}
+
+.td {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px !important;
+  color: var(--white);
+}
+.tableContainer {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+}
+.submitProofButton {
+  width: 100%;
+  padding: 12px 0;
+}
+
+.tableItemRoot {
+  display: flex;
+  flex-direction: column;
+  overflow-x: scroll;
+  white-space: nowrap;
+}

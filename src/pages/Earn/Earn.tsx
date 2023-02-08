@@ -9,6 +9,17 @@ import {
 import React from "react";
 import { randomHashGenerator } from "~/helpers/randomHashGenerator";
 import styles from "./Earn.module.scss";
+import GradientBackgroundContainer from "~/components/GradientBackgroundContainer/GradientBackgroundContainer";
+import ImageIcon from "~/components/ImageIcon/ImageIcon";
+import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";
+import { CurrencyEnum } from "~/enums/CurrencyEnum";
+import Table from "~/components/Table/Table";
+import { EarnTableData } from "~/data/earnPage";
+import ActionButton from "~/components/ActionButton/ActionButton";
+import Button from "~/components/Button/Button";
+import { VariantsEnum } from "~/enums/VariantsEnum";
+import useWindowDimensions from "~/hooks/useWindowDimesnsion";
+import EarnMobileTable from "~/components/EarnMobileTable/EarnMobileTable";
 type Props = {};
 
 const Earn = (props: Props) => {
@@ -34,37 +45,104 @@ const Earn = (props: Props) => {
       mergeStyle: MergeStyle.Straight,
     },
   });
+
+  const tableData = EarnTableData.map((row) => {
+    return [
+      <div className={styles.planningCell}>
+        {row.planningToSell.amount}{" "}
+        <ImageIcon image={getIconFromCurrencyType(row.planningToSell.type)} />{" "}
+        {row.planningToSell.type}
+      </div>,
+      <div className={styles.planningCell}>
+        {row.planningToBuy.amount}
+        <ImageIcon image={getIconFromCurrencyType(row.planningToBuy.type)} />
+        {row.planningToBuy.type}
+      </div>,
+      <div className={styles.planningCell}>
+        {row.earn.amount}
+        <ImageIcon image={getIconFromCurrencyType(row.earn.type)} />
+        {row.earn.type}
+      </div>,
+      <div className={styles.actionsCell}>
+        <Button variant={VariantsEnum.outlinePrimaryFilledText} radius={10}>
+          Submit Proof
+        </Button>
+      </div>,
+    ];
+  });
+
+  const { mobileView } = useWindowDimensions();
+
+  const handleSubmitProof = (data: (string | React.ReactNode)[]) => {
+    console.log(data);
+  };
+
   return (
     <div className={styles.earnPage}>
+      <div>
+        <h1 className={styles.pageTitle}>Earn</h1>
+        <p className={styles.pageDesc}>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit.
+        </p>
+      </div>
       <section>
-        <h3>1. Earn coins by submitting Bitcoin block headers</h3>
-        <div className={styles.box}>
-          <p className={styles.subTitle}>Earn 10 coins</p>
-          <Gitgraph
-            options={{
-              orientation: Orientation.Horizontal,
-              // mode: Mode.Compact,
-              generateCommitHash: randomHashGenerator,
-              template: withoutHash,
-            }}
-          >
-            {(gitgraph) => {
-              const master = gitgraph.branch("master");
-              master.commit("Initial commit");
-              master.commit({
-                subject: "Initial commit 2",
-              });
-              master.tag("v1.20.1");
-              master.branch("develop");
-              const develop = gitgraph.branch("develop");
-              develop.commit("Create fork");
-            }}
-          </Gitgraph>
-        </div>
+        {/* <h3>1. Earn coins by submitting Bitcoin block headers</h3> */}
+        <GradientBackgroundContainer colorLeft="#FFD57243">
+          <div className={styles.box}>
+            <p className={styles.subTitle}>
+              Earn coins by submitting{" "}
+              <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
+              Bitcoin block headers coins
+            </p>
+            <Gitgraph
+              options={{
+                orientation: Orientation.Horizontal,
+                // mode: Mode.Compact,
+                generateCommitHash: randomHashGenerator,
+                template: withoutHash,
+              }}
+            >
+              {(gitgraph) => {
+                const master = gitgraph.branch("master");
+                master.commit("Initial commit");
+                master.commit({
+                  subject: "Initial commit 2",
+                });
+                master.tag("v1.20.1");
+                master.branch("develop");
+                const develop = gitgraph.branch("develop");
+                develop.commit("Create fork");
+              }}
+            </Gitgraph>
+          </div>
+        </GradientBackgroundContainer>
       </section>
       <section>
-        <h3>2. Earn 0.05% on transaction by submitting proof of payment</h3>
-        <div className={styles.box}>SOmething</div>
+        {/* <h3>2. Earn 0.05% on transaction by submitting proof of payment</h3>
+        <div className={styles.box}>SOmething</div> */}
+        <GradientBackgroundContainer colorLeft="#FFD57243">
+          <div className={styles.box}>
+            {!mobileView ? (
+              <Table
+                horizontalSpacing={"xs"}
+                verticalSpacing={"md"}
+                tableCaption="Earn 0.05% on transactions by submitting proof of payment"
+                cols={["Planning to sell", "Planning to buy", "Earn", ""]}
+                data={tableData}
+                onRowClick={handleSubmitProof}
+              />
+            ) : (
+              <EarnMobileTable
+                horizontalSpacing={"xs"}
+                verticalSpacing={"md"}
+                tableCaption="Earn 0.05% on transactions by submitting proof of payment"
+                cols={["Planning to sell", "Planning to buy", "Earn", ""]}
+                data={tableData}
+                onRowClick={handleSubmitProof}
+              />
+            )}
+          </div>
+        </GradientBackgroundContainer>
       </section>
     </div>
   );

@@ -22,19 +22,16 @@ const Table = ({
   const tableContainerRef = React.useRef(null);
 
   useAutoHideScrollbar(tableContainerRef);
-
-  const previousData = () => {
-    alert("previousData");
-  };
-  const nextData = () => {
-    alert("Next data");
-  };
+ 
 
   return (
     <div className={styles.root}>
-      <div className={styles.heading}>
-        <h2 className={styles.caption}>{tableCaption}</h2>
-      </div>
+      {tableCaption !== "" && (
+        <div className={styles.heading}>
+          <h2 className={styles.caption}>{tableCaption}</h2>
+        </div>
+      )}
+
       <div className={styles.tableContainer} ref={tableContainerRef}>
         <MantineTable
           verticalSpacing={verticalSpacing}

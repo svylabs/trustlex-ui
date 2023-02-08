@@ -174,7 +174,7 @@ const Exchange = (props: Props) => {
       bitcoinAddress: exchangeData.address,
       offerValidTill: TimeToNumber(exchangeData.valid),
     };
-    const addedOffer = await AddOfferWithEth(data);
+    const addedOffer = await AddOfferWithEth(context.contract, data);
     if (addedOffer.hash !== "") {
       setHashedOfferData(addedOffer.hash);
     }
@@ -182,7 +182,7 @@ const Exchange = (props: Props) => {
 
   const listentotheEvent = async () => {
     try {
-      const trustLex = await connect();
+      const trustLex = context.contract;
       if (!trustLex) return false;
 
       trustLex.on("NEW_OFFER", async (from, to, value) => {
@@ -192,7 +192,7 @@ const Exchange = (props: Props) => {
           value: value,
         };
 
-        const offerData = await getOffers(to);
+        const offerData = await getOffers(trustLex, to);
         const offerDetailsInJson = {
           offerQuantity: offerData[0].toString(),
           offeredBy: offerData[1].toString(),

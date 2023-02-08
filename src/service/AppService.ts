@@ -83,12 +83,11 @@ export const getBalance = async (address: string) => {
 //     return false;
 //   }
 // };
-export const connect = async () => {
+export const connect = async (provider:  ethers.providers.Web3Provider, callback?: Function) => {
   try {
     if (typeof window.ethereum !== undefined) {
-      const { ethereum } = window;
-      const provider = new ethers.providers.Web3Provider(ethereum);
-      await provider.send("eth_requestAccounts", []);
+      let accounts = await provider.send("eth_requestAccounts", []);
+      
       const signer = provider.getSigner();
       const trustLex = new ethers.Contract(
         `0x5078d53e9347ca2Ee42b6cFfC01C04b69ff9420A`,
@@ -104,9 +103,8 @@ export const connect = async () => {
   }
 };
 
-export const getOffers = async (offerId: any) => {
+export const getOffers = async (trustLex: ethers.Contract | undefined, offerId: any) => {
   try {
-    const trustLex = await connect();
     if (!trustLex) return false;
 
     let offerData = await trustLex.offers(offerId);
@@ -121,11 +119,10 @@ export const getOffers = async (offerId: any) => {
   }
 };
 
-export const AddOfferWithEth = async (data: IAddOfferWithEth) => {
+export const AddOfferWithEth = async (trustLex: ethers.Contract | undefined, data: IAddOfferWithEth) => {
   const { satoshis, bitcoinAddress, offerValidTill } = data;
 
   try {
-    const trustLex = await connect();
     if (!trustLex) return false;
     const addOffer = await trustLex.addOfferWithEth(
       satoshis,
@@ -140,9 +137,8 @@ export const AddOfferWithEth = async (data: IAddOfferWithEth) => {
     console.log(error);
   }
 };
-const listentotheEvent = async () => {
+const listentotheEvent = async (trustLex: ethers.Contract | undefined) => {
   try {
-    const trustLex = await connect();
     if (!trustLex) return false;
     let data = {
       offerEvent: {} as INewOfferEvent,
@@ -155,7 +151,7 @@ const listentotheEvent = async () => {
         value: value,
       };
 
-      const offerData = await getOffers(to);
+      const offerData = await getOffers(trustLex, to);
       const offerDetailsInJson = {
         offerQuantity: offerData[0].toString(),
         offeredBy: offerData[1].toString(),
@@ -178,11 +174,11 @@ const listentotheEvent = async () => {
 };
 
 export const InitializeFullfillment = async (
+  trustLex: ethers.Contract | undefined,
   offerId: string,
   _fulfillment: IFullfillmentEvent
 ) => {
   try {
-    const trustLex = await connect();
     if (!trustLex) return false;
     const initializeFullfillment = await trustLex.initiateFulfillment(
       offerId,
@@ -198,9 +194,8 @@ export const InitializeFullfillment = async (
   }
 };
 
-export const AddOfferWithToken = async (data: IAddOfferWithToken) => {
+export const AddOfferWithToken = async (trustLex: ethers.Contract | undefined, data: IAddOfferWithToken) => {
   try {
-    const trustLex = await connect();
     if (!trustLex) return false;
     const addOffer = await trustLex.addOfferWithToken(
       data.value,

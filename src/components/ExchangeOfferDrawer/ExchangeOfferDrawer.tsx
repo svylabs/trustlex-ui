@@ -86,6 +86,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
     console.log("Initalizing fullfillment");
 
     const data = await InitializeFullfillment(
+      context.contract,
       foundOffer.offerEvent.to,
       _fulfillment
     );

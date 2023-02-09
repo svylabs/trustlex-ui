@@ -22,7 +22,6 @@ const Table = ({
   const tableContainerRef = React.useRef(null);
 
   useAutoHideScrollbar(tableContainerRef);
- 
 
   return (
     <div className={styles.root}>

@@ -1,0 +1,28 @@
+.box {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+  border-radius: 1rem;
+}
+
+.planningCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem;
+}
+
+.actionsCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+@media screen and (max-width: 500px) {
+  section {
+    .box {
+      padding: 0;
+    }
+  }
+}

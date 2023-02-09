@@ -29,7 +29,7 @@ export default function App() {
           setBalance(balance);
         }
       });
-      connect(provider).then((trustlex) => {
+      connect(provider, '0x5078d53e9347ca2Ee42b6cFfC01C04b69ff9420A').then((trustlex) => {
         if (trustlex) {
           setContract(trustlex as ethers.Contract);
         }

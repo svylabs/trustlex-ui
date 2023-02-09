@@ -83,14 +83,14 @@ export const getBalance = async (address: string) => {
 //     return false;
 //   }
 // };
-export const connect = async (provider:  ethers.providers.Web3Provider, callback?: Function) => {
+export const connect = async (provider:  ethers.providers.Web3Provider, address: string, callback?: Function) => {
   try {
     if (typeof window.ethereum !== undefined) {
       let accounts = await provider.send("eth_requestAccounts", []);
       
       const signer = provider.getSigner();
       const trustLex = new ethers.Contract(
-        `0x5078d53e9347ca2Ee42b6cFfC01C04b69ff9420A`,
+        address,
         abi.abi,
         signer
       );

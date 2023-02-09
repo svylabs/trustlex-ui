@@ -29,6 +29,11 @@ export default function App() {
           setBalance(balance);
         }
       });
+      connect(provider).then((trustlex) => {
+        if (trustlex) {
+          setContract(trustlex as ethers.Contract);
+        }
+      });
   });
 
   const [userInputData, setUserInputData] = useState<IUserInputData>({

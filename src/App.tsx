@@ -7,7 +7,7 @@ import Exchange from "~/pages/Exchange/Exchange";
 import Recent from "./pages/Recent/Recent";
 import { AppContext } from "./Context/AppContext";
 import { useState, useEffect, useContext } from "react";
-import { connect, findMetaMaskAccount, getBalance } from "./service/AppService";
+import { connect, findMetaMaskAccount, getBalance, listOffers } from "./service/AppService";
 import IUserInputData from "./interfaces/IUserInputData";
 import swapArrayElements from "./utils/swapArray";
 import { IListenedOfferData } from "./interfaces/IOfferdata";
@@ -34,6 +34,7 @@ export default function App() {
       connect(provider, ContractMap[selectedToken].address).then((trustlex) => {
         if (trustlex) {
           setContract(trustlex as ethers.Contract);
+
         }
       });
   });
@@ -84,9 +85,11 @@ export default function App() {
   };
 
   useEffect(() => {
-    connect(provider, ContractMap[selectedToken].address).then((trustlex) => {
+    connect(provider, ContractMap[selectedToken].address).then(async (trustlex) => {
       if (trustlex) {
         setContract(trustlex as ethers.Contract);
+        const offers = await listOffers(trustlex);
+        setListenedOfferData(offers);
       }
       findMetaMaskAccount().then((account) => {
         if (account !== null) {

@@ -39,8 +39,8 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
 
   const { listenedOfferData } = context;
 
-  const foundOffer = listenedOfferData.find(
-    (offer) => offer.offerDetailsInJson.offeredBlockNumber === data![0]
+  const foundOffer = data && listenedOfferData.find(
+    (offer) => offer.offerDetailsInJson.offeredBlockNumber === data[0]
   );
   console.log(foundOffer);
   useAutoHideScrollbar(rootRef);

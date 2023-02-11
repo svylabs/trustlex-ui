@@ -132,6 +132,53 @@
   }
 }
 
+@media screen and (max-width: 768px) {
+  .graphBoxContainer {
+    flex-direction: row;
+    .graphBox {
+      width: 100%;
+      justify-content: flex-start;
+      align-items: flex-start;
+      padding-left: 1rem;
+      flex-direction: column;
+    }
+  }
+
+  .lineContainer{
+    padding-left: 4px;
+  
+    .line {
+      width: 0;
+      height: 38px;
+    }
+  }
+  .vericalGraph {
+    padding: 0 ;
+    flex-direction: column;
+    gap: 5rem;
+  
+    .firstVeritcalGraph {
+      position: absolute;
+      top: 1rem;
+      left: 10rem;
+    }
+  }
+
+  .pointerBox {
+    height: fit-content;
+    width: 40px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+  
+    .pointNumber {
+      top: 0;
+      bottom: 0;
+      right: 0;
+    }
+  }
+}
+
 @media screen and (max-width: 500px) {
   .box {
     padding: 0;

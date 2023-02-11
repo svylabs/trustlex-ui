@@ -332,10 +332,10 @@
         .stepsContentsContainer {
           .stepContent {
             .sendToContainer {
-              .qrImage {
-                width: 60px;
-                height: 62px;
-              }
+              // .qrImage {
+              //   width: 60px;
+              //   height: 62px;
+              // }
 
               .sendTo {
                 > span {
@@ -367,4 +367,9 @@
       }
     }
   }
+}
+
+.qrImage {
+  width: 60px;
+  height: 62px;
 }

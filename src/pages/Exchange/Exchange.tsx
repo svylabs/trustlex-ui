@@ -35,7 +35,7 @@ import BtcToSatoshiConverter from "~/utils/BtcToSatoshiConverter";
 import { IListenedOfferData } from "~/interfaces/IOfferdata";
 import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
 import { NumberToTime, TimeToNumber } from "~/utils/TimeConverter";
-import {ethers} from 'ethers';
+import { ethers } from "ethers";
 type Props = {};
 
 // const tableDummyData: string[][] = new Array(5).fill([
@@ -115,7 +115,8 @@ const Exchange = (props: Props) => {
       return [
         offer.offerDetailsInJson.offeredBlockNumber,
         <>
-          {ethers.utils.formatEther(offer.offerDetailsInJson.offerQuantity)} <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />
+          {ethers.utils.formatEther(offer.offerDetailsInJson.offerQuantity)}{" "}
+          <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />
           {CurrencyEnum.ETH}
         </>,
         <>
@@ -136,7 +137,7 @@ const Exchange = (props: Props) => {
         "09 Jan, 13:45pm",
       ];
     });
-  }
+  };
 
   let data = getTableData(listenedOfferData);
 
@@ -290,7 +291,7 @@ const Exchange = (props: Props) => {
     listOffers(context.contract).then((offers) => {
       setListenedOfferData(offers);
       setTableData(getTableData(offers));
-    })
+    });
   }, [hashedOfferData]);
 
   return (

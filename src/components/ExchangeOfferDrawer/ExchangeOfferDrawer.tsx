@@ -15,6 +15,7 @@ import Countdown from "~/utils/Countdown";
 import { AppContext } from "~/Context/AppContext";
 import { IFullfillmentEvent } from "~/interfaces/IOfferdata";
 import { InitializeFullfillment } from "~/service/AppService";
+import { QRCodeCanvas } from "qrcode.react";
 
 type Props = {
   isOpened: boolean;
@@ -39,10 +40,12 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
 
   const { listenedOfferData } = context;
 
-  const foundOffer = data && listenedOfferData.find(
-    (offer) => offer.offerDetailsInJson.offeredBlockNumber === data[0]
-  );
-  console.log(foundOffer);
+  const foundOffer =
+    data &&
+    listenedOfferData.find(
+      (offer) => offer.offerDetailsInJson.offeredBlockNumber === data[0]
+    );
+  // console.log(foundOffer);
   useAutoHideScrollbar(rootRef);
 
   const [isInitiatng, setIsInitating] = useState("");
@@ -97,6 +100,8 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
   //   if (!listenedOfferData || listenedOfferData === undefined) return;
   //   initiateFullFillMent();
   // }, [listenedOfferData]);
+
+  if (!isOpened) return null;
 
   return (
     <Drawer
@@ -266,7 +271,23 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                 <div className={styles.stepContent}>
                   <div className={styles.spacing} />
                   <div className={styles.sendToContainer}>
-                    <img src="/images/qr-code.png" className={styles.qrImage} />
+                    {
+                      <div className={styles.qrImage}>
+                        {/* values can be set anything but should a string */}
+                        {/* Can use JSON.stringify(value) to make string of any values like arrays */}
+                        {/* Can use JSON.parse(value) to parse the value in arrays */}
+                        <QRCodeCanvas
+                          value={"Random value"}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                          }}
+                          // bgColor="#7C7C7C00"
+                          // fgColor="#7C7C7C"
+                        />
+                      </div>
+                    }
+                    {/* <img src="/images/qr-code.png" className={styles.qrImage} /> */}
                     <div className={styles.sendTo}>
                       <span>Send 0.5 Bitcoins to:</span>
                       {mobileView ? (

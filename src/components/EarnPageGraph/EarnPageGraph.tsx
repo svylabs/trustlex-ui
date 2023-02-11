@@ -234,6 +234,8 @@ function CommitDot({ commit }: { commit: any }) {
 }
 
 const CustomGraph = () => {
+  const { tabletView } = useWindowDimensions();
+
   return (
     <div className={styles.graphBoxContainer}>
       <div className={styles.graphBox}>
@@ -247,7 +249,10 @@ const CustomGraph = () => {
         <Point active={false} />
         <Line />
         <Point active={false} />
-        <Line width="65px" />
+        <Line
+          width={tabletView ? "0" : "65px"}
+          height={tabletView ? "65px" : "0"}
+        />
         <Button
           variant={VariantsEnum.primary}
           radius={10}
@@ -281,14 +286,17 @@ const CustomGraph = () => {
   );
 };
 
-const Line = ({ width }: { width?: string }) => {
+const Line = ({ width, height }: { width?: string; height?: string }) => {
   return (
-    <div
-      className={styles.line}
-      style={{
-        width: width,
-      }}
-    ></div>
+    <div className={styles.lineContainer}>
+      <div
+        className={styles.line}
+        style={{
+          width: width,
+          height: height,
+        }}
+      ></div>
+    </div>
   );
 };
 
@@ -324,7 +332,12 @@ const Point = ({ active }: { active: boolean }) => {
           active && styles.activeCheckbox
         }`}
       >
-        <input type="radio" className={styles.checkbox} checked={true} />
+        <input
+          type="radio"
+          className={styles.checkbox}
+          readOnly
+          checked={active ? true : false}
+        />
       </div>
     </div>
   );

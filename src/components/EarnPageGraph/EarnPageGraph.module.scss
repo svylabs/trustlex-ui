@@ -19,7 +19,10 @@
   width: 100%;
   height: 100%;
   position: relative;
-  overflow-x: scroll;
+  overflow-x: hidden;
+  &:hover {
+    overflow-x: scroll;
+  }
 
   .submitButton {
     position: absolute;
@@ -42,7 +45,7 @@
 .graphBoxContainer {
   display: flex;
   flex-direction: column;
-  height: fit-content;
+  min-height: 200px;
   gap: 1.2rem;
   padding: 2rem 0;
 
@@ -58,17 +61,6 @@
   height: 0px;
   opacity: 0.7;
   border: 1px solid #909092;
-}
-.vericalGraph {
-  display: flex;
-  padding: 0 1rem 5rem 11.5rem;
-  position: relative;
-
-  .firstVeritcalGraph {
-    position: absolute;
-    top: 1rem;
-    left: 18rem;
-  }
 }
 
 .pointerBox {
@@ -132,6 +124,40 @@
   }
 }
 
+.reverseData {
+  flex-direction: column;
+  gap: 0.5rem;
+  .pointNumber {
+    order: 2;
+    position: relative;
+  }
+}
+
+.extendedPoint {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+
+  .extendedLine {
+    width: fit-content;
+    height: fit-content;
+    position: absolute;
+    left: 0;
+    bottom: -12px;
+
+    .linepoint {
+      position: absolute;
+      top: 15px;
+      left: 52px;
+    }
+    .extendedButton {
+      position: absolute;
+      top: 10px;
+      left: 60px;
+    }
+  }
+}
+
 @media screen and (max-width: 768px) {
   .graphBoxContainer {
     flex-direction: row;
@@ -144,23 +170,12 @@
     }
   }
 
-  .lineContainer{
+  .lineContainer {
     padding-left: 4px;
-  
+
     .line {
       width: 0;
       height: 38px;
-    }
-  }
-  .vericalGraph {
-    padding: 0 ;
-    flex-direction: column;
-    gap: 5rem;
-  
-    .firstVeritcalGraph {
-      position: absolute;
-      top: 1rem;
-      left: 10rem;
     }
   }
 
@@ -168,13 +183,38 @@
     height: fit-content;
     width: 40px;
     display: flex;
-    align-items: flex-start;
+    gap: 1rem;
+    align-items: center;
     justify-content: flex-start;
-  
+
     .pointNumber {
-      top: 0;
-      bottom: 0;
-      right: 0;
+      order: 1;
+      position: relative;
+    }
+  }
+
+  .extendedPoint {
+    position: relative;
+    align-items: center;
+    justify-content: center;
+
+    .extendedLine {
+      width: fit-content;
+      height: fit-content;
+      position: absolute;
+      left: 35px;
+      top: 35px;
+
+      .linepoint {
+        position: absolute;
+        top: 25px;
+        left: 58px;
+      }
+      .extendedButton {
+        position: absolute;
+        top: 50px;
+        left: 20px;
+      }
     }
   }
 }

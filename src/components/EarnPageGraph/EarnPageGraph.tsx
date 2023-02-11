@@ -58,6 +58,16 @@ const withoutHash = templateExtend(TemplateName.Metro, {
   },
 });
 
+interface IBlock {
+  active: boolean;
+  extended: boolean;
+  number: number;
+}
+
+interface IBlocksProps extends IBlock {
+  extendList: IBlock[] | [];
+}
+
 const EarnPageGraph = () => {
   const { mobileView } = useWindowDimensions();
 
@@ -71,8 +81,44 @@ const EarnPageGraph = () => {
     // template: TemplateName.BlackArrow,
   };
 
-  const graphRef = useRef(null);
-  useAutoHideScrollbar(graphRef);
+  const blocks: IBlocksProps[] = [
+    {
+      active: true,
+      extended: false,
+      number: 760000,
+      extendList: [],
+    },
+    {
+      active: false,
+      extended: true,
+      number: 760000,
+      extendList: [
+        {
+          active: false,
+          extended: false,
+          number: 760000,
+        },
+      ],
+    },
+    {
+      active: false,
+      extended: false,
+      number: 760000,
+      extendList: [],
+    },
+    {
+      active: false,
+      extended: false,
+      number: 760000,
+      extendList: [],
+    },
+    {
+      active: false,
+      extended: false,
+      number: 760000,
+      extendList: [],
+    },
+  ];
 
   return (
     <div className={styles.box}>
@@ -81,8 +127,8 @@ const EarnPageGraph = () => {
         <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} /> Bitcoin
         block headers coins
       </p>
-      <div className={styles.gitGraph} ref={graphRef}>
-        <CustomGraph />
+      <div className={styles.gitGraph}>
+        <CustomGraph blocks={blocks} />
         {/* <Gitgraph options={options}>
           {(gitgraph) => {
             const master = gitgraph
@@ -233,50 +279,33 @@ function CommitDot({ commit }: { commit: any }) {
   );
 }
 
-const CustomGraph = () => {
+const CustomGraph = ({ blocks }: { blocks: IBlocksProps[] }) => {
   const { tabletView } = useWindowDimensions();
 
   return (
     <div className={styles.graphBoxContainer}>
       <div className={styles.graphBox}>
         <Line />
-        <Point active={true} />
-        <Line />
-        <Point active={false} />
-        <Line />
-        <Point active={false} />
-        <Line />
-        <Point active={false} />
-        <Line />
-        <Point active={false} />
-        <Line
-          width={tabletView ? "0" : "65px"}
-          height={tabletView ? "65px" : "0"}
-        />
-        <Button
-          variant={VariantsEnum.primary}
-          radius={10}
-          style={{
-            width: "197px",
-            height: "42px",
-          }}
-        >
-          Submit next block
-        </Button>
-      </div>
 
-      <div className={styles.vericalGraph}>
-        <VerticalLine width="64px" rotate="45deg" />
-        <div className={styles.firstVeritcalGraph}>
-          <Point active={false} />
-        </div>
+        {blocks.map((block, index) => {
+          return (
+            <>
+              {block.extended && block.extendList.length > 0 ? (
+                <ExtendedPoint active={false} extendedList={block.extendList} />
+              ) : (
+                <Point active={block.active} />
+              )}
+              <Line />
+            </>
+          );
+        })}
+
         <Button
           variant={VariantsEnum.primary}
           radius={10}
           style={{
             width: "197px",
             height: "42px",
-            marginLeft: "5rem",
           }}
         >
           Submit next block
@@ -318,9 +347,17 @@ const VerticalLine = ({
   );
 };
 
-const Point = ({ active }: { active: boolean }) => {
+const Point = ({
+  active,
+  reverseData,
+}: {
+  active: boolean;
+  reverseData?: boolean;
+}) => {
   return (
-    <div className={styles.pointerBox}>
+    <div
+      className={`${styles.pointerBox} ${reverseData && styles.reverseData}`}
+    >
       <span
         className={`${styles.pointNumber} ${active && styles.activePointer}`}
       >
@@ -339,6 +376,79 @@ const Point = ({ active }: { active: boolean }) => {
           checked={active ? true : false}
         />
       </div>
+    </div>
+  );
+};
+
+const ExtendedPoint = ({
+  active,
+  extendedList,
+}: {
+  active: boolean;
+  extendedList: IBlock[] | [];
+}) => {
+  const { tabletView } = useWindowDimensions();
+  return (
+    <div className={styles.extendedPoint}>
+      <Point active={active} />
+
+      {extendedList.map((block, index) => {
+        return (
+          <div className={styles.extendedLine}>
+            {index !== 0 ? (
+              <>
+                <Line />
+                <Point active={block.active} />
+              </>
+            ) : (
+              <>
+                {" "}
+                <VerticalLine rotate="45deg" width="65px" />
+                <div className={styles.linepoint}>
+                  <Point
+                    active={false}
+                    reverseData={!tabletView ? true : false}
+                  />
+                </div>
+                <div className={styles.extendedButton}>
+                  <Button
+                    variant={VariantsEnum.primary}
+                    radius={10}
+                    style={{
+                      width: "197px",
+                      height: "42px",
+                      marginLeft: "5rem",
+                    }}
+                  >
+                    Submit next block
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        );
+      })}
+
+      {/* <div className={styles.extendedLine}>
+        <VerticalLine rotate="45deg" width="65px" />
+        <div className={styles.linepoint}>
+          <Point active={false} reverseData={!tabletView ? true : false} />
+        </div>
+      
+        <div className={styles.extendedButton}>
+          <Button
+            variant={VariantsEnum.primary}
+            radius={10}
+            style={{
+              width: "197px",
+              height: "42px",
+              marginLeft: "5rem",
+            }}
+          >
+            Submit next block
+          </Button>
+        </div>
+      </div> */}
     </div>
   );
 };

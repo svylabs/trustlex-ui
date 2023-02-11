@@ -4,6 +4,7 @@ import { ethers } from "ethers";
 import { IAddOfferWithToken } from "~/interfaces/IAddOfferWithToken";
 import {
   IFullfillmentEvent,
+  IListenedOfferData,
   INewOfferEvent,
   IOfferdata,
 } from "~/interfaces/IOfferdata";
@@ -137,21 +138,42 @@ export const AddOfferWithEth = async (trustLex: ethers.Contract | undefined, dat
     console.log(error);
   }
 };
-const listentotheEvent = async (trustLex: ethers.Contract | undefined) => {
+export const listOffers = async (trustLex: ethers.Contract | undefined)  => {
   try {
-    if (!trustLex) return false;
-    let data = {
-      offerEvent: {} as INewOfferEvent,
-      offerDetailsInJson: {} as IOfferdata,
-    };
-    trustLex.on("NEW_OFFER", async (from, to, value) => {
+    if (!trustLex) return [];
+    const offers = await trustLex.queryFilter("NEW_OFFER", 0, "latest")
+    const promises = offers.map(async (offer) => {
+        const offerEvent = {
+          from: offer.args ? offer.args[0] : "",
+          to:  offer.args ? offer.args[1] : ""
+        };
+  
+        const offerData = await getOffers(trustLex, offerEvent.to);
+        const offerDetailsInJson = {
+          offerQuantity: offerData[0].toString(),
+          offeredBy: offerData[1].toString(),
+          offerValidTill: offerData[2].toString(),
+          orderedTime: offerData[3].toString(),
+          offeredBlockNumber: offerData[4].toString(),
+          bitcoinAddress: offerData[5].toString(),
+          satoshisToReceive: offerData[6].toString(),
+          satoshisReceived: offerData[7].toString(),
+          satoshisReserved: offerData[8].toString(),
+          collateralPer3Hours: offerData[9].toString(),
+        };
+        return { offerEvent, offerDetailsInJson };
+       });
+    return await Promise.all(promises);
+    /*
+    offers.forEach((offer) => {
+      console.log(offer);
       const offerEvent = {
-        from: from.toString(),
-        to: to.toString(),
-        value: value,
+        from: "",
+        to:  "",
+        value: "",
       };
 
-      const offerData = await getOffers(trustLex, to);
+      const offerData = await getOffers(trustLex, offerEvent.to);
       const offerDetailsInJson = {
         offerQuantity: offerData[0].toString(),
         offeredBy: offerData[1].toString(),
@@ -165,11 +187,13 @@ const listentotheEvent = async (trustLex: ethers.Contract | undefined) => {
         collateralPer3Hours: offerData[9].toString(),
       };
       return { offerEvent, offerDetailsInJson };
-    });
+      */
+    
+    //});
     // console.log(newOfferData);
-    return data;
   } catch (error) {
     console.log(error);
+    return [];
   }
 };
 

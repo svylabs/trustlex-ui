@@ -14,7 +14,6 @@ export interface IOfferdata {
 export interface INewOfferEvent {
   from: string;
   to: string;
-  value: any;
 }
 export interface IFullfillmentEvent {
   fulfillmentBy: string;

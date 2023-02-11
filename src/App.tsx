@@ -7,16 +7,18 @@ import Exchange from "~/pages/Exchange/Exchange";
 import Recent from "./pages/Recent/Recent";
 import { AppContext } from "./Context/AppContext";
 import { useState, useEffect, useContext } from "react";
-import { connect, findMetaMaskAccount, getBalance } from "./service/AppService";
+import { connect, findMetaMaskAccount, getBalance, listOffers } from "./service/AppService";
 import IUserInputData from "./interfaces/IUserInputData";
 import swapArrayElements from "./utils/swapArray";
 import { IListenedOfferData } from "./interfaces/IOfferdata";
 import { ethers } from "ethers";
+import { ContractMap } from "./Context/AppConfig";
 
 export default function App() {
   const [account, setAccount] = useState("");
   const [balance, setBalance] = useState("");
   const [contract, setContract] = useState<ethers.Contract>();
+  const [selectedToken, setSelectedToken] = useState(localStorage.getItem('selectedToken') || "ETH");
   const [listenedOfferData, setListenedOfferData] = useState<
     IListenedOfferData[] | []
   >([]);
@@ -29,9 +31,10 @@ export default function App() {
           setBalance(balance);
         }
       });
-      connect(provider, '0x5078d53e9347ca2Ee42b6cFfC01C04b69ff9420A').then((trustlex) => {
+      connect(provider, ContractMap[selectedToken].address).then((trustlex) => {
         if (trustlex) {
           setContract(trustlex as ethers.Contract);
+
         }
       });
   });
@@ -82,9 +85,11 @@ export default function App() {
   };
 
   useEffect(() => {
-    connect(provider).then((trustlex) => {
+    connect(provider, ContractMap[selectedToken].address).then(async (trustlex) => {
       if (trustlex) {
         setContract(trustlex as ethers.Contract);
+        const offers = await listOffers(trustlex);
+        setListenedOfferData(offers);
       }
       findMetaMaskAccount().then((account) => {
         if (account !== null) {
@@ -117,6 +122,8 @@ export default function App() {
             setBalance,
             account,
             setAccount,
+            selectedToken,
+            setSelectedToken,
             contract,
             setContract,
             userInputData,

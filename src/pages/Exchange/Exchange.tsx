@@ -29,11 +29,13 @@ import {
   InitializeFullfillment,
   connect,
   getOffers,
+  listOffers,
 } from "~/service/AppService";
 import BtcToSatoshiConverter from "~/utils/BtcToSatoshiConverter";
 import { IListenedOfferData } from "~/interfaces/IOfferdata";
 import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
 import { NumberToTime, TimeToNumber } from "~/utils/TimeConverter";
+import {ethers} from 'ethers';
 type Props = {};
 
 // const tableDummyData: string[][] = new Array(5).fill([
@@ -108,31 +110,35 @@ const Exchange = (props: Props) => {
   const [mobileTableData, setMobileTableData] =
     useState<(string | JSX.Element)[][]>(mobileData);
 
-  const data = listenedOfferData.map((offer: IListenedOfferData) => {
-    return [
-      offer.offerDetailsInJson.offeredBlockNumber,
-      <>
-        10 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />
-        {CurrencyEnum.ETH}
-      </>,
-      <>
-        {SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)}{" "}
-        <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
-        {CurrencyEnum.BTC}
-      </>,
-      <>
-        0.078 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
-        {CurrencyEnum.BTC}
-      </>,
-      <>
-        1 out of 10
-        <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />{" "}
-        {CurrencyEnum.ETH}
-      </>,
-      NumberToTime(offer.offerDetailsInJson.offerValidTill),
-      "09 Jan, 13:45pm",
-    ];
-  });
+  const getTableData = (offers: IListenedOfferData[]) => {
+    return offers.map((offer: IListenedOfferData) => {
+      return [
+        offer.offerDetailsInJson.offeredBlockNumber,
+        <>
+          {ethers.utils.formatEther(offer.offerDetailsInJson.offerQuantity)} <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />
+          {CurrencyEnum.ETH}
+        </>,
+        <>
+          {SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)}{" "}
+          <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
+          {CurrencyEnum.BTC}
+        </>,
+        <>
+          0.078 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
+          {CurrencyEnum.BTC}
+        </>,
+        <>
+          1 out of 10
+          <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />{" "}
+          {CurrencyEnum.ETH}
+        </>,
+        NumberToTime(offer.offerDetailsInJson.offerValidTill),
+        "09 Jan, 13:45pm",
+      ];
+    });
+  }
+
+  let data = getTableData(listenedOfferData);
 
   const [tableData, setTableData] = useState<(string | JSX.Element)[][]>(data);
 
@@ -281,6 +287,10 @@ const Exchange = (props: Props) => {
   };
   useEffect(() => {
     listenEvent();
+    listOffers(context.contract).then((offers) => {
+      setListenedOfferData(offers);
+      setTableData(getTableData(offers));
+    })
   }, [hashedOfferData]);
 
   return (

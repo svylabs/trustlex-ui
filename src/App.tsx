@@ -6,49 +6,81 @@ import Home from "~/pages/Home/Home";
 import Exchange from "~/pages/Exchange/Exchange";
 import Recent from "./pages/Recent/Recent";
 import { AppContext } from "./Context/AppContext";
-import { useState, useEffect, useContext } from "react";
-import { connect, findMetaMaskAccount, getBalance, listOffers } from "./service/AppService";
+import { useState, useEffect } from "react";
+import {
+  connect,
+  findMetaMaskAccount,
+  getBalance,
+  listOffers,
+} from "./service/AppService";
 import IUserInputData from "./interfaces/IUserInputData";
 import swapArrayElements from "./utils/swapArray";
 import { IListenedOfferData } from "./interfaces/IOfferdata";
 import { ethers } from "ethers";
 import { ContractMap } from "./Context/AppConfig";
+import useLocalstorage from "./hooks/useLocalstorage";
 
 export default function App() {
+  const { get, set, remove } = useLocalstorage();
   const [account, setAccount] = useState("");
   const [balance, setBalance] = useState("");
   const [contract, setContract] = useState<ethers.Contract>();
-  const [selectedToken, setSelectedToken] = useState(localStorage.getItem('selectedToken') || "ETH");
+  const tokenData = get("selectedToken", false);
+  const [selectedToken, setSelectedToken] = useState(
+    tokenData ? tokenData.toUpperCase() : "ETH"
+  );
   const [listenedOfferData, setListenedOfferData] = useState<
     IListenedOfferData[] | []
   >([]);
+
+  const userData = get("userInputData", true);
+  const [userInputData, setUserInputData] = useState<IUserInputData>(
+    userData
+      ? userData
+      : {
+          setLimit: true,
+          limit: "",
+          activeExchange: [
+            { currency: "btc", value: "" },
+            { currency: "eth", value: "" },
+            { currency: "sol", value: "" },
+            { currency: "doge", value: "" },
+          ],
+        }
+  );
+
+  useEffect(() => {
+    set("userInputData", userInputData);
+  }, [userInputData]);
+
+  useEffect(() => {
+    set(
+      "selectedToken",
+      // if you have multiple token address in AppConfig.tsx,
+      // you can use this line instead of ETH
+      // this line throws error if all the activeExchange are not in AppConfig.tsx
+
+      // userInputData.activeExchange[1].currency.toUpperCase()
+      "ETH"
+    );
+  }, [userInputData.activeExchange]);
+
   const provider = new ethers.providers.Web3Provider(window.ethereum);
-  window.ethereum.on('accountsChanged', function (accounts) {
-      //onsole.log("Account changed..", accounts);
-      setAccount(accounts[0]);
-      getBalance(accounts[0]).then((balance) => {
-        if (balance) {
-          setBalance(balance);
-        }
-      });
-      connect(provider, ContractMap[selectedToken].address).then((trustlex) => {
-        if (trustlex) {
-          setContract(trustlex as ethers.Contract);
+  window.ethereum?.on("accountsChanged", function (accounts: any) {
+    setAccount(accounts[0]);
+    getBalance(accounts[0]).then((balance) => {
+      if (balance) {
+        setBalance(balance);
+      }
+    });
 
-        }
-      });
+    connect(provider, ContractMap[selectedToken].address).then((trustlex) => {
+      if (trustlex) {
+        setContract(trustlex as ethers.Contract);
+      }
+    });
   });
 
-  const [userInputData, setUserInputData] = useState<IUserInputData>({
-    setLimit: true,
-    limit: "0",
-    activeExchange: [
-      { currency: "btc", value: "0" },
-      { currency: "eth", value: "0" },
-      { currency: "sol", value: "0" },
-      { currency: "doge", value: "0" },
-    ],
-  });
   const swapChange = () => {
     setUserInputData((prev) => {
       return {
@@ -72,9 +104,9 @@ export default function App() {
         (item) => item.currency === to
       );
       let fromItem = prev.activeExchange[fromIndex];
-      fromItem.value = "0";
+      // fromItem.value = "0";
       let toItem = prev.activeExchange[toIndex];
-      toItem.value = "0";
+      // toItem.value = "0";
 
       let activeExchangeData = prev.activeExchange;
       activeExchangeData[fromIndex] = toItem;
@@ -85,24 +117,26 @@ export default function App() {
   };
 
   useEffect(() => {
-    connect(provider, ContractMap[selectedToken].address).then(async (trustlex) => {
-      if (trustlex) {
-        setContract(trustlex as ethers.Contract);
-        const offers = await listOffers(trustlex);
-        setListenedOfferData(offers);
-      }
-      findMetaMaskAccount().then((account) => {
-        if (account !== null) {
-          setAccount(account);
-          console.log("Account: ", account);
-          getBalance(account).then((balance) => {
-            if (balance) {
-              setBalance(balance);
-            }
-          });
+    connect(provider, ContractMap[selectedToken].address).then(
+      async (trustlex) => {
+        if (trustlex) {
+          setContract(trustlex as ethers.Contract);
+          const offers = await listOffers(trustlex);
+          setListenedOfferData(offers);
         }
-      });
-    });
+        findMetaMaskAccount().then((account) => {
+          if (account !== null) {
+            setAccount(account);
+            console.log("Account: ", account);
+            getBalance(account).then((balance) => {
+              if (balance) {
+                setBalance(balance);
+              }
+            });
+          }
+        });
+      }
+    );
     return () => {
       setAccount("");
       setBalance("");

@@ -98,6 +98,21 @@ const EarnPageGraph = () => {
           extended: false,
           number: 760000,
         },
+        {
+          active: false,
+          extended: false,
+          number: 760000,
+        },
+        {
+          active: false,
+          extended: false,
+          number: 760000,
+        },
+        {
+          active: false,
+          extended: false,
+          number: 760000,
+        },
       ],
     },
     {
@@ -394,15 +409,9 @@ const ExtendedPoint = ({
 
       {extendedList.map((block, index) => {
         return (
-          <div className={styles.extendedLine}>
-            {index !== 0 ? (
+          <div className={styles.extendedLine} key={index}>
+            {index === 0 && (
               <>
-                <Line />
-                <Point active={block.active} />
-              </>
-            ) : (
-              <>
-                {" "}
                 <VerticalLine rotate="45deg" width="65px" />
                 <div className={styles.linepoint}>
                   <Point
@@ -425,6 +434,23 @@ const ExtendedPoint = ({
                 </div>
               </>
             )}
+
+            {/* {index > 0 && (
+              <div
+                style={{
+                  position: "absolute",
+                  left: "80px",
+                  top: "8px",
+                  display: "flex",
+                  alignItems: "baseline",
+                  justifyContent: "flex-end",
+                  gap: "0.5rem",
+                }}
+              >
+                <Line />
+                <Point active={block.active} reverseData={true} />
+              </div>
+            )} */}
           </div>
         );
       })}

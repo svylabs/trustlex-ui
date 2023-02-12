@@ -64,6 +64,7 @@
       color: var(--white);
       padding: 2rem 2rem;
       border-bottom: 1px solid rgba(255, 255, 255, 0.504);
+      white-space: wrap;
 
       @media screen and (max-width: 362px) {
         padding: 2rem 0.5rem;

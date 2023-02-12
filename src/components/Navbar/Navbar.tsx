@@ -56,7 +56,10 @@ const Navbar = (props: Props) => {
           title="Bitcoin"
           icon="/icons/bitcoin.svg"
           dropdownItems={[
-            { title: " BTC RPC URL", href: "" },
+            {
+              title: "BTC RPC URL",
+              href: "",
+            },
             { title: " RPC Password", href: "" },
             { title: " RPC Username", href: "" },
           ]}

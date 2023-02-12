@@ -1,4 +1,3 @@
-import React from "react";
 import styles from "./ImageIcon.module.scss";
 type Props = {
   image: string;

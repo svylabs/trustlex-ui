@@ -1,6 +1,5 @@
 import { Menu } from "@mantine/core";
 import React from "react";
-import Button from "~/components/Button/Button";
 import TargetButton from "../Button/TargetButton";
 
 type Props = {

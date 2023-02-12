@@ -1,4 +1,4 @@
-import React, { ReactNode } from "react";
+import { ReactNode } from "react";
 import styles from "./Tabs.module.scss";
 import { Tabs as MantineTabs } from "@mantine/core";
 interface Props {

@@ -22,7 +22,7 @@ interface Props extends TableProps {
 
 const ViewOrderDrawerHistoryTable = ({ tableCaption, cols, data }: Props) => {
   const [isMoreTableDataLoading, setIsMoreTableDataLoading] = useState(false);
-  const { height, width } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   let mobileView: boolean = width !== null && width < 500 ? true : false;
 
   const loadMoreData = () => {

@@ -1,4 +1,3 @@
-import React from "react";
 import GradientBackgroundContainer from "../GradientBackgroundContainer/GradientBackgroundContainer";
 import styles from "./HomepageCard.module.scss";
 type Props = {};

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import styles from "./Earn.module.scss";
 import GradientBackgroundContainer from "~/components/GradientBackgroundContainer/GradientBackgroundContainer";
 import ImageIcon from "~/components/ImageIcon/ImageIcon";
@@ -8,10 +8,12 @@ import Button from "~/components/Button/Button";
 import { VariantsEnum } from "~/enums/VariantsEnum";
 import EarnPageGraph from "~/components/EarnPageGraph/EarnPageGraph";
 import EarnTable from "~/components/EarnTable/EarnTable";
+import { Box, Center } from "@mantine/core";
+import ActionButton from "~/components/ActionButton/ActionButton";
 type Props = {};
 
 const Earn = (props: Props) => {
-  const tableData = EarnTableData.map((row) => {
+  const data = EarnTableData.map((row) => {
     return [
       <div className={styles.planningCell}>
         {row.planningToSell.amount}{" "}
@@ -35,9 +37,20 @@ const Earn = (props: Props) => {
       </div>,
     ];
   });
+  const [tableData, setTableData] = useState(data);
 
   const handleSubmitProof = (data: (string | React.ReactNode)[]) => {
     console.log(data);
+  };
+
+  const [isProofTableLoading, setProofTableLoading] = useState(false);
+
+  const loadMoreSubmitProof = () => {
+    setProofTableLoading(true);
+    setTimeout(() => {
+      setTableData([...tableData, ...data]);
+      setProofTableLoading(false);
+    }, 2000);
   };
 
   return (
@@ -60,6 +73,16 @@ const Earn = (props: Props) => {
             tableData={tableData}
             handleSubmitProof={handleSubmitProof}
           />
+          <br />
+          <Center>
+            <ActionButton
+              variant={"transparent"}
+              loading={isProofTableLoading}
+              onClick={loadMoreSubmitProof}
+            >
+              Load more
+            </ActionButton>{" "}
+          </Center>
         </GradientBackgroundContainer>
       </section>
     </div>

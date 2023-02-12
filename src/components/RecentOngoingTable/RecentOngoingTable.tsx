@@ -1,11 +1,9 @@
 import { TableProps } from "@mantine/core";
-import React, { useState } from "react";
+import { useState } from "react";
 import { CurrencyEnum } from "~/enums/CurrencyEnum";
-import { VariantsEnum } from "~/enums/VariantsEnum";
 import { IPlanning } from "~/interfaces/IPlanning";
 import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";
 import ActionButton from "../ActionButton/ActionButton";
-import Button from "../Button/Button";
 import ImageIcon from "../ImageIcon/ImageIcon";
 import Table from "../Table/Table";
 import ViewOrderDrawer from "../ViewOrderDrawer/ViewOrderDrawer";

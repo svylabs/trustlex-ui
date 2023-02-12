@@ -2,7 +2,6 @@ import React, { ReactNode } from "react";
 import styles from "./Table.module.scss";
 import { Table as MantineTable, TableProps } from "@mantine/core";
 import useAutoHideScrollbar from "../../hooks/useAutoHideScrollBar";
-import { Icon } from "@iconify/react";
 
 interface Props extends TableProps {
   tableCaption?: string;

@@ -12,11 +12,9 @@ import {
 } from "@gitgraph/react";
 import { randomHashGenerator } from "~/helpers/randomHashGenerator";
 import { CurrencyEnum } from "~/enums/CurrencyEnum";
-import React, { useRef } from "react";
+import React from "react";
 import Button from "../Button/Button";
 import { VariantsEnum } from "~/enums/VariantsEnum";
-import useAutoHideScrollbar from "~/hooks/useAutoHideScrollBar";
-import { clsx } from "@mantine/core";
 
 const withoutHash = templateExtend(TemplateName.Metro, {
   tag: {

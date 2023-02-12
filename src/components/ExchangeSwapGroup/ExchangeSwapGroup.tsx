@@ -5,7 +5,6 @@ import ExchangeGridLayout from "../ExchangeGridLayout/ExchangeGridLayout";
 import ImageIcon from "../ImageIcon/ImageIcon";
 import { InputWithSelect } from "../InputWithSelect/InputWithSelect";
 import { AppContext } from "~/Context/AppContext";
-import { ethers } from "ethers";
 const currencyObjects: {
   [key: string]: {
     label: string;

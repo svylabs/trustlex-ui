@@ -6,7 +6,6 @@ import RecentHistoryTable from "~/components/RecentHistoryTable/RecentHistoryTab
 import RecentOngoingTable from "~/components/RecentOngoingTable/RecentOngoingTable";
 import Tabs from "~/components/Tabs/Tabs";
 import { HistoryTableData, OngoingTableData } from "~/data/recentPage";
-import { VariantsEnum } from "~/enums/VariantsEnum";
 import styles from "./Recent.module.scss";
 import { useState } from "react";
 import AllSwapTable from "~/components/AllSwapTable/AllSwapTable";

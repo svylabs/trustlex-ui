@@ -1,5 +1,4 @@
 import { TextInput, TextInputProps } from "@mantine/core";
-import { useState } from "react";
 import styles from "./Input.module.scss";
 
 interface Props extends TextInputProps {}

@@ -1,4 +1,3 @@
-import React from "react";
 import { CurrencyEnum } from "~/enums/CurrencyEnum";
 import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";
 import ImageIcon from "../ImageIcon/ImageIcon";

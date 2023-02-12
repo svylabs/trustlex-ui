@@ -1,5 +1,5 @@
 import { Icon } from "@iconify/react";
-import { Box, Center, Drawer, Grid, ScrollArea, Text } from "@mantine/core";
+import { Box, Drawer, Grid, Text } from "@mantine/core";
 import { viewOrderDrawerHistoryTableData } from "~/data/recentPage";
 import { CurrencyEnum } from "~/enums/CurrencyEnum";
 import { VariantsEnum } from "~/enums/VariantsEnum";
@@ -9,8 +9,7 @@ import GradientBackgroundContainer from "../GradientBackgroundContainer/Gradient
 import ViewOrderDrawerHistoryTable from "../ViewOrderDrawerHistoryTable/ViewOrderDrawerHistoryTable";
 import styles from "./ViewOrderDrawer.module.scss";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
-import ActionButton from "../ActionButton/ActionButton";
-import { useState, useRef } from "react";
+import { useRef } from "react";
 import useAutoHideScrollbar from "~/hooks/useAutoHideScrollBar";
 type Props = {
   isOpened: boolean;
@@ -18,7 +17,7 @@ type Props = {
 };
 
 const ViewOrderDrawer = ({ isOpened, onClose }: Props) => {
-  const { height, width } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   let mobileView: boolean = width !== null && width < 500 ? true : false;
   const rootRef = useRef(null);
 

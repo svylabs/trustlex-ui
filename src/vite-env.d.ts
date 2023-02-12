@@ -9,3 +9,4 @@ declare global {
 }
 declare module "wif";
 declare module "bip38";
+// declare module "vite-plugin-wasm";

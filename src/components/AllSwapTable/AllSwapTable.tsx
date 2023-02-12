@@ -1,4 +1,3 @@
-import React from "react";
 import { TableProps } from "@mantine/core";
 import { ITableRow } from "../RecentHistoryTable/RecentHistoryTable";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";

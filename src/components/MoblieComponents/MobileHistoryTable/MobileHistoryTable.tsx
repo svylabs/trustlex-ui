@@ -1,8 +1,7 @@
 import styles from "./MobileHistoryTable.module.scss";
 
-import React, { ReactNode, useState } from "react";
+import { ReactNode, useState } from "react";
 import { Table as MantineTable, TableProps } from "@mantine/core";
-import useAutoHideScrollbar from "~/hooks/useAutoHideScrollBar";
 import { Icon } from "@iconify/react";
 
 interface Props extends TableProps {

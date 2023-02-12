@@ -36,6 +36,7 @@ import { IListenedOfferData } from "~/interfaces/IOfferdata";
 import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
 import { NumberToTime, TimeToNumber } from "~/utils/TimeConverter";
 import { ethers } from "ethers";
+// import { generateBitcoinWallet } from "~/utils/BitcoinUtils";
 type Props = {};
 
 // const tableDummyData: string[][] = new Array(5).fill([
@@ -294,6 +295,11 @@ const Exchange = (props: Props) => {
     });
   }, [hashedOfferData]);
 
+  // const handleGenerateBitcoinWallet = async () => {
+  //   const data = await generateBitcoinWallet();
+  //   console.log(data);
+  // };
+
   return (
     <div className={styles.root}>
       <h1 className={styles.pageTitle}>Exchange</h1>
@@ -321,6 +327,15 @@ const Exchange = (props: Props) => {
                   placeholder={"Limit price BTC/ETC"}
                   disabled={userInputData.setLimit ? false : true}
                 />
+                <div className={styles.temporary}></div>
+                {/* <Button
+                  variant={VariantsEnum.primary}
+                  radius={10}
+                  fullWidth
+                  onClick={handleGenerateBitcoinWallet}
+                >
+                  Generate Bitcoin Wallet
+                </Button> */}
                 <SpanFullGridWidth>
                   <Input
                     type="text"

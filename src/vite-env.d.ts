@@ -2,9 +2,13 @@
 /// <reference types="react-scripts" />
 
 import ethers from "ethers";
+
+declare module "stream-browserify";
+import { Stream } from "stream-browserify";
 declare global {
   interface Window {
     ethereum: ethers.providers.ExternalProvider;
+    Stream: Stream;
   }
 }
 declare module "wif";

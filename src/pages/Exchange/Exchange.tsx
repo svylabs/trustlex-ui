@@ -36,7 +36,7 @@ import { IListenedOfferData } from "~/interfaces/IOfferdata";
 import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
 import { NumberToTime, TimeToNumber } from "~/utils/TimeConverter";
 import { ethers } from "ethers";
-// import { generateBitcoinWallet } from "~/utils/BitcoinUtils";
+import { generateBitcoinWallet, generateTrustlexAddress } from "~/utils/BitcoinUtils";
 type Props = {};
 
 // const tableDummyData: string[][] = new Array(5).fill([
@@ -290,15 +290,19 @@ const Exchange = (props: Props) => {
   useEffect(() => {
     listenEvent();
     listOffers(context.contract).then((offers) => {
-      setListenedOfferData(offers);
-      setTableData(getTableData(offers));
+      setListenedOfferData(offers.offers);
+      setTableData(getTableData(offers.offers));
     });
   }, [hashedOfferData]);
 
-  // const handleGenerateBitcoinWallet = async () => {
-  //   const data = await generateBitcoinWallet();
-  //   console.log(data);
-  // };
+  const handleGenerateBitcoinWallet = async () => {
+     const data = generateBitcoinWallet();
+     console.log(data);
+     console.log(generateTrustlexAddress(data.pubkeyHash, "10"));
+  };
+
+  handleGenerateBitcoinWallet();
+  
 
   return (
     <div className={styles.root}>

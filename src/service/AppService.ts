@@ -137,11 +137,11 @@ export const AddOfferWithEth = async (trustLex: ethers.Contract | undefined, dat
   } catch (error) {
     console.log(error);
   }
-};
-export const listOffers = async (trustLex: ethers.Contract | undefined)  => {
+}
+export const listOffers = async (trustLex: ethers.Contract | undefined, fromBlock: number = 0, toBlock: "latest" | number = "latest")  => {
   try {
-    if (!trustLex) return [];
-    const offers = await trustLex.queryFilter("NEW_OFFER", 0, "latest")
+    if (!trustLex) return { fromBlock: fromBlock, toBlock: toBlock, offers: []};
+    const offers = await trustLex.queryFilter("NEW_OFFER", fromBlock, toBlock)
     const promises = offers.map(async (offer) => {
         const offerEvent = {
           from: offer.args ? offer.args[0] : "",
@@ -163,7 +163,11 @@ export const listOffers = async (trustLex: ethers.Contract | undefined)  => {
         };
         return { offerEvent, offerDetailsInJson };
        });
-    return await Promise.all(promises);
+    return {
+      fromBlock: fromBlock,
+      toBlock: toBlock,
+      offers: await Promise.all(promises)
+    };
     /*
     offers.forEach((offer) => {
       console.log(offer);
@@ -193,7 +197,7 @@ export const listOffers = async (trustLex: ethers.Contract | undefined)  => {
     // console.log(newOfferData);
   } catch (error) {
     console.log(error);
-    return [];
+    return {offers: [], fromBlock, toBlock};
   }
 };
 

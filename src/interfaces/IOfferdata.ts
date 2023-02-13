@@ -31,3 +31,9 @@ export interface IListenedOfferData {
   offerEvent: INewOfferEvent;
   offerDetailsInJson: IOfferdata;
 }
+
+export interface IOffersResult {
+  fromBlock: number;
+  toBlock: "latest" | number;
+  offers: IListenedOfferData[];
+}

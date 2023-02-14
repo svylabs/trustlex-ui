@@ -37,11 +37,14 @@ import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
 import { NumberToTime, TimeToNumber } from "~/utils/TimeConverter";
 import { ethers } from "ethers";
 // import { generateBitcoinWallet } from "~/utils/BitcoinUtils";
-// import { generateBitcoinWallet } from "~/service/AppService";
 import {
   generateBitcoinWallet,
   generateTrustlexAddress,
-} from "~/utils/BitcoinUtils";
+} from "~/service/AppService";
+// import {
+//   generateBitcoinWallet,
+//   generateTrustlexAddress,
+// } from "~/utils/BitcoinUtils";
 type Props = {};
 
 // const tableDummyData: string[][] = new Array(5).fill([
@@ -301,18 +304,31 @@ const Exchange = (props: Props) => {
   }, [hashedOfferData]);
 
   const handleGenerateBitcoinWallet = async () => {
-    // const data = await generateBitcoinWallet();
-    // console.log(data);
-    // setExchangeData((prev) => {
-    //   return { ...prev, address: data.pubkeyHash };
-    // });
-
-    const data = generateBitcoinWallet();
+    const data = await generateBitcoinWallet();
     console.log(data);
-    console.log(generateTrustlexAddress(data?.pubkeyHash, "10"));
+    setExchangeData((prev) => {
+      return { ...prev, address: data.pubkeyHash };
+    });
+
+    handleGenerateTrustlexAddress(data?.pubkeyHash, "10");
+
+    // const data = generateBitcoinWallet();
+    // console.log(data);
+    // console.log(generateTrustlexAddress(data?.pubkeyHash, "10"));
   };
 
-  handleGenerateBitcoinWallet();
+  const handleGenerateTrustlexAddress = async (
+    pubkeyHash: string,
+    fulfillmentId: string
+  ) => {
+    console.log("Getting trustlex account");
+    const trustlexAddress = await generateTrustlexAddress(
+      pubkeyHash,
+      fulfillmentId
+    );
+    console.log(trustlexAddress);
+  };
+  // handleGenerateBitcoinWallet();
 
   return (
     <div className={styles.root}>

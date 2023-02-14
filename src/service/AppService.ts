@@ -269,19 +269,31 @@ export const generateBitcoinWallet = async () => {
     console.log(error);
   }
 };
-export const encryptWallet = async ({
-  keyPair,
-  password,
-}: {
-  keyPair: Wallet;
-  password: string;
-}) => {
+export const encryptWallet = async (keyPair: Wallet, password: string) => {
   try {
     const response = await axios.post(`${baseURL}/encryptWallet`, {
       keyPair: "",
       password: "",
     });
     console.log(response);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const generateTrustlexAddress = async (
+  pubkeyHash: string,
+  fulfillmentId: string
+) => {
+  try {
+    const response = await axios.post(`${baseURL}/generateTrustlexAddress`, {
+      pubkeyHash: pubkeyHash,
+      fulfillmentId: fulfillmentId,
+    });
+    // if (response.status === 201) {
+    return response.data;
+    // }
+    return null;
   } catch (error) {
     console.log(error);
   }

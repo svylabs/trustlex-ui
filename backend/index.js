@@ -10,7 +10,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get("/generateBitcoinWallet", (req, res) => {
+app.get("/generateBitcoinWallet", async (req, res) => {
   const ecpair = pkg.ECPairFactory(tinysecp);
   const keypair = ecpair.makeRandom({
     compressed: true,
@@ -24,7 +24,7 @@ app.get("/generateBitcoinWallet", (req, res) => {
   });
 });
 
-app.post("/encryptWallet", (req, res) => {
+app.post("/encryptWallet", async (req, res) => {
   const { keyPair, password } = req.body;
   const encryptedKey = bip38.encrypt(keyPair.privateKey, true, password);
   return res.json({
@@ -34,7 +34,7 @@ app.post("/encryptWallet", (req, res) => {
   });
 });
 
-app.post("/decryptWallet", (req, res) => {
+app.post("/decryptWallet", async (req, res) => {
   const { walletJSON, password } = req.body;
   const wallet = JSON.parse(walletJSON);
   const decryptedKey = bip38.decrypt(wallet.encryptedPrivateKey, password);
@@ -45,11 +45,11 @@ app.post("/decryptWallet", (req, res) => {
   });
 });
 
-app.post("/generateTrustlexAddress", (req, res) => {
+app.post("/generateTrustlexAddress", async (req, res) => {
   const { pubkeyHash, fulfillmentId } = req.body;
 
-  if (pubkeyHash.length != 20) return undefined;
-  const witnessScript = bitcoin.script.compile([
+  // if (pubkeyHash.length != 20) return undefined;
+  const witnessScript = await bitcoin.script.compile([
     Buffer.from(fulfillmentId, "hex"),
     bitcoin.opcodes.OP_DROP,
     bitcoin.opcodes.OP_DUP,

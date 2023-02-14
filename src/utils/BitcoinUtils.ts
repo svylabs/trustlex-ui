@@ -1,7 +1,6 @@
 import * as tinysecp from 'tiny-secp256k1';
 import * as bitcoin from 'bitcoinjs-lib';
-import { Signer, SignerAsync, ECPairInterface, ECPairFactory, ECPairAPI, TinySecp256k1Interface, networks } from 'ecpair';
-import * as wif from 'wif';
+import { ECPairFactory, ECPairAPI, networks } from 'ecpair';
 import * as bip38 from 'bip38';
 
 export interface Wallet {

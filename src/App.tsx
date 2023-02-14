@@ -122,7 +122,7 @@ export default function App() {
         if (trustlex) {
           setContract(trustlex as ethers.Contract);
           const offers = await listOffers(trustlex);
-          setListenedOfferData(offers);
+          setListenedOfferData(offers.offers);
         }
         findMetaMaskAccount().then((account) => {
           if (account !== null) {

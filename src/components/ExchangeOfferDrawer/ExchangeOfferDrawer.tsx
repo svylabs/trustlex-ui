@@ -74,7 +74,6 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
 
   const initiateFullFillMent = async () => {
     if (!foundOffer || foundOffer === undefined) return;
-    console.log(foundOffer);
     const _fulfillment: IFullfillmentEvent = {
       fulfillmentBy: foundOffer.offerEvent.from,
       quantityRequested: foundOffer.offerDetailsInJson.satoshisToReceive,
@@ -85,6 +84,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
       fulfilledTime: 10,
       collateralAddedBy: foundOffer.offerEvent.from,
     };
+    console.log(_fulfillment);
 
     console.log("Initalizing fullfillment");
 

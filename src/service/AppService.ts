@@ -1,6 +1,6 @@
 import { IAddOfferWithEth } from "~/interfaces/IAddOfferWithEth";
 import abi from "../files/contract.json";
-import { ethers } from "ethers";
+import { Wallet, ethers } from "ethers";
 import { IAddOfferWithToken } from "~/interfaces/IAddOfferWithToken";
 import {
   IFullfillmentEvent,
@@ -8,6 +8,7 @@ import {
   INewOfferEvent,
   IOfferdata,
 } from "~/interfaces/IOfferdata";
+import axios from "axios";
 const getEthereumObject = () => window.ethereum;
 
 export const findMetaMaskAccount = async () => {
@@ -84,17 +85,17 @@ export const getBalance = async (address: string) => {
 //     return false;
 //   }
 // };
-export const connect = async (provider:  ethers.providers.Web3Provider, address: string, callback?: Function) => {
+export const connect = async (
+  provider: ethers.providers.Web3Provider,
+  address: string,
+  callback?: Function
+) => {
   try {
     if (typeof window.ethereum !== undefined) {
       let accounts = await provider.send("eth_requestAccounts", []);
-      
+
       const signer = provider.getSigner();
-      const trustLex = new ethers.Contract(
-        address,
-        abi.abi,
-        signer
-      );
+      const trustLex = new ethers.Contract(address, abi.abi, signer);
       return trustLex;
     } else {
       return false;
@@ -104,7 +105,10 @@ export const connect = async (provider:  ethers.providers.Web3Provider, address:
   }
 };
 
-export const getOffers = async (trustLex: ethers.Contract | undefined, offerId: any) => {
+export const getOffers = async (
+  trustLex: ethers.Contract | undefined,
+  offerId: any
+) => {
   try {
     if (!trustLex) return false;
 
@@ -120,7 +124,10 @@ export const getOffers = async (trustLex: ethers.Contract | undefined, offerId: 
   }
 };
 
-export const AddOfferWithEth = async (trustLex: ethers.Contract | undefined, data: IAddOfferWithEth) => {
+export const AddOfferWithEth = async (
+  trustLex: ethers.Contract | undefined,
+  data: IAddOfferWithEth
+) => {
   const { satoshis, bitcoinAddress, offerValidTill } = data;
 
   try {
@@ -138,31 +145,31 @@ export const AddOfferWithEth = async (trustLex: ethers.Contract | undefined, dat
     console.log(error);
   }
 };
-export const listOffers = async (trustLex: ethers.Contract | undefined)  => {
+export const listOffers = async (trustLex: ethers.Contract | undefined) => {
   try {
     if (!trustLex) return [];
-    const offers = await trustLex.queryFilter("NEW_OFFER", 0, "latest")
+    const offers = await trustLex.queryFilter("NEW_OFFER", 0, "latest");
     const promises = offers.map(async (offer) => {
-        const offerEvent = {
-          from: offer.args ? offer.args[0] : "",
-          to:  offer.args ? offer.args[1] : ""
-        };
-  
-        const offerData = await getOffers(trustLex, offerEvent.to);
-        const offerDetailsInJson = {
-          offerQuantity: offerData[0].toString(),
-          offeredBy: offerData[1].toString(),
-          offerValidTill: offerData[2].toString(),
-          orderedTime: offerData[3].toString(),
-          offeredBlockNumber: offerData[4].toString(),
-          bitcoinAddress: offerData[5].toString(),
-          satoshisToReceive: offerData[6].toString(),
-          satoshisReceived: offerData[7].toString(),
-          satoshisReserved: offerData[8].toString(),
-          collateralPer3Hours: offerData[9].toString(),
-        };
-        return { offerEvent, offerDetailsInJson };
-       });
+      const offerEvent = {
+        from: offer.args ? offer.args[0] : "",
+        to: offer.args ? offer.args[1] : "",
+      };
+
+      const offerData = await getOffers(trustLex, offerEvent.to);
+      const offerDetailsInJson = {
+        offerQuantity: offerData[0].toString(),
+        offeredBy: offerData[1].toString(),
+        offerValidTill: offerData[2].toString(),
+        orderedTime: offerData[3].toString(),
+        offeredBlockNumber: offerData[4].toString(),
+        bitcoinAddress: offerData[5].toString(),
+        satoshisToReceive: offerData[6].toString(),
+        satoshisReceived: offerData[7].toString(),
+        satoshisReserved: offerData[8].toString(),
+        collateralPer3Hours: offerData[9].toString(),
+      };
+      return { offerEvent, offerDetailsInJson };
+    });
     return await Promise.all(promises);
     /*
     offers.forEach((offer) => {
@@ -188,7 +195,7 @@ export const listOffers = async (trustLex: ethers.Contract | undefined)  => {
       };
       return { offerEvent, offerDetailsInJson };
       */
-    
+
     //});
     // console.log(newOfferData);
   } catch (error) {
@@ -212,13 +219,17 @@ export const InitializeFullfillment = async (
     console.log("Mining...", initializeFullfillment.hash);
     await initializeFullfillment.wait();
     console.log("Mined -- ", initializeFullfillment.hash);
+    console.log("InitializeFullfillment", initializeFullfillment);
     return initializeFullfillment;
   } catch (error) {
     console.log(JSON.stringify(error), null, 4);
   }
 };
 
-export const AddOfferWithToken = async (trustLex: ethers.Contract | undefined, data: IAddOfferWithToken) => {
+export const AddOfferWithToken = async (
+  trustLex: ethers.Contract | undefined,
+  data: IAddOfferWithToken
+) => {
   try {
     if (!trustLex) return false;
     const addOffer = await trustLex.addOfferWithToken(
@@ -231,6 +242,37 @@ export const AddOfferWithToken = async (trustLex: ethers.Contract | undefined, d
     await addOffer.wait();
     console.log("Mined -- ", addOffer.hash);
     return addOffer;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const baseURL = "http://localhost:3000";
+
+export const generateBitcoinWallet = async () => {
+  try {
+    const response = await axios.get(`${baseURL}/generateBitcoinWallet`);
+    if (response.status === 200) {
+      return response.data;
+    }
+    return null;
+  } catch (error) {
+    console.log(error);
+  }
+};
+export const encryptWallet = async ({
+  keyPair,
+  password,
+}: {
+  keyPair: Wallet;
+  password: string;
+}) => {
+  try {
+    const response = await axios.post(`${baseURL}/encryptWallet`, {
+      keyPair: "",
+      password: "",
+    });
+    console.log(response);
   } catch (error) {
     console.log(error);
   }

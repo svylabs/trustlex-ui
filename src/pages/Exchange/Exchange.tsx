@@ -37,6 +37,7 @@ import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
 import { NumberToTime, TimeToNumber } from "~/utils/TimeConverter";
 import { ethers } from "ethers";
 // import { generateBitcoinWallet } from "~/utils/BitcoinUtils";
+import { generateBitcoinWallet } from "~/service/AppService";
 type Props = {};
 
 // const tableDummyData: string[][] = new Array(5).fill([
@@ -295,10 +296,13 @@ const Exchange = (props: Props) => {
     });
   }, [hashedOfferData]);
 
-  // const handleGenerateBitcoinWallet = async () => {
-  //   const data = await generateBitcoinWallet();
-  //   console.log(data);
-  // };
+  const handleGenerateBitcoinWallet = async () => {
+    const data = await generateBitcoinWallet();
+    console.log(data);
+    setExchangeData((prev) => {
+      return { ...prev, address: data.pubkeyHash };
+    });
+  };
 
   return (
     <div className={styles.root}>
@@ -328,14 +332,16 @@ const Exchange = (props: Props) => {
                   disabled={userInputData.setLimit ? false : true}
                 />
                 <div className={styles.temporary}></div>
-                {/* <Button
-                  variant={VariantsEnum.primary}
+                <div className={styles.temporary}></div>
+
+                <Button
+                  variant={VariantsEnum.outlinePrimaryFilledText}
                   radius={10}
-                  fullWidth
+                  // fullWidth
                   onClick={handleGenerateBitcoinWallet}
                 >
                   Generate Bitcoin Wallet
-                </Button> */}
+                </Button>
                 <SpanFullGridWidth>
                   <Input
                     type="text"

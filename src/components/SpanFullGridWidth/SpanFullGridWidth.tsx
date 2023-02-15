@@ -1,11 +1,15 @@
 import React from "react";
 import styles from "./SpanFullGridWidth.module.scss";
-type Props = {
+interface Props extends React.ComponentPropsWithoutRef<"div"> {
   children: React.ReactNode;
-};
+}
 
-const SpanFullGridWidth = ({ children }: Props) => {
-  return <div className={styles.root}>{children}</div>;
+const SpanFullGridWidth = ({ children, ...rest }: Props) => {
+  return (
+    <div className={styles.root} {...rest}>
+      {children}
+    </div>
+  );
 };
 
 export default SpanFullGridWidth;

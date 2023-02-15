@@ -1,0 +1,84 @@
+.input {
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+  padding: 2.5rem 0;
+  color: var(--white);
+
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 19px;
+  color: #ffffff;
+
+  &::placeholder {
+    color: #808080;
+  }
+}
+.label {
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 17px;
+  color: #f8f8f8;
+}
+.chevronIcon {
+  font-size: 2rem;
+}
+
+.dropdown {
+  background-color: var(--darkGray);
+  border-color: var(--gray);
+}
+
+.rightSection {
+  position: relative;
+  font-size: 2rem;
+  margin: 0;
+  padding: 0;
+  width: fit-content;
+  > button {
+    padding-left: 0;
+    padding-right: 1rem;
+  }
+}
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid #404040;
+  &:focus {
+    border-bottom: 1px solid #404040;
+  }
+}
+
+// @media only screen and (max-width: 1300px) {
+//   .input {
+//     font-size: 4.8rem;
+//     &::placeholder {
+//       font-size: 2rem;
+//     }
+//   }
+//   .label {
+//     font-size: 1.8rem;
+//   }
+// }
+
+// @media only screen and (max-width: 330px) {
+//   .input {
+//     font-size: 3.8rem;
+//     &::placeholder {
+//       font-size: 1rem;
+//     }
+//   }
+//   .label {
+//     font-size: 1.3rem;
+//   }
+//   .rightSection {
+//     font-size: 1.6rem;
+//     // >button{
+//     //   padding-left: 0;
+//     //   padding-right: 3rem;
+//     //   // font-size: 1.6rem;
+//     //   // width: 100%;
+//     // }
+//   }
+// }

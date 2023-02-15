@@ -2,9 +2,11 @@ import styles from "./Navbar.module.scss";
 import NavDropdownButton from "../NavDropdownButton/NavDropdownButton";
 import { Icon } from "@iconify/react";
 import { Button } from "@mantine/core";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { AppContext } from "~/Context/AppContext";
 import { connectToMetamask } from "~/service/AppService";
+import SendBtcDrawer from "~/components/SendBtc/SendBtcDrawer/SendBtcDrawer";
+import SendBtcBox from "~/components/SendBtc/SendBtcBox/SendBtcBox";
 type Props = {
   toggleSidebar: () => void;
 };
@@ -38,6 +40,12 @@ const Navbar = (props: Props) => {
     // { title: " RPC Password", href: "" },
     // { title: " RPC Username", href: "" },
   ];
+  const [showSendBtcBox, setShowSendBtcBox] = useState(false);
+
+  const handleShowSendBtc = () => {
+    setShowSendBtcBox((prev) => !prev);
+  };
+
   return (
     <nav className={styles.navbar}>
       <div className={styles.left}>
@@ -52,6 +60,18 @@ const Navbar = (props: Props) => {
         </Button>
       </div>
       <div className={styles.right}>
+        <div className={styles.btcNavbutton}>
+          <NavDropdownButton
+            title="0.5 BTC"
+            handleNavButtonClick={handleShowSendBtc}
+          />
+          {/* Variant1 */}
+
+          {/* <SendBtcBox open={showSendBtcBox} onClose={handleShowSendBtc} /> */}
+
+          {/* Variant2 */}
+          <SendBtcDrawer open={showSendBtcBox} onClose={handleShowSendBtc} />
+        </div>
         <NavDropdownButton
           title="Bitcoin"
           icon="/icons/bitcoin.svg"

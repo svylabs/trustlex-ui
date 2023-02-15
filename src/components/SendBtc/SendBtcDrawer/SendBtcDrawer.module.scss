@@ -1,0 +1,40 @@
+.sendBtcDrawerRoot {
+  padding: 2rem 1.5rem 4rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 1rem;
+  height: calc(100vh - 2vh);
+  overflow-y: scroll;
+  overflow-x: hidden;
+  border-radius: 20px;
+  font-family: "Inter", sans-serif;
+  font-style: normal;
+  letter-spacing: 0.5px;
+  color: var(--white);
+
+  .heading {
+    .headTitle {
+      font-weight: 700;
+      font-size: 22px;
+      padding-top: 6rem;
+    }
+    .title {
+      font-weight: 600;
+      font-size: 16px;
+    }
+    .closeIcon {
+      font-size: 2.5rem;
+      color: #616575;
+    }
+  }
+  .inputAndButton {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    .inputField {
+      width: 100%;
+    }
+  }
+}

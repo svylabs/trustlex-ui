@@ -4,9 +4,10 @@ import styles from "./NavDropdownButton.module.scss";
 import navDropdownStyles from "./NavDropdownStyles.module.scss";
 
 interface INavDropdown {
-  icon: string;
+  icon?: string;
   title: string;
-  dropdownItems: {
+  handleNavButtonClick?: () => void;
+  dropdownItems?: {
     title: string;
     href: string;
     inputField?: React.ReactNode;
@@ -14,13 +15,18 @@ interface INavDropdown {
   }[];
 }
 
-const NavDropdownButton = ({ icon, title, dropdownItems }: INavDropdown) => {
+const NavDropdownButton = ({
+  icon,
+  title,
+  dropdownItems,
+  handleNavButtonClick,
+}: INavDropdown) => {
   return (
     <div className={styles.root}>
       <Menu classNames={navDropdownStyles}>
         <Menu.Target>
-          <div className={styles.navButton}>
-            <img src={icon} className={styles.icon} />
+          <div className={styles.navButton} onClick={handleNavButtonClick}>
+            {icon && icon !== "" && <img src={icon} className={styles.icon} />}
             <span className={styles.title}>{title}</span>
             <Icon
               icon={"ic:round-keyboard-arrow-down"}
@@ -28,14 +34,17 @@ const NavDropdownButton = ({ icon, title, dropdownItems }: INavDropdown) => {
             />
           </div>
         </Menu.Target>
-        <Menu.Dropdown>
-          {dropdownItems.map((item, index) => (
-            <Menu.Item key={index} onClick={item.onClick}>
-              {item.title}
-              {item.inputField && item.inputField}
-            </Menu.Item>
-          ))}
-        </Menu.Dropdown>
+
+        {dropdownItems && dropdownItems.length > 0 && (
+          <Menu.Dropdown>
+            {dropdownItems.map((item, index) => (
+              <Menu.Item key={index} onClick={item.onClick}>
+                {item.title}
+                {item.inputField && item.inputField}
+              </Menu.Item>
+            ))}
+          </Menu.Dropdown>
+        )}
       </Menu>
     </div>
   );

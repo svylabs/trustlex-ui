@@ -36,15 +36,11 @@ import { IListenedOfferData } from "~/interfaces/IOfferdata";
 import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
 import { NumberToTime, TimeToNumber } from "~/utils/TimeConverter";
 import { ethers } from "ethers";
-// import { generateBitcoinWallet } from "~/utils/BitcoinUtils";
 import {
   generateBitcoinWallet,
   generateTrustlexAddress,
-} from "~/service/AppService";
-// import {
-//   generateBitcoinWallet,
-//   generateTrustlexAddress,
-// } from "~/utils/BitcoinUtils";
+} from "~/utils/BitcoinUtils";
+import GenerateWalletDrawer from "~/components/GenerateWalletDrawer/GenerateWalletDrawer";
 type Props = {};
 
 // const tableDummyData: string[][] = new Array(5).fill([
@@ -151,6 +147,8 @@ const Exchange = (props: Props) => {
   let data = getTableData(listenedOfferData);
 
   const [tableData, setTableData] = useState<(string | JSX.Element)[][]>(data);
+  const [generateWalletDrawerOpen, setGenerateWalletDrawerOpen] =
+    useState(false);
 
   const loadMoreOffers = () => {
     setMoreTableDataLoading(true);
@@ -304,31 +302,12 @@ const Exchange = (props: Props) => {
   }, [hashedOfferData]);
 
   const handleGenerateBitcoinWallet = async () => {
-    const data = await generateBitcoinWallet();
+    const data = generateBitcoinWallet();
     console.log(data);
-    setExchangeData((prev) => {
-      return { ...prev, address: data.pubkeyHash };
-    });
-
-    handleGenerateTrustlexAddress(data?.pubkeyHash, "10");
-
-    // const data = generateBitcoinWallet();
-    // console.log(data);
-    // console.log(generateTrustlexAddress(data?.pubkeyHash, "10"));
+    console.log(generateTrustlexAddress(data.pubkeyHash, "10"));
   };
 
-  const handleGenerateTrustlexAddress = async (
-    pubkeyHash: string,
-    fulfillmentId: string
-  ) => {
-    console.log("Getting trustlex account");
-    const trustlexAddress = await generateTrustlexAddress(
-      pubkeyHash,
-      fulfillmentId
-    );
-    console.log(trustlexAddress);
-  };
-  // handleGenerateBitcoinWallet();
+  handleGenerateBitcoinWallet();
 
   return (
     <div className={styles.root}>
@@ -358,17 +337,25 @@ const Exchange = (props: Props) => {
                   disabled={userInputData.setLimit ? false : true}
                 />
                 <div className={styles.temporary}></div>
-                <div className={styles.temporary}></div>
 
-                <Button
-                  variant={VariantsEnum.outlinePrimaryFilledText}
-                  radius={10}
-                  // fullWidth
-                  onClick={handleGenerateBitcoinWallet}
-                >
-                  Generate Bitcoin Wallet
-                </Button>
-                <SpanFullGridWidth>
+                <SpanFullGridWidth style={{ position: "relative" }}>
+                  {exchangeData.address === "" && (
+                    <div
+                      className={styles.generateAddressButton}
+                      onClick={() => setGenerateWalletDrawerOpen(true)}
+                    >
+                      <Button
+                        variant={VariantsEnum.outlinePrimary}
+                        radius={10}
+                        style={{
+                          backgroundColor: "transparent",
+                        }}
+                      >
+                        Generate in browser
+                      </Button>
+                    </div>
+                  )}
+
                   <Input
                     type="text"
                     label="Address to receive Bitcoin"
@@ -453,6 +440,10 @@ const Exchange = (props: Props) => {
         onClose={() => setRowData(null)}
         isOpened={rowData !== null ? true : false}
         data={rowData}
+      />
+      <GenerateWalletDrawer
+        onClose={() => setGenerateWalletDrawerOpen(false)}
+        open={generateWalletDrawerOpen}
       />
     </div>
   );

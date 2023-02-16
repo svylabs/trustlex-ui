@@ -28,3 +28,39 @@
     }
   }
 }
+
+
+.mobileDialog{
+}
+
+@media screen and (max-width: 500px) {
+
+ 
+
+  .generateWalletRoot {
+    padding: 0 0 1rem 0;
+    gap: 2rem;
+    height: fit-content;
+    color: var(--white);
+
+    .heading {
+      .crossIconBox{
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+      }
+      .headTitle {
+        font-weight: 700;
+        font-size: 22px;
+      }
+      .title {
+        font-weight: 600;
+        font-size: 16px;
+      }
+      .closeIcon {
+        font-size: 3rem;
+        color: #616575;
+      }
+    }
+  }
+}

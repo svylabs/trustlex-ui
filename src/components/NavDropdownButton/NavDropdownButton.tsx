@@ -27,7 +27,7 @@ const NavDropdownButton = ({
         <Menu.Target>
           <div className={styles.navButton} onClick={handleNavButtonClick}>
             {icon && icon !== "" && <img src={icon} className={styles.icon} />}
-            <span className={styles.title}>{title}</span>
+            {title !== "" && <span className={styles.title}>{title}</span>}
             <Icon
               icon={"ic:round-keyboard-arrow-down"}
               className={styles.chevronIcon}

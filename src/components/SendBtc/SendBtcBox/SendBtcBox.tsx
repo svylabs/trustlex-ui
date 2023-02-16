@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import useDetectOutsideClick from "~/hooks/useDetectOutsideClick";
 import { ISendBtcBoxProps } from "~/interfaces/ISendBtcProps";
 import styles from "~/components/SendBtc/SendBtcBox/SendBtcBox.module.scss";
@@ -9,10 +9,16 @@ import { VariantsEnum } from "~/enums/VariantsEnum";
 
 const SendBtcBox = ({ open, onClose }: ISendBtcBoxProps) => {
   const sendBtcBoxRef = useRef(null);
+  const [btcAddress, setBtcAddress] = useState("");
   useDetectOutsideClick({
     ref: sendBtcBoxRef,
     callback: onClose,
   });
+
+  const handleSendBtc = () => {
+    console.log(btcAddress);
+    // TODO: Send BTC
+  };
   return (
     <>
       {open ? (
@@ -26,7 +32,12 @@ const SendBtcBox = ({ open, onClose }: ISendBtcBoxProps) => {
             />
           </div>
           <div className={styles.inputField}>
-            <DrawerInput type="text" placeholder="Address to send BTC" />
+            <DrawerInput
+              value={btcAddress}
+              onChange={(e) => setBtcAddress(e.target.value)}
+              type="text"
+              placeholder="Address to send BTC"
+            />
           </div>
           <Button
             variant={VariantsEnum.outlinePrimary}
@@ -39,6 +50,7 @@ const SendBtcBox = ({ open, onClose }: ISendBtcBoxProps) => {
               marginTop: "16px",
             }}
             fullWidth
+            onClick={handleSendBtc}
           >
             Send
           </Button>

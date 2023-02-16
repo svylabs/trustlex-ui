@@ -7,6 +7,7 @@ import { AppContext } from "~/Context/AppContext";
 import { connectToMetamask } from "~/service/AppService";
 import SendBtcDrawer from "~/components/SendBtc/SendBtcDrawer/SendBtcDrawer";
 import SendBtcBox from "~/components/SendBtc/SendBtcBox/SendBtcBox";
+import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 type Props = {
   toggleSidebar: () => void;
 };
@@ -45,6 +46,7 @@ const Navbar = (props: Props) => {
   const handleShowSendBtc = () => {
     setShowSendBtcBox((prev) => !prev);
   };
+  const { mobileView } = useWindowDimensions();
 
   return (
     <nav className={styles.navbar}>
@@ -67,13 +69,13 @@ const Navbar = (props: Props) => {
           />
           {/* Variant1 */}
 
-          {/* <SendBtcBox open={showSendBtcBox} onClose={handleShowSendBtc} /> */}
+          <SendBtcBox open={showSendBtcBox} onClose={handleShowSendBtc} />
 
           {/* Variant2 */}
-          <SendBtcDrawer open={showSendBtcBox} onClose={handleShowSendBtc} />
+          {/* <SendBtcDrawer open={showSendBtcBox} onClose={handleShowSendBtc} /> */}
         </div>
         <NavDropdownButton
-          title="Bitcoin"
+          title={mobileView ? "" : "Bitcoin"}
           icon="/icons/bitcoin.svg"
           dropdownItems={[
             {
@@ -85,7 +87,7 @@ const Navbar = (props: Props) => {
           ]}
         />
         <NavDropdownButton
-          title="Ethereum"
+          title={mobileView ? "" : "Ethereum"}
           icon="/icons/etherium.svg"
           dropdownItems={ethDropdownItems}
         />

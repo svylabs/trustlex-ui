@@ -41,6 +41,7 @@ import {
   generateTrustlexAddress,
 } from "~/utils/BitcoinUtils";
 import GenerateWalletDrawer from "~/components/GenerateWalletDrawer/GenerateWalletDrawer";
+import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 type Props = {};
 
 // const tableDummyData: string[][] = new Array(5).fill([
@@ -308,6 +309,7 @@ const Exchange = (props: Props) => {
   };
 
   handleGenerateBitcoinWallet();
+  const { mobileView } = useWindowDimensions();
 
   return (
     <div className={styles.root}>
@@ -338,7 +340,7 @@ const Exchange = (props: Props) => {
                 />
                 <div className={styles.temporary}></div>
 
-                <SpanFullGridWidth style={{ position: "relative" }}>
+                <SpanFullGridWidth className={styles.addressBox}>
                   {exchangeData.address === "" && (
                     <div
                       className={styles.generateAddressButton}
@@ -350,6 +352,7 @@ const Exchange = (props: Props) => {
                         style={{
                           backgroundColor: "transparent",
                         }}
+                        fullWidth={mobileView ? true : false}
                       >
                         Generate in browser
                       </Button>

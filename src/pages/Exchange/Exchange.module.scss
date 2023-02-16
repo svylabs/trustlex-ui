@@ -43,14 +43,18 @@
   align-items: center;
   gap: 1rem;
 }
-.generateAddressButton {
-  position: absolute;
-  right: 0;
-  top: 40px;
-  font-weight: 500;
-  font-size: 16px;
-  cursor: pointer;
-  z-index: 1;
+
+.addressBox {
+  position: relative;
+  .generateAddressButton {
+    position: absolute;
+    right: 0;
+    top: 40px;
+    font-weight: 500;
+    font-size: 16px;
+    cursor: pointer;
+    z-index: 1;
+  }
 }
 
 @media only screen and (max-width: 1300px) {
@@ -99,6 +103,18 @@
           display: block;
         }
       }
+    }
+  }
+
+  .addressBox {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    .generateAddressButton {
+      position: relative;
+      right: unset;
+      top: unset;
+      order: 1;
     }
   }
 }

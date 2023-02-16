@@ -33,3 +33,11 @@
     width: 100%;
   }
 }
+
+@media screen and (max-width: 500px) {
+  .sendBtcBox {
+    left: unset;
+    right: -15rem;
+    width: 240px;
+  }
+}

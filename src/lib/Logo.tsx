@@ -28,7 +28,7 @@ const Logo = (props: IProps) => {
         rx="0.720457"
         transform="matrix(-1 0 0 1 22.9373 21.0522)"
         stroke="#FFF3DB"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <rect
         x="-0.360228"
@@ -38,7 +38,7 @@ const Logo = (props: IProps) => {
         rx="0.720457"
         transform="matrix(-1 0 0 1 14.5315 21.0522)"
         stroke="#FFF3DB"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <rect
         x="-0.360228"
@@ -48,7 +48,7 @@ const Logo = (props: IProps) => {
         rx="0.720457"
         transform="matrix(-1 0 0 1 20.135 21.0522)"
         stroke="#FFF3DB"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <rect
         x="-0.360228"
@@ -58,7 +58,7 @@ const Logo = (props: IProps) => {
         rx="0.720457"
         transform="matrix(-1 0 0 1 11.7297 21.0522)"
         stroke="#FFF3DB"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <rect
         x="-0.360228"
@@ -68,7 +68,7 @@ const Logo = (props: IProps) => {
         rx="0.720457"
         transform="matrix(-1 0 0 1 8.92798 21.0522)"
         stroke="#FFF3DB"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <rect
         x="-0.360228"
@@ -78,7 +78,7 @@ const Logo = (props: IProps) => {
         rx="0.720457"
         transform="matrix(-1 0 0 1 22.9373 23.8545)"
         stroke="#FFF3DB"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <rect
         x="-0.360228"
@@ -88,7 +88,7 @@ const Logo = (props: IProps) => {
         rx="0.720457"
         transform="matrix(-1 0 0 1 20.135 23.8545)"
         stroke="#FFF3DB"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <rect
         x="-0.360228"
@@ -98,7 +98,7 @@ const Logo = (props: IProps) => {
         rx="0.720457"
         transform="matrix(-1 0 0 1 20.135 26.6558)"
         stroke="#FFF3DB"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <rect
         x="-0.360228"
@@ -108,7 +108,7 @@ const Logo = (props: IProps) => {
         rx="0.720457"
         transform="matrix(-1 0 0 1 22.9373 18.2505)"
         stroke="#FFF3DB"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <rect
         x="-0.360228"
@@ -118,7 +118,7 @@ const Logo = (props: IProps) => {
         rx="0.720457"
         transform="matrix(-1 0 0 1 20.135 18.2505)"
         stroke="#FFF3DB"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <rect
         x="-0.360228"
@@ -128,7 +128,7 @@ const Logo = (props: IProps) => {
         rx="0.720457"
         transform="matrix(-1 0 0 1 20.135 15.4487)"
         stroke="#FFF3DB"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <rect
         x="-0.360228"
@@ -138,7 +138,7 @@ const Logo = (props: IProps) => {
         rx="0.720457"
         transform="matrix(-1 0 0 1 25.739 21.0522)"
         stroke="#FFF3DB"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <rect
         x="-0.360228"
@@ -148,7 +148,7 @@ const Logo = (props: IProps) => {
         rx="0.720457"
         transform="matrix(-1 0 0 1 17.3333 21.0522)"
         stroke="#FFF3DB"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <rect
         x="10.0092"
@@ -157,7 +157,7 @@ const Logo = (props: IProps) => {
         height="2.08132"
         rx="0.720457"
         stroke="white"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <rect
         x="18.4144"
@@ -166,7 +166,7 @@ const Logo = (props: IProps) => {
         height="2.08132"
         rx="0.720457"
         stroke="white"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <rect
         x="12.8109"
@@ -175,7 +175,7 @@ const Logo = (props: IProps) => {
         height="2.08132"
         rx="0.720457"
         stroke="white"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <rect
         x="21.2162"
@@ -184,7 +184,7 @@ const Logo = (props: IProps) => {
         height="2.08132"
         rx="0.720457"
         stroke="white"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <rect
         x="24.0179"
@@ -193,7 +193,7 @@ const Logo = (props: IProps) => {
         height="2.08132"
         rx="0.720457"
         stroke="white"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <rect
         x="10.0092"
@@ -202,7 +202,7 @@ const Logo = (props: IProps) => {
         height="2.08132"
         rx="0.720457"
         stroke="white"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <rect
         x="12.8109"
@@ -211,7 +211,7 @@ const Logo = (props: IProps) => {
         height="2.08132"
         rx="0.720457"
         stroke="white"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <rect
         x="12.8109"
@@ -220,7 +220,7 @@ const Logo = (props: IProps) => {
         height="2.08132"
         rx="0.720457"
         stroke="white"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <rect
         x="10.0092"
@@ -229,7 +229,7 @@ const Logo = (props: IProps) => {
         height="2.08132"
         rx="0.720457"
         stroke="white"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <rect
         x="12.8109"
@@ -238,7 +238,7 @@ const Logo = (props: IProps) => {
         height="2.08132"
         rx="0.720457"
         stroke="white"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <rect
         x="12.8109"
@@ -247,7 +247,7 @@ const Logo = (props: IProps) => {
         height="2.08132"
         rx="0.720457"
         stroke="white"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <rect
         x="7.20691"
@@ -256,7 +256,7 @@ const Logo = (props: IProps) => {
         height="2.08132"
         rx="0.720457"
         stroke="white"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <rect
         x="15.6127"
@@ -265,7 +265,7 @@ const Logo = (props: IProps) => {
         height="2.08132"
         rx="0.720457"
         stroke="white"
-        stroke-width="0.720457"
+        strokeWidth="0.720457"
       />
       <defs>
         <linearGradient
@@ -276,8 +276,8 @@ const Logo = (props: IProps) => {
           y2="26.4702"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stop-color="#FFD47D" />
-          <stop offset="1" stop-color="#DB880B" />
+          <stop stopColor="#FFD47D" />
+          <stop offset="1" stopColor="#DB880B" />
         </linearGradient>
       </defs>
     </svg>

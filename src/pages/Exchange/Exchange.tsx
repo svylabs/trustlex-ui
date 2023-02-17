@@ -340,33 +340,36 @@ const Exchange = (props: Props) => {
                 />
                 <div className={styles.temporary}></div>
 
-                <SpanFullGridWidth className={styles.addressBox}>
-                  {exchangeData.address === "" && (
-                    <div
-                      className={styles.generateAddressButton}
-                      onClick={() => setGenerateWalletDrawerOpen(true)}
-                    >
-                      <Button
-                        variant={VariantsEnum.outlinePrimary}
-                        radius={10}
-                        style={{
-                          backgroundColor: "transparent",
-                        }}
-                        fullWidth={mobileView ? true : false}
+                <SpanFullGridWidth>
+                  <div className={styles.addressBox}>
+                    {exchangeData.address === "" && (
+                      <div
+                        className={styles.generateAddressButton}
+                        onClick={() => setGenerateWalletDrawerOpen(true)}
                       >
-                        Generate in browser
-                      </Button>
-                    </div>
-                  )}
+                        <Button
+                          variant={VariantsEnum.outlinePrimary}
+                          radius={10}
+                          style={{
+                            backgroundColor: "transparent",
+                          }}
+                          fullWidth={mobileView ? true : false}
+                        >
+                          Generate in browser
+                        </Button>
+                      </div>
+                    )}
 
-                  <Input
-                    type="text"
-                    label="Address to receive Bitcoin"
-                    placeholder="Type here"
-                    value={exchangeData.address}
-                    onChange={handleAddressChange}
-                  />
+                    <Input
+                      type="text"
+                      label="Address to receive Bitcoin"
+                      placeholder="Type here"
+                      value={exchangeData.address}
+                      onChange={handleAddressChange}
+                    />
+                  </div>
                 </SpanFullGridWidth>
+
                 <Select
                   onChange={handleOfferChange}
                   label="Offer valid for"
@@ -444,10 +447,13 @@ const Exchange = (props: Props) => {
         isOpened={rowData !== null ? true : false}
         data={rowData}
       />
-      <GenerateWalletDrawer
-        onClose={() => setGenerateWalletDrawerOpen(false)}
-        open={generateWalletDrawerOpen}
-      />
+
+      <div className={styles.overlay}>
+        <GenerateWalletDrawer
+          onClose={() => setGenerateWalletDrawerOpen(false)}
+          open={generateWalletDrawerOpen}
+        />
+      </div>
     </div>
   );
 };

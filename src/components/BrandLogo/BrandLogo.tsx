@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import styles from "./BrandLogo.module.scss";
-import Logo from "~/lib/logo";
+import Logo from "~/lib/Logo";
 type Props = {};
 
 const BrandLogo = (props: Props) => {

@@ -40,6 +40,7 @@
   }
 
   .tab {
+    padding:  0 2rem;
     flex: 1;
   }
 }
@@ -48,6 +49,7 @@
  
 
   .tab {
-    padding: 0 1rem;
+    padding: 0;
+    font-size: 12px;
   }
 }

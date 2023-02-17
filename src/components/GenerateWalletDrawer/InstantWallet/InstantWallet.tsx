@@ -3,24 +3,84 @@ import DrawerInput from "~/components/GenerateWalletDrawer/DrawerInput/DrawerInp
 import Button from "~/components/Button/Button";
 import { VariantsEnum } from "~/enums/VariantsEnum";
 import { Icon } from "@iconify/react";
+import { useState } from "react";
+import { Wallet, decryptWallet, encryptWallet } from "~/utils/BitcoinUtils";
+interface IInstantWallet {
+  data: Wallet | null;
+  generatedAddress: string;
+}
 
-const InstantWallet = () => {
+const InstantWallet = ({ data, generatedAddress }: IInstantWallet) => {
+  const [inputData, setInputData] = useState({
+    password: "",
+    confirmPassword: "",
+  });
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputData((prev) => {
+      return {
+        ...prev,
+        password: e.target.value,
+      };
+    });
+  };
+
+  const handleConfirmPasswordChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setInputData((prev) => {
+      return {
+        ...prev,
+        confirmPassword: e.target.value,
+      };
+    });
+  };
+
+  const handleDownloadWalletClick = () => {
+    console.log("downloading wallet");
+    if (inputData.password === "" || inputData.confirmPassword === "")
+      return alert("Password or Confirm Password is required");
+    if (inputData.password !== inputData.confirmPassword)
+      return alert("Password and confirm password does not match");
+    if (data === null) return alert("Data is null");
+
+    const encryptedData = encryptWallet(data, inputData.password);
+    console.log("encryptedData", encryptedData);
+
+    setInputData({
+      password: "",
+      confirmPassword: "",
+    });
+
+    if (!encryptedData) return alert("Error encrypting wallet");
+    const decryptedData = decryptWallet(encryptedData, inputData.password);
+    console.log("decryptedData", decryptedData);
+  };
+
   return (
     <div className={styles.instantWalletRoot}>
       <div className={styles.generatedAddress}>
         <h3>Your generated address</h3>
-        <p>b1cqada7dda834aadfa99000adafaghaxww</p>
+        <p>
+          {generatedAddress !== ""
+            ? generatedAddress
+            : "b1cqada7dda834aadfa99000adafaghaxww"}
+        </p>
       </div>
 
       <DrawerInput
         type="password"
         placeholder="Enter your password"
         label="Password to encrypt wallet"
+        value={inputData.password}
+        onChange={handlePasswordChange}
       />
       <DrawerInput
         type="password"
         placeholder="Enter your password again"
         label="Confirm password"
+        value={inputData.confirmPassword}
+        onChange={handleConfirmPasswordChange}
       />
       <Button
         variant={VariantsEnum.outlinePrimary}
@@ -33,6 +93,7 @@ const InstantWallet = () => {
           marginTop: "16px",
         }}
         fullWidth
+        onClick={handleDownloadWalletClick}
       >
         Download Wallet
       </Button>

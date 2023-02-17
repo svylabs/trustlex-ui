@@ -37,6 +37,7 @@ import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
 import { NumberToTime, TimeToNumber } from "~/utils/TimeConverter";
 import { ethers } from "ethers";
 import {
+  Wallet,
   generateBitcoinWallet,
   generateTrustlexAddress,
 } from "~/utils/BitcoinUtils";
@@ -146,7 +147,8 @@ const Exchange = (props: Props) => {
   };
 
   let data = getTableData(listenedOfferData);
-
+  const [generatedBitcoinData, setGeneratedBitcoinData] =
+    useState<Wallet | null>(null);
   const [tableData, setTableData] = useState<(string | JSX.Element)[][]>(data);
   const [generateWalletDrawerOpen, setGenerateWalletDrawerOpen] =
     useState(false);
@@ -306,9 +308,10 @@ const Exchange = (props: Props) => {
     const data = generateBitcoinWallet();
     console.log(data);
     console.log(generateTrustlexAddress(data.pubkeyHash, "10"));
+    setGeneratedBitcoinData(data);
   };
 
-  handleGenerateBitcoinWallet();
+  // handleGenerateBitcoinWallet();
   const { mobileView } = useWindowDimensions();
 
   return (
@@ -345,7 +348,10 @@ const Exchange = (props: Props) => {
                     {exchangeData.address === "" && (
                       <div
                         className={styles.generateAddressButton}
-                        onClick={() => setGenerateWalletDrawerOpen(true)}
+                        onClick={() => {
+                          handleGenerateBitcoinWallet();
+                          setGenerateWalletDrawerOpen(true);
+                        }}
                       >
                         <Button
                           variant={VariantsEnum.outlinePrimary}
@@ -452,6 +458,7 @@ const Exchange = (props: Props) => {
         <GenerateWalletDrawer
           onClose={() => setGenerateWalletDrawerOpen(false)}
           open={generateWalletDrawerOpen}
+          data={generatedBitcoinData}
         />
       </div>
     </div>

@@ -9,14 +9,16 @@ import InstantWallet from "~/components/GenerateWalletDrawer/InstantWallet/Insta
 import HardwareWallet from "~/components/GenerateWalletDrawer/HardwareWallet/HardwareWallet";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 import useAutoHideScrollbar from "~/hooks/useAutoHideScrollBar";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import useDetectOutsideClick from "~/hooks/useDetectOutsideClick";
+import { Wallet, generateTrustlexAddress } from "~/utils/BitcoinUtils";
 interface IProps {
   open: boolean;
   onClose: () => void;
+  data: Wallet | null;
 }
 
-const GenerateWalletDrawer = ({ open, onClose }: IProps) => {
+const GenerateWalletDrawer = ({ open, onClose, data }: IProps) => {
   const { mobileView, tabletView } = useWindowDimensions();
 
   const mobileContentRef = useRef(null);
@@ -25,6 +27,9 @@ const GenerateWalletDrawer = ({ open, onClose }: IProps) => {
     callback: onClose,
   });
 
+  if (!open) return null;
+  console.log("data", data);
+  // if (!data) return onClose();
   return mobileView ? (
     open ? (
       <div className={styles.mobileDialogRoot}>
@@ -34,7 +39,7 @@ const GenerateWalletDrawer = ({ open, onClose }: IProps) => {
             colorLeft={"#FEBD3893"}
             bgImage="/images/Rectangle.svg"
           >
-            <GenerateWalletContent onClose={onClose} />
+            <GenerateWalletContent onClose={onClose} data={data} />
           </GradientBackgroundContainer>
         </div>
       </div>
@@ -56,17 +61,30 @@ const GenerateWalletDrawer = ({ open, onClose }: IProps) => {
         colorLeft={"#FEBD3893"}
         bgImage="/images/Rectangle.svg"
       >
-        <GenerateWalletContent onClose={onClose} />
+        <GenerateWalletContent onClose={onClose} data={data} />
       </GradientBackgroundContainer>
     </Drawer>
   );
 };
 
-const GenerateWalletContent = ({ onClose }: { onClose: () => void }) => {
+const GenerateWalletContent = ({
+  onClose,
+  data,
+}: {
+  onClose: () => void;
+  data: Wallet | null;
+}) => {
   const { mobileView } = useWindowDimensions();
-
   const generateWalletRef = useRef(null);
   useAutoHideScrollbar(generateWalletRef);
+
+  const [generatedAddress, setGeneratedAddress] = useState<string>("");
+
+  useEffect(() => {
+    if (data === null || data.pubkeyHash === undefined) return;
+    const address = generateTrustlexAddress(data.pubkeyHash, "10");
+    setGeneratedAddress(address as string);
+  }, [data]);
 
   return (
     <div className={styles.generateWalletRoot} ref={generateWalletRef}>
@@ -110,7 +128,9 @@ const GenerateWalletContent = ({ onClose }: { onClose: () => void }) => {
         panels={[
           {
             value: "instant-wallet",
-            children: <InstantWallet />,
+            children: (
+              <InstantWallet data={data} generatedAddress={generatedAddress} />
+            ),
           },
           {
             value: "hardware-wallet",

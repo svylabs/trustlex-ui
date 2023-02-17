@@ -61,7 +61,7 @@ const Home = (props: Props) => {
   const { width } = useWindowDimensions();
   const settings = {
     dots: false,
-    arrow: false,
+    arrows: false,
     infinite: false,
     speed: 500,
     slidesToShow: 1,

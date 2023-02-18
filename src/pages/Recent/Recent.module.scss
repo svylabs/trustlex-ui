@@ -1,10 +1,9 @@
-// .root {
-// }
+
 
 .panelCont {
   display: flex;
   flex-direction: column;
-  gap: 5rem;
+  gap: 3rem;
 }
 
 .recentMobileTable {
@@ -18,11 +17,7 @@
   padding: 2rem;
   white-space: nowrap;
 }
-.allSwapRoot {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
+
 
 @media screen and (max-width: 500px) {
   .recentTable {

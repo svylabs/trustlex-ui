@@ -10,11 +10,15 @@ import styles from "./Recent.module.scss";
 import { useState } from "react";
 import AllSwapTable from "~/components/AllSwapTable/AllSwapTable";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
+import MainLayout from "~/components/MainLayout/MainLayout";
 type Props = {};
 
 const Recent = (props: Props) => {
   return (
-    <div className={styles.root}>
+    <MainLayout
+      title="Recents"
+      description="Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    >
       <Tabs
         tabs={[
           { label: "My Swaps", value: "my-swaps" },
@@ -31,7 +35,7 @@ const Recent = (props: Props) => {
           },
         ]}
       />
-    </div>
+    </MainLayout>
   );
 };
 
@@ -143,38 +147,35 @@ function AllSwaps() {
     }, 2000);
   };
   return (
-    <div className={styles.allSwapRoot}>
-      {/* <h1>All Swaps</h1> */}
-      <GradientBackgroundContainer colorLeft="#FFD57243">
-        <Box p={"lg"} className={styles.box}>
-          <AllSwapTable
-            data={swapData}
-            cols={
-              mobileView
-                ? ["# of order", "Date", "More Details"]
-                : [
-                    "# of order",
-                    "Planning to sell",
-                    "Planning to buy",
-                    "Price per ETH in BTC",
-                    "Date",
-                    "Status",
-                  ]
-            }
-            tableCaption="All Swaps"
-          />
-          <br />
-          <Center>
-            <ActionButton
-              variant={"transparent"}
-              loading={isMoreSwapsLoading}
-              onClick={loadMoreSwaps}
-            >
-              Load more
-            </ActionButton>{" "}
-          </Center>
-        </Box>
-      </GradientBackgroundContainer>
-    </div>
+    <GradientBackgroundContainer colorLeft="#FFD57243">
+      <Box p={"lg"} className={styles.box}>
+        <AllSwapTable
+          data={swapData}
+          cols={
+            mobileView
+              ? ["# of order", "Date", "More Details"]
+              : [
+                  "# of order",
+                  "Planning to sell",
+                  "Planning to buy",
+                  "Price per ETH in BTC",
+                  "Date",
+                  "Status",
+                ]
+          }
+          tableCaption="All Swaps"
+        />
+        <br />
+        <Center>
+          <ActionButton
+            variant={"transparent"}
+            loading={isMoreSwapsLoading}
+            onClick={loadMoreSwaps}
+          >
+            Load more
+          </ActionButton>{" "}
+        </Center>
+      </Box>
+    </GradientBackgroundContainer>
   );
 }

@@ -58,8 +58,8 @@ const RecentHistoryTable = ({ tableCaption, cols, data, mobile }: Props) => {
 
   return (
     <Table
-      horizontalSpacing={mobile ? "xs" : "lg"}
-      verticalSpacing={"lg"}
+      horizontalSpacing={mobile ? "xs" : "md"}
+      verticalSpacing={"md"}
       tableCaption={tableCaption}
       cols={cols}
       data={tableData}

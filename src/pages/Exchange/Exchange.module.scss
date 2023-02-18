@@ -1,39 +1,18 @@
-.root {
-  .pageTitle,
-  .pageDesc {
-    font-family: "Inter", sans-serif;
-    font-style: normal;
+.exchangeForm {
+  .exchangeFormContent {
+    display: grid;
+    font-size: 2rem;
+    grid-template-columns: 1fr 5rem 1fr;
+    gap: 2rem;
+    padding: 2rem;
   }
-  .pageTitle {
-    font-weight: 600;
-    color: var(--white);
-  }
-
-  .pageDesc {
-    font-weight: 500;
-    font-size: 1.8rem;
-    color: var(--white);
-    opacity: 0.5;
-  }
-
-  .exchangeForm {
-    margin-top: 3rem;
-    .exchangeFormContent {
-      display: grid;
-      font-size: 2rem;
-      grid-template-columns: 1fr 5rem 1fr;
-      gap: 2rem;
-      padding: 2rem;
-    }
-  }
-  .offersTable {
-    margin-top: 3rem;
-    .innerWrapper {
-      padding: 2rem;
-      white-space: nowrap;
-      .mobileTableInner {
-        display: none;
-      }
+}
+.offersTable {
+  .innerWrapper {
+    padding: 2rem;
+    white-space: nowrap;
+    .mobileTableInner {
+      display: none;
     }
   }
 }
@@ -58,17 +37,14 @@
 }
 
 @media only screen and (max-width: 1300px) {
-  .root {
-    .exchangeForm {
-      .exchangeFormContent {
-        grid-template-columns: 1fr;
-      }
+  .exchangeForm {
+    .exchangeFormContent {
+      grid-template-columns: 1fr;
     }
   }
 }
 
 @media screen and (max-width: 768px) {
-  // .root {
   //   .offersTable {
   //     .innerWrapper {
   //       .tableInner {
@@ -79,7 +55,7 @@
   //       }
   //     }
   //   }
-  // }
+
   .addressBox {
     .generateAddressButton {
       top: 30px;
@@ -88,25 +64,23 @@
 }
 
 @media screen and (max-width: 500px) {
-  .root {
-    .exchangeForm {
-      .exchangeFormContent {
-        gap: 3rem;
-        padding: 0;
-        .temporary {
-          display: none;
-        }
+  .exchangeForm {
+    .exchangeFormContent {
+      gap: 3rem;
+      padding: 0;
+      .temporary {
+        display: none;
       }
     }
-    .offersTable {
-      .innerWrapper {
-        padding: 0;
-        .tableInner {
-          display: none;
-        }
-        .mobileTableInner {
-          display: block;
-        }
+  }
+  .offersTable {
+    .innerWrapper {
+      padding: 0;
+      .tableInner {
+        display: none;
+      }
+      .mobileTableInner {
+        display: block;
       }
     }
   }
@@ -124,17 +98,12 @@
   }
 }
 
-
-
-
 @media only screen and (max-width: 330px) {
-  .root {
-    .exchangeForm {
+  .exchangeForm {
+    padding: 0;
+    .exchangeFormContent {
+      gap: 2rem;
       padding: 0;
-      .exchangeFormContent {
-        gap: 2rem;
-        padding: 0;
-      }
     }
   }
 }

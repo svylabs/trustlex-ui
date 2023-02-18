@@ -10,6 +10,7 @@ import EarnPageGraph from "~/components/EarnPageGraph/EarnPageGraph";
 import EarnTable from "~/components/EarnTable/EarnTable";
 import { Box, Center } from "@mantine/core";
 import ActionButton from "~/components/ActionButton/ActionButton";
+import MainLayout from "~/components/MainLayout/MainLayout";
 type Props = {};
 
 const Earn = (props: Props) => {
@@ -54,14 +55,10 @@ const Earn = (props: Props) => {
   };
 
   return (
-    <div className={styles.earnPage}>
-      <div>
-        <h1 className={styles.pageTitle}>Earn</h1>
-        <p className={styles.pageDesc}>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit.
-        </p>
-      </div>
-
+    <MainLayout
+      title="Earn"
+      description="Lorem ipsum dolor sit amet consectetur adipisicing elit."
+    >
       <section>
         <GradientBackgroundContainer colorLeft="#FFD57243">
           <EarnPageGraph />
@@ -85,7 +82,7 @@ const Earn = (props: Props) => {
           </Center>
         </GradientBackgroundContainer>
       </section>
-    </div>
+    </MainLayout>
   );
 };
 

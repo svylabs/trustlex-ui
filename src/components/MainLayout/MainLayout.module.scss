@@ -1,33 +1,31 @@
-.earnPage {
+.mainLayoutRoot {
   // padding: 2rem 4rem;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 3rem;
+  gap: 2rem;
 
-  .earnPageTop{
-    .pageTitle,
-    .pageDesc {
+  .mainLayoutTop {
+    .layoutTitle,
+    .layoutDesc {
       font-family: "Inter", sans-serif;
       font-style: normal;
     }
-    .pageTitle {
+    .layoutTitle {
       font-weight: 600;
       color: var(--white);
     }
-  
-    .pageDesc {
+
+    .layoutDesc {
       font-weight: 500;
       font-size: 1.8rem;
       color: var(--white);
       opacity: 0.5;
     }
   }
-
-}
-
-@media screen and (max-width: 500px) {
-  .earnPage {
-    padding: 0;
+  .contentRoot {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
   }
 }

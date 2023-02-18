@@ -15,6 +15,7 @@ import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 import { AppContext } from "~/Context/AppContext";
 import { useNavigate } from "react-router-dom";
 import { AddOfferWithEth, AddOfferWithToken } from "~/service/AppService";
+import MainLayout from "~/components/MainLayout/MainLayout";
 
 type Props = {};
 
@@ -78,38 +79,14 @@ const Home = (props: Props) => {
   const handleConfirmClick = () => navigate("/exchange");
 
   return (
-    <div className={styles.root}>
-      <h1 className={styles.pageTitle}>Home</h1>
-      <p className={styles.pageDesc}>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit.
-      </p>
-
-      <div className={styles.mainContent}>
-        {width !== null && width < 1360 ? (
-          <div className={styles.slider}>
-            <Slider {...settings}>
-              <HomepageCard
-                color="#fd90d1b3"
-                icon="/icons/Activity.png"
-                title="Supported networks / assets"
-                value="5 networks, 25 pairs"
-              />
-              <HomepageCard
-                color="#67D558b3"
-                icon="/icons/Lock.png"
-                title="Total Value Locked"
-                value="$ 1.6 Billion"
-              />
-              <HomepageCard
-                color="#78CEF9b3"
-                icon="/icons/Chart.png"
-                title="Total Transaction Volume (last 24h)"
-                value="$ 25 Million"
-              />
-            </Slider>
-          </div>
-        ) : (
-          <div className={styles.cards}>
+    <MainLayout
+      title="Home"
+      description="Lorem ipsum dolor sit amet consectetur adipisicing elit."
+    >
+      {/* <div className={styles.mainContent}> */}
+      {width !== null && width < 1360 ? (
+        <div className={styles.slider}>
+          <Slider {...settings}>
             <HomepageCard
               color="#fd90d1b3"
               icon="/icons/Activity.png"
@@ -128,47 +105,69 @@ const Home = (props: Props) => {
               title="Total Transaction Volume (last 24h)"
               value="$ 25 Million"
             />
-          </div>
-        )}
-
-        <div className={styles.bottomSection}>
-          <GradientBackgroundContainer
-            colorRight="#FEBD38b3"
-            colorLeft="#FEBD3833"
-          >
-            <div className={styles.bottomSectionContent}>
-              <SpanFullGridWidth>
-                <ExchangeSwapGroup />
-              </SpanFullGridWidth>
-
-              <div>
-                <div className={styles.homeIndicator}>
-                  <span></span>
-                </div>
-                <InputWithSelect
-                  options={data2}
-                  type="number"
-                  placeholder={"Limit price BTC/ETC"}
-                  value={userInputData.limit}
-                  onChange={handleLimitChange}
-                  disabled={userInputData.setLimit ? false : true}
-                />
-              </div>
-              <div className={styles.temporary}></div>
-              <div className={styles.temporary}></div>
-              <Button
-                variant={VariantsEnum.primary}
-                radius="md"
-                fullWidth
-                onClick={handleConfirmClick}
-              >
-                Confirm
-              </Button>
-            </div>
-          </GradientBackgroundContainer>
+          </Slider>
         </div>
+      ) : (
+        <div className={styles.cards}>
+          <HomepageCard
+            color="#fd90d1b3"
+            icon="/icons/Activity.png"
+            title="Supported networks / assets"
+            value="5 networks, 25 pairs"
+          />
+          <HomepageCard
+            color="#67D558b3"
+            icon="/icons/Lock.png"
+            title="Total Value Locked"
+            value="$ 1.6 Billion"
+          />
+          <HomepageCard
+            color="#78CEF9b3"
+            icon="/icons/Chart.png"
+            title="Total Transaction Volume (last 24h)"
+            value="$ 25 Million"
+          />
+        </div>
+      )}
+
+      <div className={styles.bottomSection}>
+        <GradientBackgroundContainer
+          colorRight="#FEBD38b3"
+          colorLeft="#FEBD3833"
+        >
+          <div className={styles.bottomSectionContent}>
+            <SpanFullGridWidth>
+              <ExchangeSwapGroup />
+            </SpanFullGridWidth>
+
+            <div>
+              <div className={styles.homeIndicator}>
+                <span></span>
+              </div>
+              <InputWithSelect
+                options={data2}
+                type="number"
+                placeholder={"Limit price BTC/ETC"}
+                value={userInputData.limit}
+                onChange={handleLimitChange}
+                disabled={userInputData.setLimit ? false : true}
+              />
+            </div>
+            <div className={styles.temporary}></div>
+            <div className={styles.temporary}></div>
+            <Button
+              variant={VariantsEnum.primary}
+              radius="md"
+              fullWidth
+              onClick={handleConfirmClick}
+            >
+              Confirm
+            </Button>
+          </div>
+        </GradientBackgroundContainer>
       </div>
-    </div>
+      {/* </div> */}
+    </MainLayout>
   );
 };
 

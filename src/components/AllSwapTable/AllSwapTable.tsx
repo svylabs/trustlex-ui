@@ -55,8 +55,8 @@ const AllSwapTable = ({ tableCaption, cols, data }: Props) => {
 
   return (
     <Table
-      horizontalSpacing={mobileView ? "xs" : "lg"}
-      verticalSpacing={"lg"}
+      horizontalSpacing={mobileView ? "xs" : "md"}
+      verticalSpacing={"md"}
       tableCaption={tableCaption}
       cols={cols}
       data={tableData}

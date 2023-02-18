@@ -16,7 +16,7 @@ const EarnTable = ({ tableData, handleSubmitProof }: IProps) => {
     <div className={styles.box}>
       {!mobileView ? (
         <Table
-          horizontalSpacing={"xs"}
+          horizontalSpacing={"md"}
           verticalSpacing={"md"}
           tableCaption="Earn 0.05% on transactions by submitting proof of payment"
           cols={["Planning to sell", "Planning to buy", "Earn", ""]}

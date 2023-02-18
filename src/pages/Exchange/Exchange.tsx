@@ -43,6 +43,7 @@ import {
 } from "~/utils/BitcoinUtils";
 import GenerateWalletDrawer from "~/components/GenerateWalletDrawer/GenerateWalletDrawer";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
+import MainLayout from "~/components/MainLayout/MainLayout";
 type Props = {};
 
 // const tableDummyData: string[][] = new Array(5).fill([
@@ -315,12 +316,10 @@ const Exchange = (props: Props) => {
   const { mobileView } = useWindowDimensions();
 
   return (
-    <div className={styles.root}>
-      <h1 className={styles.pageTitle}>Exchange</h1>
-      <p className={styles.pageDesc}>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit.
-      </p>
-
+    <MainLayout
+      title="Exchange"
+      description="  Lorem ipsum dolor sit amet consectetur adipisicing elit."
+    >
       <div className={styles.exchangeForm}>
         <GradientBackgroundContainer
           colorRight="#FEBD3863"
@@ -418,7 +417,8 @@ const Exchange = (props: Props) => {
                 tableCaption="All offers"
                 cols={exchangeTableCols}
                 data={tableData}
-                verticalSpacing={"lg"}
+                horizontalSpacing={"md"}
+                verticalSpacing={"md"}
                 onRowClick={(data) => {
                   console.log(data);
                   setRowData(data);
@@ -430,7 +430,7 @@ const Exchange = (props: Props) => {
                 tableCaption="All offers"
                 cols={exchangeMobileTableCols}
                 data={mobileTableData}
-                verticalSpacing={"lg"}
+                verticalSpacing={"md"}
                 horizontalSpacing={"xs"}
                 onRowClick={(data) => setRowData(data)}
               />
@@ -461,7 +461,7 @@ const Exchange = (props: Props) => {
           data={generatedBitcoinData}
         />
       </div>
-    </div>
+    </MainLayout>
   );
 };
 

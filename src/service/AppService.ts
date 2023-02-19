@@ -9,6 +9,7 @@ import {
   IOfferdata,
 } from "~/interfaces/IOfferdata";
 import axios from "axios";
+import { MAX_BLOCKS_TO_QUERY, MAX_ITERATIONS } from "~/Context/Constants";
 const getEthereumObject = () => window.ethereum;
 
 export const findMetaMaskAccount = async () => {
@@ -151,34 +152,54 @@ export const listOffers = async (
   toBlock: "latest" | number = "latest"
 ) => {
   try {
-    if (!trustLex)
+    console.log("Querying... ", fromBlock, toBlock);
+    if (!trustLex || toBlock == -1)
       return { fromBlock: fromBlock, toBlock: toBlock, offers: [] };
-    const offers = await trustLex.queryFilter("NEW_OFFER", fromBlock, toBlock);
-    const promises = offers.map(async (offer) => {
-      const offerEvent = {
-        from: offer.args ? offer.args[0] : "",
-        to: offer.args ? offer.args[1] : "",
-      };
+    let estimatedFromBlock = fromBlock;
+    if (toBlock === "latest") {
+       toBlock = await trustLex.provider.getBlockNumber();
+       estimatedFromBlock = Math.max(0, toBlock - MAX_BLOCKS_TO_QUERY);
+    } else if (toBlock > 0) {
+       estimatedFromBlock = Math.max(fromBlock, toBlock - MAX_BLOCKS_TO_QUERY);
+    }
+    const offers: IListenedOfferData[] = [];
+    let iterations = 0;
+    do {
+      estimatedFromBlock = Math.max(fromBlock, estimatedFromBlock - MAX_BLOCKS_TO_QUERY);
+      console.log("Querying... ", estimatedFromBlock, estimatedFromBlock + MAX_BLOCKS_TO_QUERY);
+      const offersSubSet = await trustLex.queryFilter("NEW_OFFER", estimatedFromBlock, estimatedFromBlock + MAX_BLOCKS_TO_QUERY);
+      const promises = offersSubSet.map(async (offer) => {
+        const offerEvent = {
+          from: offer.args ? offer.args[0] : "",
+          to: offer.args ? offer.args[1] : "",
+        };
 
-      const offerData = await getOffers(trustLex, offerEvent.to);
-      const offerDetailsInJson = {
-        offerQuantity: offerData[0].toString(),
-        offeredBy: offerData[1].toString(),
-        offerValidTill: offerData[2].toString(),
-        orderedTime: offerData[3].toString(),
-        offeredBlockNumber: offerData[4].toString(),
-        bitcoinAddress: offerData[5].toString(),
-        satoshisToReceive: offerData[6].toString(),
-        satoshisReceived: offerData[7].toString(),
-        satoshisReserved: offerData[8].toString(),
-        collateralPer3Hours: offerData[9].toString(),
-      };
-      return { offerEvent, offerDetailsInJson };
-    });
+        const offerData = await getOffers(trustLex, offerEvent.to);
+        const offerDetailsInJson = {
+          offerQuantity: offerData[0].toString(),
+          offeredBy: offerData[1].toString(),
+          offerValidTill: offerData[2].toString(),
+          orderedTime: offerData[3].toString(),
+          offeredBlockNumber: offerData[4].toString(),
+          bitcoinAddress: offerData[5].toString(),
+          satoshisToReceive: offerData[6].toString(),
+          satoshisReceived: offerData[7].toString(),
+          satoshisReserved: offerData[8].toString(),
+          collateralPer3Hours: offerData[9].toString(),
+        };
+        return { offerEvent, offerDetailsInJson };
+      });
+      const offersList: IListenedOfferData[] = await Promise.all(promises);
+      offersList.forEach((o) => {
+        offers.push(o);
+      })
+      iterations++;
+    } while (estimatedFromBlock > fromBlock && iterations < MAX_ITERATIONS);
+    console.log(offers);
     return {
       fromBlock: fromBlock,
       toBlock: toBlock,
-      offers: await Promise.all(promises),
+      offers: offers,
     };
     /*
     offers.forEach((offer) => {

@@ -15,7 +15,7 @@ import {
 } from "./service/AppService";
 import IUserInputData from "./interfaces/IUserInputData";
 import swapArrayElements from "./utils/swapArray";
-import { IListenedOfferData } from "./interfaces/IOfferdata";
+import { IListenedOfferData, IOffersResult } from "./interfaces/IOfferdata";
 import { ethers } from "ethers";
 import { ContractMap } from "./Context/AppConfig";
 import useLocalstorage from "./hooks/useLocalstorage";
@@ -30,8 +30,8 @@ export default function App() {
     tokenData ? tokenData.toUpperCase() : "ETH"
   );
   const [listenedOfferData, setListenedOfferData] = useState<
-    IListenedOfferData[] | []
-  >([]);
+   IOffersResult
+  >({fromBlock: 0, toBlock: 0, offers: []});
 
   const userData = get("userInputData", true);
   const [userInputData, setUserInputData] = useState<IUserInputData>(
@@ -122,7 +122,7 @@ export default function App() {
         if (trustlex) {
           setContract(trustlex as ethers.Contract);
           const offers = await listOffers(trustlex);
-          setListenedOfferData(offers.offers);
+          setListenedOfferData(offers);
         }
         findMetaMaskAccount().then((account) => {
           if (account !== null) {

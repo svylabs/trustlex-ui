@@ -42,7 +42,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
 
   const foundOffer =
     data &&
-    listenedOfferData.find(
+    listenedOfferData.offers.find(
       (offer) => offer.offerDetailsInJson.offeredBlockNumber === data[0]
     );
   // console.log(foundOffer);

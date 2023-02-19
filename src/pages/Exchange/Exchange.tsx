@@ -44,6 +44,7 @@ import {
 import GenerateWalletDrawer from "~/components/GenerateWalletDrawer/GenerateWalletDrawer";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 import MainLayout from "~/components/MainLayout/MainLayout";
+import { MAX_BLOCKS_TO_QUERY, MAX_ITERATIONS } from "~/Context/Constants";
 type Props = {};
 
 // const tableDummyData: string[][] = new Array(5).fill([
@@ -107,7 +108,7 @@ const Exchange = (props: Props) => {
         : minCollateral[0].value,
   });
 
-  const mobileData = listenedOfferData.map((offer: IListenedOfferData) => {
+  const mobileData = listenedOfferData.offers.map((offer: IListenedOfferData) => {
     return [
       offer.offerDetailsInJson.offeredBlockNumber,
       "09 Jan, 13:45pm",
@@ -147,7 +148,7 @@ const Exchange = (props: Props) => {
     });
   };
 
-  let data = getTableData(listenedOfferData);
+  let data = getTableData(listenedOfferData.offers);
   const [generatedBitcoinData, setGeneratedBitcoinData] =
     useState<Wallet | null>(null);
   const [tableData, setTableData] = useState<(string | JSX.Element)[][]>(data);
@@ -156,11 +157,13 @@ const Exchange = (props: Props) => {
 
   const loadMoreOffers = () => {
     setMoreTableDataLoading(true);
-    setTimeout(() => {
-      // setTableData([...tableData, ...tableDummyData]);
-      // setMobileTableData([...mobileTableData, ...mobileTableDummyData]);
+    let fromBlock = Math.max(0, listenedOfferData.fromBlock - MAX_ITERATIONS * MAX_BLOCKS_TO_QUERY);
+    listOffers(context.contract, fromBlock, listenedOfferData.fromBlock - 1).then((offers) => {
+      const listenedOffers = {fromBlock: offers.fromBlock, toBlock: listenedOfferData.toBlock, offers: [...listenedOfferData.offers, ...offers.offers]}
+      setListenedOfferData(listenedOffers);
+      setTableData(getTableData(listenedOffers.offers));
       setMoreTableDataLoading(false);
-    }, 2000);
+    });
   };
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -224,16 +227,19 @@ const Exchange = (props: Props) => {
           collateralPer3Hours: offerData[9].toString(),
         };
 
-        const exists = listenedOfferData.find(
+        const exists = listenedOfferData.offers.find(
           (offer) =>
             offer.offerDetailsInJson.offeredBlockNumber ===
             offerDetailsInJson.offeredBlockNumber
         );
         if (exists === undefined) {
-          setListenedOfferData([
-            ...listenedOfferData,
-            { offerEvent, offerDetailsInJson },
-          ]);
+          setListenedOfferData(
+            {
+            fromBlock: listenedOfferData.fromBlock,
+            toBlock: offerDetailsInJson.offeredBlockNumber, 
+            offers: [...listenedOfferData.offers, { offerEvent, offerDetailsInJson }]
+            }
+          );
           setTableData((prev) => {
             return [
               ...prev,
@@ -300,7 +306,7 @@ const Exchange = (props: Props) => {
   useEffect(() => {
     listenEvent();
     listOffers(context.contract).then((offers) => {
-      setListenedOfferData(offers.offers);
+      setListenedOfferData(offers);
       setTableData(getTableData(offers.offers));
     });
   }, [hashedOfferData]);

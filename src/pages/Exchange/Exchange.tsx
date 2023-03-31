@@ -47,43 +47,45 @@ import MainLayout from "~/components/MainLayout/MainLayout";
 import { MAX_BLOCKS_TO_QUERY, MAX_ITERATIONS } from "~/Context/Constants";
 type Props = {};
 
-// const tableDummyData: string[][] = new Array(5).fill([
-//   1211,
-//   <>
-//     10 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />{" "}
-//     {CurrencyEnum.ETH}
-//   </>,
-//   <>
-//     0.078 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
-//     {CurrencyEnum.BTC}
-//   </>,
-//   <>
-//     0.078 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
-//     {CurrencyEnum.BTC}
-//   </>,
-//   <>
-//     1 out of 10 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />{" "}
-//     {CurrencyEnum.ETH}
-//   </>,
-//   "1h",
-//   "09 Jan, 13:45pm",
-// ]);
+const tableDummyData: string[][] = new Array(5).fill([
+  1211,
+  <>
+    10 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />{" "}
+    {CurrencyEnum.ETH}
+  </>,
+  <>
+    0.078 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
+    {CurrencyEnum.BTC}
+  </>,
+  <>
+    0.078 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
+    {CurrencyEnum.BTC}
+  </>,
+  <>
+    1 out of 10 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />{" "}
+    {CurrencyEnum.ETH}
+  </>,
+  "1h",
+  "09 Jan, 13:45pm",
+]);
 
-// const mobileTableDummyData: string[][] = new Array(5).fill([
-//   1211,
+const mobileTableDummyData: string[][] = new Array(5).fill([
+  1211,
 
-//   "09 Jan, 13:45pm",
-//   <SeeMoreButton
-//     onClick={(e) => {
-//       // console.log("button clicked");
-//     }}
-//   />,
-// ]);
+  "09 Jan, 13:45pm",
+  <SeeMoreButton
+    onClick={(e) => {
+      // console.log("button clicked");
+    }}
+  />,
+]);
 
 const Exchange = (props: Props) => {
   const [isMoreTableDataLoading, setMoreTableDataLoading] = useState(false);
 
   const [rowData, setRowData] = useState<(string | ReactNode)[] | null>(null);
+
+  const [addOffer, setAddOffer] = useState(false);
 
   const context = React.useContext(AppContext);
   if (context === null) {
@@ -112,7 +114,7 @@ const Exchange = (props: Props) => {
     return [
       offer.offerDetailsInJson.offeredBlockNumber,
       "09 Jan, 13:45pm",
-      <SeeMoreButton onClick={(e) => {}} />,
+      <SeeMoreButton onClick={(e) => { }} />,
     ];
   });
 
@@ -159,7 +161,7 @@ const Exchange = (props: Props) => {
     setMoreTableDataLoading(true);
     let fromBlock = Math.max(0, listenedOfferData.fromBlock - MAX_ITERATIONS * MAX_BLOCKS_TO_QUERY);
     listOffers(context.contract, fromBlock, listenedOfferData.fromBlock - 1).then((offers) => {
-      const listenedOffers = {fromBlock: offers.fromBlock, toBlock: listenedOfferData.toBlock, offers: [...listenedOfferData.offers, ...offers.offers]}
+      const listenedOffers = { fromBlock: offers.fromBlock, toBlock: listenedOfferData.toBlock, offers: [...listenedOfferData.offers, ...offers.offers] }
       setListenedOfferData(listenedOffers);
       setTableData(getTableData(listenedOffers.offers));
       setMoreTableDataLoading(false);
@@ -235,9 +237,9 @@ const Exchange = (props: Props) => {
         if (exists === undefined) {
           setListenedOfferData(
             {
-            fromBlock: listenedOfferData.fromBlock,
-            toBlock: offerDetailsInJson.offeredBlockNumber, 
-            offers: [...listenedOfferData.offers, { offerEvent, offerDetailsInJson }]
+              fromBlock: listenedOfferData.fromBlock,
+              toBlock: offerDetailsInJson.offeredBlockNumber,
+              offers: [...listenedOfferData.offers, { offerEvent, offerDetailsInJson }]
             }
           );
           setTableData((prev) => {
@@ -321,18 +323,13 @@ const Exchange = (props: Props) => {
   // handleGenerateBitcoinWallet();
   const { mobileView } = useWindowDimensions();
 
-  return (
-    <MainLayout
-      title="Exchange"
-      description="  Lorem ipsum dolor sit amet consectetur adipisicing elit."
-    >
+  const AddOfferModal = () => {
+    return (
       <div className={styles.exchangeForm}>
-        <GradientBackgroundContainer
-          colorRight="#FEBD3863"
-          colorLeft="#FEBD3833"
-          bgImage="/images/Rectangle.svg"
+        <div
         >
           <div className={styles.exchangeFormContent}>
+            <div className={styles.font}>Adding offer</div>
             <SpanFullGridWidth>
               <ExchangeSwapGroup />
             </SpanFullGridWidth>
@@ -409,8 +406,16 @@ const Exchange = (props: Props) => {
               Confirm
             </Button>
           </div>
-        </GradientBackgroundContainer>
+        </div>
       </div>
+    )
+  }
+
+  return (
+    <MainLayout
+      title="Exchange"
+      description="  Lorem ipsum dolor sit amet consectetur adipisicing elit."
+    >
 
       <div className={styles.offersTable}>
         <GradientBackgroundContainer
@@ -422,11 +427,13 @@ const Exchange = (props: Props) => {
               <Table
                 tableCaption="All offers"
                 cols={exchangeTableCols}
-                data={tableData}
+                data={tableDummyData}
                 horizontalSpacing={"md"}
+                addOffer={addOffer}
+                OfferModal={AddOfferModal}
+                setOffer={setAddOffer}
                 verticalSpacing={"md"}
                 onRowClick={(data) => {
-                  console.log(data);
                   setRowData(data);
                 }}
               />
@@ -436,6 +443,9 @@ const Exchange = (props: Props) => {
                 tableCaption="All offers"
                 cols={exchangeMobileTableCols}
                 data={mobileTableData}
+                setOffer={setAddOffer}
+                OfferModal={AddOfferModal}
+                addOffer={addOffer}
                 verticalSpacing={"md"}
                 horizontalSpacing={"xs"}
                 onRowClick={(data) => setRowData(data)}

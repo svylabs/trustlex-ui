@@ -8,6 +8,9 @@ interface Props extends TableProps {
   cols: string[];
   data: (string | ReactNode)[][];
   onRowClick?: (data: (string | ReactNode)[]) => void;
+  setOffer?: any;
+  addOffer?: boolean;
+  OfferModal?: any
 }
 
 const Table = ({
@@ -16,6 +19,9 @@ const Table = ({
   cols,
   verticalSpacing = "md",
   onRowClick,
+  setOffer,
+  addOffer,
+  OfferModal,
   ...props
 }: Props) => {
   const tableContainerRef = React.useRef(null);
@@ -27,8 +33,18 @@ const Table = ({
       {tableCaption !== "" && (
         <div className={styles.heading}>
           <h2 className={styles.caption}>{tableCaption}</h2>
+          {!addOffer ?
+            <button onClick={() => setOffer(true)} >Add your offers</button> :
+            <button onClick={() => setOffer(false)} >Cancel</button>
+          }
         </div>
       )}
+      {addOffer &&
+        <>
+          <OfferModal />
+          <div className={styles.font1}>Existing offers</div>
+        </>
+      }
 
       <div className={styles.tableContainer} ref={tableContainerRef}>
         <MantineTable
@@ -50,9 +66,8 @@ const Table = ({
           <tbody className={styles.tbody}>
             {data.map((row, index) => (
               <tr
-                className={`${styles.tr} ${
-                  onRowClick !== undefined && styles.pointer
-                }`}
+                className={`${styles.tr} ${onRowClick !== undefined && styles.pointer
+                  }`}
                 key={index}
                 onClick={() => {
                   if (onRowClick !== undefined) onRowClick(row);

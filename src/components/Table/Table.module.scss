@@ -3,6 +3,7 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 2rem;
+
   .caption {
     font-family: "Inter", sans-serif;
     font-style: normal;
@@ -10,15 +11,33 @@
     font-size: 2.8rem;
     color: var(--white);
     flex: 1;
+
   }
+
+  button {
+    background-color: transparent;
+    padding: 12px 24px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 1px solid #FFD572;
+  }
+
   .actions {
     display: flex;
     gap: 1rem;
+
     .icon {
       font-size: 4rem;
       cursor: pointer;
     }
   }
+}
+
+.font1 {
+  color: white;
+  font-size: 20px;
+  font-weight: 500;
+  font-family: "Inter";
 }
 
 .cols {
@@ -29,12 +48,14 @@
   color: var(--white);
   opacity: 0.5;
 }
+
 .tbody {
   tr {
     td {
       border-top: none !important;
     }
   }
+
   .pointer {
     cursor: pointer;
   }
@@ -47,6 +68,7 @@
   font-size: 1.6rem !important;
   color: var(--white);
 }
+
 .tableContainer {
   width: 100%;
   overflow-x: scroll;

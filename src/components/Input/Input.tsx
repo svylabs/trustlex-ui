@@ -1,7 +1,7 @@
 import { TextInput, TextInputProps } from "@mantine/core";
 import styles from "./Input.module.scss";
 
-interface Props extends TextInputProps {}
+interface Props extends TextInputProps { }
 
 const Input = ({
   placeholder,
@@ -30,6 +30,7 @@ const Input = ({
       rightSectionWidth={100}
       onChange={onChange}
     />
+    // <input onChange={onChange} value={value}></input>
   );
 };
 

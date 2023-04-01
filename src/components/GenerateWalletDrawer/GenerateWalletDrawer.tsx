@@ -16,9 +16,10 @@ interface IProps {
   open: boolean;
   onClose: () => void;
   data: Wallet | null;
+  generateAddress: any;
 }
 
-const GenerateWalletDrawer = ({ open, onClose, data }: IProps) => {
+const GenerateWalletDrawer = ({ open, onClose, data, generateAddress }: IProps) => {
   const { mobileView, tabletView } = useWindowDimensions();
 
   const mobileContentRef = useRef(null);
@@ -39,7 +40,7 @@ const GenerateWalletDrawer = ({ open, onClose, data }: IProps) => {
             colorLeft={"#FEBD3893"}
             bgImage="/images/Rectangle.svg"
           >
-            <GenerateWalletContent onClose={onClose} data={data} />
+            <GenerateWalletContent onClose={onClose} data={data} generateAddress={generateAddress} />
           </GradientBackgroundContainer>
         </div>
       </div>
@@ -61,7 +62,7 @@ const GenerateWalletDrawer = ({ open, onClose, data }: IProps) => {
         colorLeft={"#FEBD3893"}
         bgImage="/images/Rectangle.svg"
       >
-        <GenerateWalletContent onClose={onClose} data={data} />
+        <GenerateWalletContent onClose={onClose} data={data} generateAddress={generateAddress} />
       </GradientBackgroundContainer>
     </Drawer>
   );
@@ -70,9 +71,11 @@ const GenerateWalletDrawer = ({ open, onClose, data }: IProps) => {
 const GenerateWalletContent = ({
   onClose,
   data,
+  generateAddress
 }: {
   onClose: () => void;
   data: Wallet | null;
+  generateAddress: any
 }) => {
   const { mobileView } = useWindowDimensions();
   const generateWalletRef = useRef(null);
@@ -84,6 +87,7 @@ const GenerateWalletContent = ({
     if (data === null || data.pubkeyHash === undefined) return;
     const address = generateTrustlexAddress(data.pubkeyHash, "10");
     setGeneratedAddress(address as string);
+    generateAddress(address);
   }, [data]);
 
   return (

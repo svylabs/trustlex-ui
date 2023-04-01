@@ -30,23 +30,23 @@ export default function App() {
     tokenData ? tokenData.toUpperCase() : "ETH"
   );
   const [listenedOfferData, setListenedOfferData] = useState<
-   IOffersResult
-  >({fromBlock: 0, toBlock: 0, offers: []});
+    IOffersResult
+  >({ fromBlock: 0, toBlock: 0, offers: [] });
 
   const userData = get("userInputData", true);
   const [userInputData, setUserInputData] = useState<IUserInputData>(
     userData
       ? userData
       : {
-          setLimit: true,
-          limit: "",
-          activeExchange: [
-            { currency: "btc", value: "" },
-            { currency: "eth", value: "" },
-            { currency: "sol", value: "" },
-            { currency: "doge", value: "" },
-          ],
-        }
+        setLimit: true,
+        limit: "",
+        activeExchange: [
+          { currency: "btc", value: "" },
+          { currency: "eth", value: "" },
+          { currency: "sol", value: "" },
+          { currency: "doge", value: "" },
+        ],
+      }
   );
 
   useEffect(() => {
@@ -65,21 +65,28 @@ export default function App() {
     );
   }, [userInputData.activeExchange]);
 
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
-  window.ethereum?.on("accountsChanged", function (accounts: any) {
-    setAccount(accounts[0]);
-    getBalance(accounts[0]).then((balance) => {
-      if (balance) {
-        setBalance(balance);
-      }
-    });
+  useEffect(() => {
+    const { ethereum } = window;
+    if (ethereum) {
+      const provider = new ethers.providers.Web3Provider(ethereum);
 
-    connect(provider, ContractMap[selectedToken].address).then((trustlex) => {
-      if (trustlex) {
-        setContract(trustlex as ethers.Contract);
-      }
-    });
-  });
+      (ethereum as any).on("accountsChanged", function (accounts: any) {
+        setAccount(accounts[0]);
+        getBalance(accounts[0]).then((balance) => {
+          if (balance) {
+            setBalance(balance);
+          }
+        });
+
+        connect(provider, ContractMap[selectedToken].address).then((trustlex) => {
+          if (trustlex) {
+            setContract(trustlex as ethers.Contract);
+          }
+        });
+      });
+    }
+
+  }, [])
 
   const swapChange = () => {
     setUserInputData((prev) => {
@@ -117,26 +124,30 @@ export default function App() {
   };
 
   useEffect(() => {
-    connect(provider, ContractMap[selectedToken].address).then(
-      async (trustlex) => {
-        if (trustlex) {
-          setContract(trustlex as ethers.Contract);
-          const offers = await listOffers(trustlex);
-          setListenedOfferData(offers);
-        }
-        findMetaMaskAccount().then((account) => {
-          if (account !== null) {
-            setAccount(account);
-            console.log("Account: ", account);
-            getBalance(account).then((balance) => {
-              if (balance) {
-                setBalance(balance);
-              }
-            });
+    const { ethereum } = window;
+    if (ethereum) {
+      const provider = new ethers.providers.Web3Provider(ethereum);
+      connect(provider, ContractMap[selectedToken].address).then(
+        async (trustlex) => {
+          if (trustlex) {
+            setContract(trustlex as ethers.Contract);
+            const offers = await listOffers(trustlex);
+            setListenedOfferData(offers);
           }
-        });
-      }
-    );
+          findMetaMaskAccount().then((account) => {
+            if (account !== null) {
+              setAccount(account);
+              console.log("Account: ", account);
+              getBalance(account).then((balance) => {
+                if (balance) {
+                  setBalance(balance);
+                }
+              });
+            }
+          });
+        }
+      );
+    }
     return () => {
       setAccount("");
       setBalance("");

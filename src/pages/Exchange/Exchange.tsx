@@ -85,6 +85,8 @@ const Exchange = (props: Props) => {
 
   const [rowData, setRowData] = useState<(string | ReactNode)[] | null>(null);
 
+  const [generateAddress, setGenerateAddress] = useState("");
+
   const [addOffer, setAddOffer] = useState(false);
 
   const context = React.useContext(AppContext);
@@ -151,6 +153,7 @@ const Exchange = (props: Props) => {
   };
 
   let data = getTableData(listenedOfferData.offers);
+
   const [generatedBitcoinData, setGeneratedBitcoinData] =
     useState<Wallet | null>(null);
   const [tableData, setTableData] = useState<(string | JSX.Element)[][]>(data);
@@ -320,6 +323,12 @@ const Exchange = (props: Props) => {
     setGeneratedBitcoinData(data);
   };
 
+  useEffect(() => {
+    setExchangeData((prev) => {
+      return { ...prev, address: generateAddress };
+    });
+  }, [generateAddress])
+
   // handleGenerateBitcoinWallet();
   const { mobileView } = useWindowDimensions();
 
@@ -338,10 +347,10 @@ const Exchange = (props: Props) => {
                 <InputWithSelect
                   options={data2}
                   type="number"
-                  value={userInputData.limit}
+                  value={`${Number(userInputData.activeExchange[0].value) / Number(userInputData.activeExchange[1].value)}`}
                   onChange={handleLimitChange}
                   placeholder={"Limit price BTC/ETC"}
-                  disabled={userInputData.setLimit ? false : true}
+                  disabled={true}
                 />
                 <div className={styles.temporary}></div>
 
@@ -371,8 +380,9 @@ const Exchange = (props: Props) => {
                     <Input
                       type="text"
                       label="Address to receive Bitcoin"
-                      placeholder="Type here"
+                      placeholder="Click Button ->"
                       value={exchangeData.address}
+                      disabled
                       onChange={handleAddressChange}
                     />
                   </div>
@@ -475,6 +485,7 @@ const Exchange = (props: Props) => {
           onClose={() => setGenerateWalletDrawerOpen(false)}
           open={generateWalletDrawerOpen}
           data={generatedBitcoinData}
+          generateAddress={setGenerateAddress}
         />
       </div>
     </MainLayout>

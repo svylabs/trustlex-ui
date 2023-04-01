@@ -20,10 +20,11 @@ import { QRCodeCanvas } from "qrcode.react";
 type Props = {
   isOpened: boolean;
   onClose: () => void;
-  data: (string | ReactNode)[] | null;
+  data: any;
 };
 
 const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
+  console.log(data);
   const { mobileView } = useWindowDimensions();
   const rootRef = useRef(null);
   const context = useContext(AppContext);
@@ -156,9 +157,9 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
             <Grid.Col span={11}>
               <Text component="h1" className={styles.title}>
                 <span className={styles.buy}>Buy:</span>
-                <CurrencyDisplay amount={10} type={CurrencyEnum.ETH} />
+                <CurrencyDisplay amount={data[1].props.children} type={CurrencyEnum.ETH} />
                 <span className={styles.for}>with</span>
-                <CurrencyDisplay amount={0.5} type={CurrencyEnum.BTC} />{" "}
+                <CurrencyDisplay amount={data[2].props.children} type={CurrencyEnum.BTC} />{" "}
               </Text>
             </Grid.Col>
           </Grid>
@@ -175,9 +176,8 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                 <div className={styles.stepContent}>
                   <div className={styles.spacing} />
                   <div
-                    className={`${styles.stepItem} ${
-                      checked === "allow" && styles.activeStepItem
-                    }`}
+                    className={`${styles.stepItem} ${checked === "allow" && styles.activeStepItem
+                      }`}
                     onClick={() => setChecked("allow")}
                   >
                     <div className={styles.checkboxContainer}>
@@ -194,9 +194,8 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                   </div>
 
                   <div
-                    className={`${styles.stepItem} ${
-                      checked !== "allow" && styles.activeStepItem
-                    }`}
+                    className={`${styles.stepItem} ${checked !== "allow" && styles.activeStepItem
+                      }`}
                     onClick={() => setChecked("notAllow")}
                   >
                     <div className={styles.checkboxContainer}>
@@ -282,14 +281,14 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                             width: "100%",
                             height: "100%",
                           }}
-                          // bgColor="#7C7C7C00"
-                          // fgColor="#7C7C7C"
+                        // bgColor="#7C7C7C00"
+                        // fgColor="#7C7C7C"
                         />
                       </div>
                     }
                     {/* <img src="/images/qr-code.png" className={styles.qrImage} /> */}
                     <div className={styles.sendTo}>
-                      <span>Send 0.5 Bitcoins to:</span>
+                      <span>Send {data[2].props.children} Bitcoins to:</span>
                       {mobileView ? (
                         <span>1BoatSLRHtKNngkdXEeobR76b53</span>
                       ) : (
@@ -343,9 +342,8 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                   </div>
                   <div className={styles.spacing} />
                   <div
-                    className={`${styles.stepItem} ${styles.proofCheckbox} ${
-                      verified && styles.activeStepItem
-                    }`}
+                    className={`${styles.stepItem} ${styles.proofCheckbox} ${verified && styles.activeStepItem
+                      }`}
                     onClick={() => setVerified(!verified)}
                   >
                     <div className={styles.checkboxContainer}>

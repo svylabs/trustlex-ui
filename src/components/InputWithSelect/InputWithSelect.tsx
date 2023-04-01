@@ -17,7 +17,7 @@ type Props = {
   label?: string;
   placeholder?: string;
   options: ISelectOption[];
-  value?: number | string;
+  value?: number | string | any;
   type?: "number" | "text";
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   disabled?: boolean;

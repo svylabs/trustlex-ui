@@ -3,9 +3,9 @@
     {
       "inputs": [
         {
-          "internalType": "bytes20",
+          "internalType": "address",
           "name": "_tokenContract",
-          "type": "bytes20"
+          "type": "address"
         }
       ],
       "stateMutability": "nonpayable",
@@ -205,12 +205,143 @@
     },
     {
       "inputs": [],
-      "name": "tokenContract",
+      "name": "orderBookCompactMetadata",
       "outputs": [
         {
-          "internalType": "address",
+          "internalType": "uint256",
           "name": "",
-          "type": "address"
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "deconstructMetadata",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "tokenContract",
+              "type": "address"
+            },
+            {
+              "internalType": "uint32",
+              "name": "totalOrdersInOrderBook",
+              "type": "uint32"
+            }
+          ],
+          "internalType": "struct TrustlexPerAssetOrderBook.CompactMetadata",
+          "name": "result",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getTotalOrders",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "fromOfferId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getOffers",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "offerId",
+              "type": "uint256"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "offerQuantity",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "address",
+                  "name": "offeredBy",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint32",
+                  "name": "offerValidTill",
+                  "type": "uint32"
+                },
+                {
+                  "internalType": "uint32",
+                  "name": "orderedTime",
+                  "type": "uint32"
+                },
+                {
+                  "internalType": "uint32",
+                  "name": "offeredBlockNumber",
+                  "type": "uint32"
+                },
+                {
+                  "internalType": "bytes20",
+                  "name": "bitcoinAddress",
+                  "type": "bytes20"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "satoshisToReceive",
+                  "type": "uint64"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "satoshisReceived",
+                  "type": "uint64"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "satoshisReserved",
+                  "type": "uint64"
+                },
+                {
+                  "internalType": "uint8",
+                  "name": "collateralPer3Hours",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint256[]",
+                  "name": "fulfillmentRequests",
+                  "type": "uint256[]"
+                }
+              ],
+              "internalType": "struct TrustlexPerAssetOrderBook.Offer",
+              "name": "offer",
+              "type": "tuple"
+            }
+          ],
+          "internalType": "struct TrustlexPerAssetOrderBook.ResultOffer[50]",
+          "name": "result",
+          "type": "tuple[50]"
+        },
+        {
+          "internalType": "uint256",
+          "name": "total",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",

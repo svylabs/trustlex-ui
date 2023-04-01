@@ -47,27 +47,27 @@ import MainLayout from "~/components/MainLayout/MainLayout";
 import { MAX_BLOCKS_TO_QUERY, MAX_ITERATIONS } from "~/Context/Constants";
 type Props = {};
 
-const tableDummyData: string[][] = new Array(5).fill([
-  1211,
-  <>
-    10 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />{" "}
-    {CurrencyEnum.ETH}
-  </>,
-  <>
-    0.078 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
-    {CurrencyEnum.BTC}
-  </>,
-  <>
-    0.078 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
-    {CurrencyEnum.BTC}
-  </>,
-  <>
-    1 out of 10 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />{" "}
-    {CurrencyEnum.ETH}
-  </>,
-  "1h",
-  "09 Jan, 13:45pm",
-]);
+// const tableDummyData: string[][] = new Array(5).fill([
+//   1211,
+//   <>
+//     10 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />{" "}
+//     {CurrencyEnum.ETH}
+//   </>,
+//   <>
+//     0.078 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
+//     {CurrencyEnum.BTC}
+//   </>,
+//   <>
+//     0.078 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
+//     {CurrencyEnum.BTC}
+//   </>,
+//   <>
+//     1 out of 10 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />{" "}
+//     {CurrencyEnum.ETH}
+//   </>,
+//   "1h",
+//   "09 Jan, 13:45pm",
+// ]);
 
 const mobileTableDummyData: string[][] = new Array(5).fill([
   1211,
@@ -427,7 +427,7 @@ const Exchange = (props: Props) => {
               <Table
                 tableCaption="All offers"
                 cols={exchangeTableCols}
-                data={tableDummyData}
+                data={tableData}
                 horizontalSpacing={"md"}
                 addOffer={addOffer}
                 OfferModal={AddOfferModal}

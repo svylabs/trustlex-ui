@@ -24,7 +24,6 @@ type Props = {
 };
 
 const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
-  console.log(data);
   const { mobileView } = useWindowDimensions();
   const rootRef = useRef(null);
   const context = useContext(AppContext);
@@ -63,6 +62,11 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
   const [activeStep, setActiveStep] = useState(1);
   const [verified, setVerified] = useState(false);
   const [confirmed, setConfirmed] = useState("");
+  const [initatedata, setInitatedata]: any = useState([]);
+
+  useEffect(() => {
+    console.log(initatedata.to);
+  }, [initatedata])
 
   const handleConfirmClick = () => {
     setConfirmed("loading");
@@ -94,7 +98,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
       foundOffer.offerEvent.to,
       _fulfillment
     );
-    console.log(data);
+    setInitatedata(data);
   };
 
   // useEffect(() => {
@@ -276,7 +280,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                         {/* Can use JSON.stringify(value) to make string of any values like arrays */}
                         {/* Can use JSON.parse(value) to parse the value in arrays */}
                         <QRCodeCanvas
-                          value={"Random value"}
+                          value={initatedata ? initatedata.to : "Random value"}
                           style={{
                             width: "100%",
                             height: "100%",
@@ -290,9 +294,9 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                     <div className={styles.sendTo}>
                       <span>Send {data[2].props.children} Bitcoins to:</span>
                       {mobileView ? (
-                        <span>1BoatSLRHtKNngkdXEeobR76b53</span>
+                        <span>{initatedata ? initatedata.to : ""}</span>
                       ) : (
-                        <span>1BoatSLRHtKNngkdXEeobR76b53LETtpyT</span>
+                        <span>{initatedata ? initatedata.to : ""}</span>
                       )}
                     </div>
                   </div>

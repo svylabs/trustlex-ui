@@ -133,21 +133,21 @@ const Exchange = (props: Props) => {
           {CurrencyEnum.ETH}
         </>,
         <>
-          {SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)}{" "}
+          {Number(SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)).toFixed(4)}{" "}
           <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
           {CurrencyEnum.BTC}
         </>,
         <>
-          0.078 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
+          {(Number(SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)) / Number(ethers.utils.formatEther(offer.offerDetailsInJson.offerQuantity))).toFixed(4)} <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
           {CurrencyEnum.BTC}
         </>,
         <>
-          1 out of 10
+          {Number(SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)) - 2 * Number(offer.offerDetailsInJson.satoshisReserved)}
           <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />{" "}
           {CurrencyEnum.ETH}
         </>,
         NumberToTime(offer.offerDetailsInJson.offerValidTill),
-        "09 Jan, 13:45pm",
+        offer.offerDetailsInJson.orderedTime,
       ];
     });
   };
@@ -200,6 +200,8 @@ const Exchange = (props: Props) => {
       bitcoinAddress: exchangeData.address,
       offerValidTill: TimeToNumber(exchangeData.valid),
     };
+
+    console.log(exchangeData.address);
     const addedOffer = await AddOfferWithEth(context.contract, data);
     if (addedOffer.hash !== "") {
       setHashedOfferData(addedOffer.hash);
@@ -356,32 +358,32 @@ const Exchange = (props: Props) => {
 
                 <SpanFullGridWidth>
                   <div className={styles.addressBox}>
-                    {exchangeData.address === "" && (
-                      <div
-                        className={styles.generateAddressButton}
-                        onClick={() => {
-                          handleGenerateBitcoinWallet();
-                          setGenerateWalletDrawerOpen(true);
+
+                    <div
+                      className={styles.generateAddressButton}
+                      onClick={() => {
+                        handleGenerateBitcoinWallet();
+                        setGenerateWalletDrawerOpen(true);
+                      }}
+                    >
+                      <Button
+                        variant={VariantsEnum.outlinePrimary}
+                        radius={10}
+                        style={{
+                          backgroundColor: "transparent",
                         }}
+                        fullWidth={mobileView ? true : false}
                       >
-                        <Button
-                          variant={VariantsEnum.outlinePrimary}
-                          radius={10}
-                          style={{
-                            backgroundColor: "transparent",
-                          }}
-                          fullWidth={mobileView ? true : false}
-                        >
-                          Generate in browser
-                        </Button>
-                      </div>
-                    )}
+                        Generate in browser
+                      </Button>
+                    </div>
 
                     <Input
                       type="text"
                       label="Address to receive Bitcoin"
                       placeholder="Click Button ->"
                       value={exchangeData.address}
+                      style={{ width: "78%" }}
                       disabled
                       onChange={handleAddressChange}
                     />

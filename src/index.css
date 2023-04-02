@@ -54,6 +54,7 @@ html {
 *:-webkit-scrollbar-thumb:hover {
   background-color: #3f3f3f;
 }
+
 .autoSccroll::-webkit-scrollbar,
 .autoSccroll::-webkit-scrollbar-track,
 .autoSccroll::-webkit-scrollbar-thumb,
@@ -66,4 +67,8 @@ html {
 .showScrollbar::-webkit-scrollbar-thumb,
 .showScrollbar::-webkit-scrollbar-thumb:hover {
   visibility: visible !important;
+}
+
+._input_e59a9_1:disabled {
+  font-size: 30px !important;
 }

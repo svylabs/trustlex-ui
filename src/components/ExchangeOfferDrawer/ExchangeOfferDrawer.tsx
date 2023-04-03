@@ -100,10 +100,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
     console.log(lll);
     let toAddress = Buffer.from(foundOffer.offerDetailsInJson.bitcoinAddress.substring(2), "hex");
     let hashAdress = generateTrustlexAddress(toAddress, "10");
-    console.log(hashAdress);
-    const networkVersion = 0x00;
-    const bitcoinAddress = address.toBase58Check(toAddress, networkVersion);
-    setTo(bitcoinAddress);
+    setTo(`${hashAdress}`);
     setInitatedata(data);
   };
 

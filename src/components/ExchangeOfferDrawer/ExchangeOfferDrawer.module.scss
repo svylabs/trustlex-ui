@@ -18,6 +18,7 @@
       font-weight: 700;
       font-size: 22px;
     }
+
     .title {
       font-weight: 600;
       font-size: 16px;
@@ -40,11 +41,13 @@
   .stepsConatiner {
     display: flex;
     flex-direction: column;
+
     .step {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
       justify-content: flex-start;
+
       .stepTitle {
         display: flex;
         align-items: center;
@@ -58,28 +61,27 @@
           left: -2.7rem;
           top: -0.5rem;
         }
+
         .stepCount {
           font-weight: 700;
           font-size: 16px;
           padding-left: 3rem;
         }
       }
+
       .stepsContentsContainer {
         width: 100%;
         padding-left: 1rem;
+
         .stepContent {
           // border-left: 2px dashed #56596a;
-          background: linear-gradient(
-              to right,
+          background: linear-gradient(to right,
               rgba(255, 166, 0, 0) 50%,
-              rgba(255, 255, 255, 0) 0%
-            ),
+              rgba(255, 255, 255, 0) 0%),
             linear-gradient(rgba(0, 0, 255, 0) 50%, rgba(255, 255, 255, 0) 0%),
-            linear-gradient(
-              to right,
+            linear-gradient(to right,
               rgba(0, 128, 0, 0) 50%,
-              rgba(255, 255, 255, 0) 0%
-            ),
+              rgba(255, 255, 255, 0) 0%),
             linear-gradient(#56596a 50%, rgba(255, 255, 255, 0) 0%);
           background-position: top, right, bottom, left;
           background-repeat: repeat-x, repeat-y;
@@ -108,6 +110,7 @@
               max-width: 1.5rem;
               max-height: 1.5rem;
               position: relative;
+
               // line-height: 18px;
               .checkbox {
                 position: absolute;
@@ -130,18 +133,20 @@
               }
             }
 
-            > span {
+            >span {
               font-weight: 500;
               font-size: 14px;
               opacity: 0.5;
               // line-height: 15px;
             }
           }
+
           .activeStepItem {
             .checkboxContainer {
               border-color: #febd38;
             }
-            > span {
+
+            >span {
               opacity: 1;
             }
           }
@@ -157,7 +162,7 @@
               display: flex;
               flex-direction: column;
 
-              > span {
+              >span {
                 font-weight: 500;
                 font-size: 16px;
               }
@@ -169,34 +174,41 @@
             display: flex;
             flex-direction: column;
             font-weight: 500;
+
             .colletaralText:nth-child(1) {
               font-size: 14px;
               padding: 0 0 0.4rem 0;
             }
+
             .colletaralText:nth-child(2) {
               font-size: 12px;
               opacity: 0.5;
             }
           }
+
           .submitProof {
             display: flex;
             flex-direction: column;
             // margin: 1rem 0 0 0;
             gap: 0.5rem;
-            > h3 {
+
+            >h3 {
               font-weight: 500;
               font-size: 14px;
             }
-            > p {
+
+            >p {
               font-weight: 500;
               font-size: 12px;
               opacity: 0.5;
             }
           }
+
           .proofCheckbox {
             width: fit-content;
             // margin:2rem 0;
           }
+
           .actionButton {
             display: flex;
             align-items: center;
@@ -209,6 +221,7 @@
             }
           }
         }
+
         .lastContent {
           padding-bottom: 0;
         }
@@ -219,6 +232,7 @@
   .cancelContainer {
     display: flex;
     align-items: center;
+
     .cancel {
       font-weight: 400;
       font-size: 16px;
@@ -235,6 +249,7 @@
   font-size: 2.5rem;
   color: #616575;
 }
+
 .buttonContainer {
   display: flex;
   gap: 1rem;
@@ -246,12 +261,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   .transactionLink {
     display: flex;
     flex-direction: column;
     position: relative;
 
-    > h6 {
+    >h6 {
       font-weight: 600;
       font-size: 10px;
       opacity: 0.5;
@@ -266,23 +282,23 @@
       align-items: center;
       gap: 1rem;
       border-radius: 8px;
-      > span {
+
+      >span {
         font-weight: 700;
         font-size: 12px;
         flex: 1;
         text-overflow: ellipsis;
       }
+
       .iconBox {
         height: 100%;
         width: 2.5rem;
         display: flex;
         justify-content: center;
         align-items: center;
-        background: linear-gradient(
-          180deg,
-          rgba(255, 213, 114, 0.1) 0%,
-          rgba(254, 189, 56, 0.1) 100%
-        );
+        background: linear-gradient(180deg,
+            rgba(255, 213, 114, 0.1) 0%,
+            rgba(254, 189, 56, 0.1) 100%);
         cursor: pointer;
         border-radius: 8px;
 
@@ -300,11 +316,9 @@
   font-weight: 500;
   font-size: 12px;
 
-  background: linear-gradient(
-      0deg,
+  background: linear-gradient(0deg,
       rgba(255, 255, 255, 0.2),
-      rgba(255, 255, 255, 0.2)
-    ),
+      rgba(255, 255, 255, 0.2)),
     linear-gradient(180deg, #ffd572 0%, #febd38 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -314,21 +328,33 @@
   text-shadow: 0px 10px 20px rgba(251, 204, 100, 0.25);
 }
 
+.input {
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3137254902);
+  background-color: transparent;
+  text-align: center;
+  width: 30px;
+  outline: none;
+}
+
 .spacing {
   width: 100%;
   padding: 0.5rem 0;
 }
+
 @media screen and (max-width: 768px) {
   .root {
     .stepsConatiner {
       .step {
         .stepTitle {
           width: 100%;
+
           .svg {
             left: -3.4rem;
             top: -0.7rem;
           }
         }
+
         .stepsContentsContainer {
           .stepContent {
             .sendToContainer {
@@ -338,7 +364,7 @@
               // }
 
               .sendTo {
-                > span {
+                >span {
                   font-weight: 400;
                   font-size: 14px;
                 }
@@ -356,11 +382,14 @@
     flex-direction: column;
     gap: 3rem;
     align-items: flex-start;
+
     .transactionLink {
       width: 100%;
-      > h6 {
+
+      >h6 {
         width: 100%;
       }
+
       .linkBox {
         width: 100%;
         justify-content: space-between;

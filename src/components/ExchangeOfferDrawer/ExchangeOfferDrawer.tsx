@@ -18,6 +18,8 @@ import { InitializeFullfillment } from "~/service/AppService";
 import { QRCodeCanvas } from "qrcode.react";
 import { address } from "bitcoinjs-lib";
 import { generateTrustlexAddress } from "~/utils/BitcoinUtils";
+import ImageIcon from "../ImageIcon/ImageIcon";
+import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";
 
 type Props = {
   isOpened: boolean;
@@ -29,6 +31,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
   const { mobileView } = useWindowDimensions();
   const rootRef = useRef(null);
   const context = useContext(AppContext);
+  const [ethValue, setEthValue] = useState(0);
 
   useEffect(() => {
     if (data === null) {
@@ -164,9 +167,10 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
             <Grid.Col span={11}>
               <Text component="h1" className={styles.title}>
                 <span className={styles.buy}>Buy:</span>
-                <CurrencyDisplay amount={data[1].props.children[0]} type={CurrencyEnum.ETH} />
+                <input value={ethValue} onChange={(e) => setEthValue(Number(e.target.value))} className={styles.input} />
+                <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />
                 <span className={styles.for}>with</span>
-                <CurrencyDisplay amount={data[2].props.children[0]} type={CurrencyEnum.BTC} />{" "}
+                <CurrencyDisplay amount={Number((ethValue / data[1].props.children[0] * data[2].props.children[0]).toFixed(3))} type={CurrencyEnum.BTC} />{" "}
               </Text>
             </Grid.Col>
           </Grid>
@@ -295,7 +299,9 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                     }
                     {/* <img src="/images/qr-code.png" className={styles.qrImage} /> */}
                     <div className={styles.sendTo}>
-                      <span>Send {data[2].props.children} Bitcoins to:</span>
+                      <span>Send &nbsp;
+                        <CurrencyDisplay amount={Number((ethValue / data[1].props.children[0] * data[2].props.children[0]).toFixed(3))} type={CurrencyEnum.BTC} />{" "}
+                        Bitcoins to:</span>
                       {mobileView ? (
                         <span>{to}</span>
                       ) : (

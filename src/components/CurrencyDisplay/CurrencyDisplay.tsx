@@ -11,8 +11,11 @@ type Props = {
 const CurrencyDisplay = ({ amount, type }: Props) => {
   return (
     <span className={styles.root}>
-      {amount} <ImageIcon image={getIconFromCurrencyType(type)} />
-      {type}
+      {amount}
+      <div>
+        <ImageIcon image={getIconFromCurrencyType(type)} />
+        {type}
+      </div>
     </span>
   );
 };

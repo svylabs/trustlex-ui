@@ -137,7 +137,6 @@ export default function App() {
           findMetaMaskAccount().then((account) => {
             if (account !== null) {
               setAccount(account);
-              console.log("Account: ", account);
               getBalance(account).then((balance) => {
                 if (balance) {
                   setBalance(balance);

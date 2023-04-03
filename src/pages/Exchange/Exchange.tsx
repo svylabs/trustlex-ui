@@ -1,4 +1,5 @@
 import { Center } from "@mantine/core";
+import { Icon } from "@iconify/react";
 import React, { ReactNode, useEffect, useState } from "react";
 import ActionButton from "~/components/ActionButton/ActionButton";
 import Button from "~/components/Button/Button";
@@ -45,6 +46,7 @@ import GenerateWalletDrawer from "~/components/GenerateWalletDrawer/GenerateWall
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 import MainLayout from "~/components/MainLayout/MainLayout";
 import { MAX_BLOCKS_TO_QUERY, MAX_ITERATIONS } from "~/Context/Constants";
+import Loading from "~/components/Loading/Loading";
 type Props = {};
 
 // const tableDummyData: string[][] = new Array(5).fill([
@@ -86,6 +88,8 @@ const Exchange = (props: Props) => {
   const [rowData, setRowData] = useState<(string | ReactNode)[] | null>(null);
 
   const [generateAddress, setGenerateAddress] = useState("");
+
+  const [confirm, setConfirm] = useState("none");
 
   const [addOffer, setAddOffer] = useState(false);
 
@@ -193,18 +197,27 @@ const Exchange = (props: Props) => {
 
   const [hashedOfferData, setHashedOfferData] = useState("");
   const handleOfferConfirm = async () => {
-    console.log("Offer confirmed");
 
-    const data = {
-      satoshis: BtcToSatoshiConverter(userInputData.activeExchange[0].value),
-      bitcoinAddress: exchangeData.address,
-      offerValidTill: TimeToNumber(exchangeData.valid),
-    };
+    setConfirm("loading");
+    try {
+      console.log(generatedBitcoinData?.pubkeyHash.toString("hex"));
+      const data = {
+        satoshis: BtcToSatoshiConverter(userInputData.activeExchange[0].value),
+        bitcoinAddress: generatedBitcoinData?.pubkeyHash.toString("hex"),
+        offerValidTill: TimeToNumber(exchangeData.valid),
+      };
 
-    console.log(exchangeData.address);
-    const addedOffer = await AddOfferWithEth(context.contract, data);
-    if (addedOffer.hash !== "") {
-      setHashedOfferData(addedOffer.hash);
+      const addedOffer = await AddOfferWithEth(context.contract, data);
+      if (addedOffer.hash !== "") {
+        setHashedOfferData(addedOffer.hash);
+        setConfirm("confirmed");
+        setTimeout(() => {
+          setConfirm("none");
+        }, 3000)
+      }
+    } catch {
+      setConfirm("none");
+
     }
   };
 
@@ -320,8 +333,6 @@ const Exchange = (props: Props) => {
 
   const handleGenerateBitcoinWallet = async () => {
     const data = generateBitcoinWallet();
-    console.log(data);
-    console.log(generateTrustlexAddress(data.pubkeyHash, "10"));
     setGeneratedBitcoinData(data);
   };
 
@@ -333,95 +344,6 @@ const Exchange = (props: Props) => {
 
   // handleGenerateBitcoinWallet();
   const { mobileView } = useWindowDimensions();
-
-  const AddOfferModal = () => {
-    return (
-      <div className={styles.exchangeForm}>
-        <div
-        >
-          <div className={styles.exchangeFormContent}>
-            <div className={styles.font}>Adding offer</div>
-            <SpanFullGridWidth>
-              <ExchangeSwapGroup />
-            </SpanFullGridWidth>
-            {userInputData.activeExchange[0].currency === "btc" && (
-              <>
-                <InputWithSelect
-                  options={data2}
-                  type="number"
-                  value={`${Number(userInputData.activeExchange[0].value) / Number(userInputData.activeExchange[1].value)}`}
-                  onChange={handleLimitChange}
-                  placeholder={"Limit price BTC/ETC"}
-                  disabled={true}
-                />
-                <div className={styles.temporary}></div>
-
-                <SpanFullGridWidth>
-                  <div className={styles.addressBox}>
-
-                    <div
-                      className={styles.generateAddressButton}
-                      onClick={() => {
-                        handleGenerateBitcoinWallet();
-                        setGenerateWalletDrawerOpen(true);
-                      }}
-                    >
-                      <Button
-                        variant={VariantsEnum.outlinePrimary}
-                        radius={10}
-                        style={{
-                          backgroundColor: "transparent",
-                        }}
-                        fullWidth={mobileView ? true : false}
-                      >
-                        Generate in browser
-                      </Button>
-                    </div>
-
-                    <Input
-                      type="text"
-                      label="Address to receive Bitcoin"
-                      placeholder="Click Button ->"
-                      value={exchangeData.address}
-                      style={{ width: "78%" }}
-                      disabled
-                      onChange={handleAddressChange}
-                    />
-                  </div>
-                </SpanFullGridWidth>
-
-                <Select
-                  onChange={handleOfferChange}
-                  label="Offer valid for"
-                  data={offerValidity}
-                  value={exchangeData.valid}
-                />
-                <div className={styles.temporary}></div>
-                <Select
-                  label={
-                    <span className={styles.collateralLabel}>
-                      <ImageIcon image="/icons/info.svg" /> Minimum Collateral{" "}
-                    </span>
-                  }
-                  onChange={handleCollateralChange}
-                  value={exchangeData.collateral}
-                  data={minCollateral}
-                />
-              </>
-            )}
-            <Button
-              variant={VariantsEnum.primary}
-              radius={10}
-              fullWidth
-              onClick={handleOfferConfirm}
-            >
-              Confirm
-            </Button>
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <MainLayout
@@ -435,6 +357,123 @@ const Exchange = (props: Props) => {
           colorLeft="#FEBD3833"
         >
           <div className={styles.innerWrapper}>
+            {addOffer &&
+              <div className={styles.exchangeForm}>
+                <div
+                >
+                  <div className={styles.heading}>
+                    <div className={styles.caption}>All Offers</div>
+                    <button onClick={() => setAddOffer(false)} >Cancel</button>
+                  </div>
+                  <div className={styles.exchangeFormContent}>
+                    <div className={styles.font}>Adding offer</div>
+                    <SpanFullGridWidth>
+                      <ExchangeSwapGroup />
+                    </SpanFullGridWidth>
+                    {userInputData.activeExchange[0].currency === "btc" && (
+                      <>
+                        <InputWithSelect
+                          options={data2}
+                          type="number"
+                          value={`${Number(userInputData.activeExchange[0].value) / Number(userInputData.activeExchange[1].value)}`}
+                          onChange={handleLimitChange}
+                          placeholder={"Limit price BTC/ETC"}
+                          disabled={true}
+                        />
+                        <div className={styles.temporary}></div>
+
+                        <SpanFullGridWidth>
+                          <div className={styles.addressBox}>
+
+                            <div
+                              className={styles.generateAddressButton}
+                              onClick={() => {
+                                handleGenerateBitcoinWallet();
+                                setGenerateWalletDrawerOpen(true);
+                              }}
+                            >
+                              <Button
+                                variant={VariantsEnum.outlinePrimary}
+                                radius={10}
+                                style={{
+                                  backgroundColor: "transparent",
+                                }}
+                                fullWidth={mobileView ? true : false}
+                              >
+                                Generate in browser
+                              </Button>
+                            </div>
+
+                            <Input
+                              type="text"
+                              label="Address to receive Bitcoin"
+                              placeholder="Click Button ->"
+                              value={exchangeData.address}
+                              style={{ width: "78%" }}
+                              disabled
+                              onChange={handleAddressChange}
+                            />
+                          </div>
+                        </SpanFullGridWidth>
+
+                        <Select
+                          onChange={handleOfferChange}
+                          label="Offer valid for"
+                          data={offerValidity}
+                          value={exchangeData.valid}
+                        />
+                        <div className={styles.temporary}></div>
+                        <Select
+                          label={
+                            <span className={styles.collateralLabel}>
+                              <ImageIcon image="/icons/info.svg" /> Minimum Collateral{" "}
+                            </span>
+                          }
+                          onChange={handleCollateralChange}
+                          value={exchangeData.collateral}
+                          data={minCollateral}
+                        />
+                      </>
+                    )}
+                    {confirm !== "confirmed" ? (
+                      <Button
+                        radius={10}
+                        fullWidth
+                        style={{ height: "4.5rem", }}
+                        variant={
+                          confirm === "loading"
+                            ? VariantsEnum.outline
+                            : VariantsEnum.primary
+                        }
+                        loading={confirm === "loading" ? true : false}
+                        onClick={handleOfferConfirm}
+                      >
+                        Confirm
+                      </Button>
+                    ) : (
+                      <div className={styles.confirmed}>
+                        <Button
+                          variant={VariantsEnum.outline}
+                          radius={10}
+                          style={{
+                            borderColor: "#53C07F",
+                            background: "unset",
+                            color: "#53C07F",
+                          }}
+                          fullWidth
+                          leftIcon={
+                            <Icon icon={"charm:circle-tick"} color="#53C07F" />
+                          }
+                        >
+                          Confirmed
+                        </Button>
+                      </div>
+                    )}
+
+                  </div>
+                </div>
+              </div>
+            }
             <div className={styles.tableInner}>
               <Table
                 tableCaption="All offers"
@@ -442,7 +481,7 @@ const Exchange = (props: Props) => {
                 data={tableData}
                 horizontalSpacing={"md"}
                 addOffer={addOffer}
-                OfferModal={AddOfferModal}
+                // OfferModal={AddOfferModal}
                 setOffer={setAddOffer}
                 verticalSpacing={"md"}
                 onRowClick={(data) => {
@@ -456,7 +495,7 @@ const Exchange = (props: Props) => {
                 cols={exchangeMobileTableCols}
                 data={mobileTableData}
                 setOffer={setAddOffer}
-                OfferModal={AddOfferModal}
+                // OfferModal={AddOfferModal}
                 addOffer={addOffer}
                 verticalSpacing={"md"}
                 horizontalSpacing={"xs"}

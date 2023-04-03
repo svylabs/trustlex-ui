@@ -32,19 +32,22 @@ const Table = ({
     <div className={styles.root}>
       {tableCaption !== "" && (
         <div className={styles.heading}>
-          <h2 className={styles.caption}>{tableCaption}</h2>
           {!addOffer ?
-            <button onClick={() => setOffer(true)} >Add your offers</button> :
-            <button onClick={() => setOffer(false)} >Cancel</button>
+            <>
+              <h2 className={styles.caption}>{tableCaption}</h2>
+              <button onClick={() => setOffer(true)} >Add your offers</button>
+
+            </> :
+            <div className={styles.font1}>Existing offers</div>
           }
         </div>
       )}
-      {addOffer &&
+      {/* {addOffer &&
         <>
           <OfferModal />
           <div className={styles.font1}>Existing offers</div>
         </>
-      }
+      } */}
 
       <div className={styles.tableContainer} ref={tableContainerRef}>
         <MantineTable

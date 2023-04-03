@@ -29,7 +29,6 @@ const GenerateWalletDrawer = ({ open, onClose, data, generateAddress }: IProps) 
   });
 
   if (!open) return null;
-  console.log("data", data);
   // if (!data) return onClose();
   return mobileView ? (
     open ? (

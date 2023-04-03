@@ -24,6 +24,13 @@
   }
 }
 
+.confirmed {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .mantine-Input-disabled {
   background: transparent !important;
 }
@@ -32,6 +39,41 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+
+  .caption {
+    font-family: "Inter", sans-serif;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 2.8rem;
+    color: var(--white);
+    flex: 1;
+
+  }
+
+  button {
+    background-color: transparent;
+    padding: 12px 24px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 1px solid #FFD572;
+  }
+
+  .actions {
+    display: flex;
+    gap: 1rem;
+
+    .icon {
+      font-size: 4rem;
+      cursor: pointer;
+    }
+  }
 }
 
 .addressBox {

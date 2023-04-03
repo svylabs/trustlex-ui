@@ -16,6 +16,8 @@ import { AppContext } from "~/Context/AppContext";
 import { IFullfillmentEvent } from "~/interfaces/IOfferdata";
 import { InitializeFullfillment } from "~/service/AppService";
 import { QRCodeCanvas } from "qrcode.react";
+import { address } from "bitcoinjs-lib";
+import { generateTrustlexAddress } from "~/utils/BitcoinUtils";
 
 type Props = {
   isOpened: boolean;
@@ -58,15 +60,13 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
     //   setIsInitating("initiated");
     // }, 1000 * 120);
   };
+
   const [checked, setChecked] = useState("allow");
   const [activeStep, setActiveStep] = useState(1);
   const [verified, setVerified] = useState(false);
   const [confirmed, setConfirmed] = useState("");
   const [initatedata, setInitatedata]: any = useState([]);
-
-  useEffect(() => {
-    console.log(initatedata.to);
-  }, [initatedata])
+  const [to, setTo] = useState("");
 
   const handleConfirmClick = () => {
     setConfirmed("loading");
@@ -89,15 +89,21 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
       fulfilledTime: 10,
       collateralAddedBy: foundOffer.offerEvent.from,
     };
-    console.log(_fulfillment);
 
-    console.log("Initalizing fullfillment");
-
+    console.log(foundOffer, _fulfillment);
     const data = await InitializeFullfillment(
       context.contract,
       foundOffer.offerEvent.to,
       _fulfillment
     );
+    var lll = await data.wait();
+    console.log(lll);
+    let toAddress = Buffer.from(foundOffer.offerDetailsInJson.bitcoinAddress.substring(2), "hex");
+    let hashAdress = generateTrustlexAddress(toAddress, "10");
+    console.log(hashAdress);
+    const networkVersion = 0x00;
+    const bitcoinAddress = address.toBase58Check(toAddress, networkVersion);
+    setTo(bitcoinAddress);
     setInitatedata(data);
   };
 
@@ -161,9 +167,9 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
             <Grid.Col span={11}>
               <Text component="h1" className={styles.title}>
                 <span className={styles.buy}>Buy:</span>
-                <CurrencyDisplay amount={data[1].props.children} type={CurrencyEnum.ETH} />
+                <CurrencyDisplay amount={data[1].props.children[0]} type={CurrencyEnum.ETH} />
                 <span className={styles.for}>with</span>
-                <CurrencyDisplay amount={data[2].props.children} type={CurrencyEnum.BTC} />{" "}
+                <CurrencyDisplay amount={data[2].props.children[0]} type={CurrencyEnum.BTC} />{" "}
               </Text>
             </Grid.Col>
           </Grid>
@@ -294,9 +300,9 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                     <div className={styles.sendTo}>
                       <span>Send {data[2].props.children} Bitcoins to:</span>
                       {mobileView ? (
-                        <span>{initatedata ? initatedata.to : ""}</span>
+                        <span>{to}</span>
                       ) : (
-                        <span>{initatedata ? initatedata.to : ""}</span>
+                        <span>{to}</span>
                       )}
                     </div>
                   </div>

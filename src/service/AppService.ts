@@ -21,7 +21,6 @@ export const findMetaMaskAccount = async () => {
     const accounts = await ethereum.request({ method: "eth_accounts" });
     if (accounts.length !== 0) {
       const account = accounts[0];
-      console.log(account);
       return account;
     } else {
       return false;
@@ -133,14 +132,13 @@ export const AddOfferWithEth = async (
 
   try {
     if (!trustLex) return false;
+    console.log(trustLex);
     const addOffer = await trustLex.addOfferWithEth(
       satoshis,
-      bitcoinAddress,
+      "0x" + bitcoinAddress,
       offerValidTill
     );
-    console.log("Mining...", addOffer.hash);
     await addOffer.wait();
-    console.log("Mined -- ", addOffer.hash);
     return addOffer;
   } catch (error) {
     console.log(error);
@@ -152,21 +150,19 @@ export const listOffers = async (
   toBlock: "latest" | number = "latest"
 ) => {
   try {
-    console.log("Querying... ", fromBlock, toBlock);
     if (!trustLex || toBlock == -1)
       return { fromBlock: fromBlock, toBlock: toBlock, offers: [] };
     let estimatedFromBlock = fromBlock;
     if (toBlock === "latest") {
-       toBlock = await trustLex.provider.getBlockNumber();
-       estimatedFromBlock = Math.max(0, toBlock - MAX_BLOCKS_TO_QUERY);
+      toBlock = await trustLex.provider.getBlockNumber();
+      estimatedFromBlock = Math.max(0, toBlock - MAX_BLOCKS_TO_QUERY);
     } else if (toBlock > 0) {
-       estimatedFromBlock = Math.max(fromBlock, toBlock - MAX_BLOCKS_TO_QUERY);
+      estimatedFromBlock = Math.max(fromBlock, toBlock - MAX_BLOCKS_TO_QUERY);
     }
     const offers: IListenedOfferData[] = [];
     let iterations = 0;
     do {
       estimatedFromBlock = Math.max(fromBlock, estimatedFromBlock - MAX_BLOCKS_TO_QUERY);
-      console.log("Querying... ", estimatedFromBlock, estimatedFromBlock + MAX_BLOCKS_TO_QUERY);
       const offersSubSet = await trustLex.queryFilter("NEW_OFFER", estimatedFromBlock, estimatedFromBlock + MAX_BLOCKS_TO_QUERY);
       const promises = offersSubSet.map(async (offer) => {
         const offerEvent = {
@@ -195,7 +191,6 @@ export const listOffers = async (
       })
       iterations++;
     } while (estimatedFromBlock > fromBlock && iterations < MAX_ITERATIONS);
-    console.log(offers);
     return {
       fromBlock: fromBlock,
       toBlock: toBlock,
@@ -246,10 +241,7 @@ export const InitializeFullfillment = async (
       _fulfillment
     );
 
-    console.log("Mining...", initializeFullfillment.hash);
     await initializeFullfillment.wait();
-    console.log("Mined -- ", initializeFullfillment.hash);
-    console.log("InitializeFullfillment", initializeFullfillment);
     return initializeFullfillment;
   } catch (error) {
     console.log(JSON.stringify(error), null, 4);
@@ -268,9 +260,7 @@ export const AddOfferWithToken = async (
       data.bitcoinAddress,
       data.offerValidTill
     );
-    console.log("Mining...", addOffer.hash);
     await addOffer.wait();
-    console.log("Mined -- ", addOffer.hash);
     return addOffer;
   } catch (error) {
     console.log(error);

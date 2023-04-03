@@ -17,7 +17,7 @@ export interface OfflineWallet {
 
 export const generateBitcoinWallet = (): Wallet => {
     const ecpair: ECPairAPI = ECPairFactory(tinysecp);
-    const keypair = ecpair.makeRandom({compressed: true, network: networks.bitcoin});
+    const keypair = ecpair.makeRandom({ compressed: true, network: networks.bitcoin });
     return {
         privateKey: keypair.privateKey || Buffer.from(""),
         publicKey: keypair.publicKey,
@@ -55,6 +55,6 @@ export const generateTrustlexAddress = (pubkeyHash: Buffer, fulfillmentId: strin
         bitcoin.opcodes.OP_EQUALVERIFY,
         bitcoin.opcodes.OP_CHECKSIG
     ]);
-    const p2wsh = bitcoin.payments.p2wsh({redeem: { output: witnessScript }});
+    const p2wsh = bitcoin.payments.p2wsh({ redeem: { output: witnessScript } });
     return p2wsh.address;
 }

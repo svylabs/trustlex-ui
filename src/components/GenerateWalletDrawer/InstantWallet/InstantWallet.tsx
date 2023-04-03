@@ -37,7 +37,6 @@ const InstantWallet = ({ data, generatedAddress }: IInstantWallet) => {
   };
 
   const handleDownloadWalletClick = () => {
-    console.log("downloading wallet");
     if (inputData.password === "" || inputData.confirmPassword === "")
       return alert("Password or Confirm Password is required");
     if (inputData.password !== inputData.confirmPassword)
@@ -45,7 +44,6 @@ const InstantWallet = ({ data, generatedAddress }: IInstantWallet) => {
     if (data === null) return alert("Data is null");
 
     const encryptedData = encryptWallet(data, inputData.password);
-    console.log("encryptedData", encryptedData);
 
     setInputData({
       password: "",
@@ -54,7 +52,6 @@ const InstantWallet = ({ data, generatedAddress }: IInstantWallet) => {
 
     if (!encryptedData) return alert("Error encrypting wallet");
     const decryptedData = decryptWallet(encryptedData, inputData.password);
-    console.log("decryptedData", decryptedData);
   };
 
   return (

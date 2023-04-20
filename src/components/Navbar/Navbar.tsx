@@ -17,7 +17,7 @@ const Navbar = (props: Props) => {
   if (context === null) {
     return <>Loading...</>;
   }
-  const { account, setAccount, balance } = context;
+  const { account, setAccount } = context;
 
   const handleConnect = async () => {
     if (account !== "") {
@@ -66,7 +66,6 @@ const Navbar = (props: Props) => {
           <NavDropdownButton
             title="0.5 BTC"
             handleNavButtonClick={handleShowSendBtc}
-            balanceAmt=""
           />
           {/* Variant1 */}
 
@@ -77,7 +76,6 @@ const Navbar = (props: Props) => {
         </div>
         <NavDropdownButton
           title={mobileView ? "" : "Bitcoin"}
-          balanceAmt=""
           icon="/icons/bitcoin.svg"
           dropdownItems={[
             {
@@ -90,7 +88,6 @@ const Navbar = (props: Props) => {
         />
         <NavDropdownButton
           title={mobileView ? "" : "Ethereum"}
-          balanceAmt={account != "" ? `${Number(balance).toFixed(0)} ETH` : ""}
           icon="/icons/etherium.svg"
           dropdownItems={ethDropdownItems}
         />

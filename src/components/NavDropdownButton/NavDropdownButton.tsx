@@ -6,7 +6,6 @@ import navDropdownStyles from "./NavDropdownStyles.module.scss";
 interface INavDropdown {
   icon?: string;
   title: string;
-  balanceAmt: string;
   handleNavButtonClick?: () => void;
   dropdownItems?: {
     title: string;
@@ -19,7 +18,6 @@ interface INavDropdown {
 const NavDropdownButton = ({
   icon,
   title,
-  balanceAmt,
   dropdownItems,
   handleNavButtonClick,
 }: INavDropdown) => {
@@ -29,8 +27,7 @@ const NavDropdownButton = ({
         <Menu.Target>
           <div className={styles.navButton} onClick={handleNavButtonClick}>
             {icon && icon !== "" && <img src={icon} className={styles.icon} />}
-            {title !== "" && <span className={styles.title}>{title}</span>} 
-            {balanceAmt !== "" && <span className={styles.amount}>{balanceAmt}</span>} 
+            {title !== "" && <span className={styles.title}>{title}</span>}
             <Icon
               icon={"ic:round-keyboard-arrow-down"}
               className={styles.chevronIcon}

@@ -49,6 +49,7 @@ import { MAX_BLOCKS_TO_QUERY, MAX_ITERATIONS } from "~/Context/Constants";
 import Loading from "~/components/Loading/Loading";
 type Props = {};
 
+//glen
 // const tableDummyData: string[][] = new Array(5).fill([
 //   1211,
 //   <>
@@ -116,13 +117,15 @@ const Exchange = (props: Props) => {
         : minCollateral[0].value,
   });
 
-  const mobileData = listenedOfferData.offers.map((offer: IListenedOfferData) => {
-    return [
-      offer.offerDetailsInJson.offeredBlockNumber,
-      "09 Jan, 13:45pm",
-      <SeeMoreButton onClick={(e) => { }} />,
-    ];
-  });
+  const mobileData = listenedOfferData.offers.map(
+    (offer: IListenedOfferData) => {
+      return [
+        offer.offerDetailsInJson.offeredBlockNumber,
+        "09 Jan, 13:45pm",
+        <SeeMoreButton onClick={(e) => {}} />,
+      ];
+    }
+  );
 
   const [mobileTableData, setMobileTableData] =
     useState<(string | JSX.Element)[][]>(mobileData);
@@ -137,16 +140,29 @@ const Exchange = (props: Props) => {
           {CurrencyEnum.ETH}
         </>,
         <>
-          {Number(SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)).toFixed(4)}{" "}
+          {Number(
+            SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)
+          ).toFixed(4)}{" "}
           <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
           {CurrencyEnum.BTC}
         </>,
         <>
-          {(Number(SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)) / Number(ethers.utils.formatEther(offer.offerDetailsInJson.offerQuantity))).toFixed(4)} <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
+          {(
+            Number(
+              SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)
+            ) /
+            Number(
+              ethers.utils.formatEther(offer.offerDetailsInJson.offerQuantity)
+            )
+          ).toFixed(4)}{" "}
+          <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
           {CurrencyEnum.BTC}
         </>,
         <>
-          {Number(SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)) - 2 * Number(offer.offerDetailsInJson.satoshisReserved)}
+          {Number(
+            SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)
+          ) -
+            2 * Number(offer.offerDetailsInJson.satoshisReserved)}
           <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />{" "}
           {CurrencyEnum.ETH}
         </>,
@@ -166,9 +182,20 @@ const Exchange = (props: Props) => {
 
   const loadMoreOffers = () => {
     setMoreTableDataLoading(true);
-    let fromBlock = Math.max(0, listenedOfferData.fromBlock - MAX_ITERATIONS * MAX_BLOCKS_TO_QUERY);
-    listOffers(context.contract, fromBlock, listenedOfferData.fromBlock - 1).then((offers) => {
-      const listenedOffers = { fromBlock: offers.fromBlock, toBlock: listenedOfferData.toBlock, offers: [...listenedOfferData.offers, ...offers.offers] }
+    let fromBlock = Math.max(
+      0,
+      listenedOfferData.fromBlock - MAX_ITERATIONS * MAX_BLOCKS_TO_QUERY
+    );
+    listOffers(
+      context.contract,
+      fromBlock,
+      listenedOfferData.fromBlock - 1
+    ).then((offers) => {
+      const listenedOffers = {
+        fromBlock: offers.fromBlock,
+        toBlock: listenedOfferData.toBlock,
+        offers: [...listenedOfferData.offers, ...offers.offers],
+      };
       setListenedOfferData(listenedOffers);
       setTableData(getTableData(listenedOffers.offers));
       setMoreTableDataLoading(false);
@@ -197,7 +224,6 @@ const Exchange = (props: Props) => {
 
   const [hashedOfferData, setHashedOfferData] = useState("");
   const handleOfferConfirm = async () => {
-
     setConfirm("loading");
     try {
       console.log(generatedBitcoinData?.pubkeyHash.toString("hex"));
@@ -213,11 +239,10 @@ const Exchange = (props: Props) => {
         setConfirm("confirmed");
         setTimeout(() => {
           setConfirm("none");
-        }, 3000)
+        }, 3000);
       }
     } catch {
       setConfirm("none");
-
     }
   };
 
@@ -253,13 +278,14 @@ const Exchange = (props: Props) => {
             offerDetailsInJson.offeredBlockNumber
         );
         if (exists === undefined) {
-          setListenedOfferData(
-            {
-              fromBlock: listenedOfferData.fromBlock,
-              toBlock: offerDetailsInJson.offeredBlockNumber,
-              offers: [...listenedOfferData.offers, { offerEvent, offerDetailsInJson }]
-            }
-          );
+          setListenedOfferData({
+            fromBlock: listenedOfferData.fromBlock,
+            toBlock: offerDetailsInJson.offeredBlockNumber,
+            offers: [
+              ...listenedOfferData.offers,
+              { offerEvent, offerDetailsInJson },
+            ],
+          });
           setTableData((prev) => {
             return [
               ...prev,
@@ -340,7 +366,7 @@ const Exchange = (props: Props) => {
     setExchangeData((prev) => {
       return { ...prev, address: generateAddress };
     });
-  }, [generateAddress])
+  }, [generateAddress]);
 
   // handleGenerateBitcoinWallet();
   const { mobileView } = useWindowDimensions();
@@ -350,20 +376,18 @@ const Exchange = (props: Props) => {
       title="Exchange"
       description="  Lorem ipsum dolor sit amet consectetur adipisicing elit."
     >
-
       <div className={styles.offersTable}>
         <GradientBackgroundContainer
           colorRight="#FEBD3863"
           colorLeft="#FEBD3833"
         >
           <div className={styles.innerWrapper}>
-            {addOffer &&
+            {addOffer && (
               <div className={styles.exchangeForm}>
-                <div
-                >
+                <div>
                   <div className={styles.heading}>
                     <div className={styles.caption}>All Offers</div>
-                    <button onClick={() => setAddOffer(false)} >Cancel</button>
+                    <button onClick={() => setAddOffer(false)}>Cancel</button>
                   </div>
                   <div className={styles.exchangeFormContent}>
                     <div className={styles.font}>Adding offer</div>
@@ -375,7 +399,10 @@ const Exchange = (props: Props) => {
                         <InputWithSelect
                           options={data2}
                           type="number"
-                          value={`${Number(userInputData.activeExchange[0].value) / Number(userInputData.activeExchange[1].value)}`}
+                          value={`${
+                            Number(userInputData.activeExchange[0].value) /
+                            Number(userInputData.activeExchange[1].value)
+                          }`}
                           onChange={handleLimitChange}
                           placeholder={"Limit price BTC/ETC"}
                           disabled={true}
@@ -384,7 +411,6 @@ const Exchange = (props: Props) => {
 
                         <SpanFullGridWidth>
                           <div className={styles.addressBox}>
-
                             <div
                               className={styles.generateAddressButton}
                               onClick={() => {
@@ -426,7 +452,8 @@ const Exchange = (props: Props) => {
                         <Select
                           label={
                             <span className={styles.collateralLabel}>
-                              <ImageIcon image="/icons/info.svg" /> Minimum Collateral{" "}
+                              <ImageIcon image="/icons/info.svg" /> Minimum
+                              Collateral{" "}
                             </span>
                           }
                           onChange={handleCollateralChange}
@@ -439,7 +466,7 @@ const Exchange = (props: Props) => {
                       <Button
                         radius={10}
                         fullWidth
-                        style={{ height: "4.5rem", }}
+                        style={{ height: "4.5rem" }}
                         variant={
                           confirm === "loading"
                             ? VariantsEnum.outline
@@ -469,11 +496,10 @@ const Exchange = (props: Props) => {
                         </Button>
                       </div>
                     )}
-
                   </div>
                 </div>
               </div>
-            }
+            )}
             <div className={styles.tableInner}>
               <Table
                 tableCaption="All offers"

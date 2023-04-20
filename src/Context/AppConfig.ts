@@ -1,5 +1,5 @@
 export const ContractMap: any = {
-    'ETH':  {
-       'address': '0x5078d53e9347ca2Ee42b6cFfC01C04b69ff9420A'
-    }
-}
+  ETH: {
+    address: "0x3c865b0fefc978fb56989f8b0ca534d15c4a7d8a",
+  },
+};

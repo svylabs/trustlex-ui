@@ -49,7 +49,6 @@ import { MAX_BLOCKS_TO_QUERY, MAX_ITERATIONS } from "~/Context/Constants";
 import Loading from "~/components/Loading/Loading";
 type Props = {};
 
-//glen
 // const tableDummyData: string[][] = new Array(5).fill([
 //   1211,
 //   <>
@@ -162,8 +161,8 @@ const Exchange = (props: Props) => {
           {Number(
             SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)
           ) -
-            2 * Number(offer.offerDetailsInJson.satoshisReserved)}
-          <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />{" "}
+            2 * Number(offer.offerDetailsInJson.satoshisReserved)}{" "}
+          <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />
           {CurrencyEnum.ETH}
         </>,
         NumberToTime(offer.offerDetailsInJson.offerValidTill),
@@ -186,6 +185,7 @@ const Exchange = (props: Props) => {
       0,
       listenedOfferData.fromBlock - MAX_ITERATIONS * MAX_BLOCKS_TO_QUERY
     );
+
     listOffers(
       context.contract,
       fromBlock,

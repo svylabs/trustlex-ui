@@ -133,7 +133,7 @@ const ExchangeSwapGroup = (props: Props) => {
             onChange={handleRightDataChange}
             placeholder="Enter pay amount"
             label={`Pay with (In your wallet: ${
-              userInputData.activeExchange[1].currency === "eth" ? balance : 10
+              userInputData.activeExchange[1].currency === "eth" ? Number(balance).toFixed(0) : 10
             } ${
               currencyObjects[userInputData.activeExchange[1].currency].value
             })`}

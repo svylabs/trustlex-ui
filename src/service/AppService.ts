@@ -155,15 +155,24 @@ export const listOffers = async (
     let estimatedFromBlock = fromBlock;
     if (toBlock === "latest") {
       toBlock = await trustLex.provider.getBlockNumber();
-      estimatedFromBlock = Math.max(0, toBlock - MAX_BLOCKS_TO_QUERY);
+      // estimatedFromBlock = Math.max(0, toBlock - MAX_BLOCKS_TO_QUERY);
+      estimatedFromBlock = Math.max(0, toBlock);
     } else if (toBlock > 0) {
       estimatedFromBlock = Math.max(fromBlock, toBlock - MAX_BLOCKS_TO_QUERY);
     }
+
     const offers: IListenedOfferData[] = [];
     let iterations = 0;
     do {
-      estimatedFromBlock = Math.max(fromBlock, estimatedFromBlock - MAX_BLOCKS_TO_QUERY);
-      const offersSubSet = await trustLex.queryFilter("NEW_OFFER", estimatedFromBlock, estimatedFromBlock + MAX_BLOCKS_TO_QUERY);
+      estimatedFromBlock = Math.max(
+        fromBlock,
+        estimatedFromBlock - MAX_BLOCKS_TO_QUERY
+      );
+      const offersSubSet = await trustLex.queryFilter(
+        "NEW_OFFER",
+        estimatedFromBlock,
+        estimatedFromBlock + MAX_BLOCKS_TO_QUERY
+      );
       const promises = offersSubSet.map(async (offer) => {
         const offerEvent = {
           from: offer.args ? offer.args[0] : "",
@@ -171,6 +180,7 @@ export const listOffers = async (
         };
 
         const offerData = await getOffers(trustLex, offerEvent.to);
+        console.log(offerData);
         const offerDetailsInJson = {
           offerQuantity: offerData[0].toString(),
           offeredBy: offerData[1].toString(),
@@ -188,7 +198,7 @@ export const listOffers = async (
       const offersList: IListenedOfferData[] = await Promise.all(promises);
       offersList.forEach((o) => {
         offers.push(o);
-      })
+      });
       iterations++;
     } while (estimatedFromBlock > fromBlock && iterations < MAX_ITERATIONS);
     return {

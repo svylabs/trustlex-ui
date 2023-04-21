@@ -135,7 +135,13 @@ const Exchange = (props: Props) => {
 
   const getTableData = (offers: IListenedOfferData[]) => {
     return offers.map((offer: IListenedOfferData) => {
-      console.log(offer);
+      // console.log(offer);
+      const planningToSell = Number(
+        SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)
+      ).toFixed(4);
+      const offerQuantity = ethers.utils.formatEther(
+        offer.offerDetailsInJson.offerQuantity
+      );
       const price_per_ETH_in_BTC =
         Number(
           SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)
@@ -163,14 +169,12 @@ const Exchange = (props: Props) => {
         // offer.offerDetailsInJson.offeredBlockNumber,
         offer.offerEvent.to.toString(),
         <>
-          {ethers.utils.formatEther(offer.offerDetailsInJson.offerQuantity)}{" "}
+          {offerQuantity}{" "}
           <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />
           {CurrencyEnum.ETH}
         </>,
         <>
-          {Number(
-            SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)
-          ).toFixed(4)}{" "}
+          {planningToSell}{" "}
           <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
           {CurrencyEnum.BTC}
         </>,

@@ -20,6 +20,8 @@ import { address } from "bitcoinjs-lib";
 import { generateTrustlexAddress } from "~/utils/BitcoinUtils";
 import ImageIcon from "../ImageIcon/ImageIcon";
 import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";
+import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
+import { ethers } from "ethers";
 
 type Props = {
   isOpened: boolean;
@@ -28,6 +30,7 @@ type Props = {
 };
 
 const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
+  // console.log(data);
   const { mobileView } = useWindowDimensions();
   const rootRef = useRef(null);
   const context = useContext(AppContext);
@@ -47,10 +50,12 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
 
   const foundOffer =
     data &&
-    listenedOfferData.offers.find(
-      (offer) => offer.offerDetailsInJson.offeredBlockNumber === data[0]
-    );
-  // console.log(foundOffer);
+    listenedOfferData.offers.find((offer) => {
+      // return offer.offerDetailsInJson.offeredBlockNumber === data[0]
+      return offer.offerEvent.to.toString() == data[0];
+    });
+
+  console.log(foundOffer, data, listenedOfferData);
   useAutoHideScrollbar(rootRef);
 
   const [isInitiatng, setIsInitating] = useState("");
@@ -70,6 +75,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
   const [confirmed, setConfirmed] = useState("");
   const [initatedata, setInitatedata]: any = useState([]);
   const [to, setTo] = useState("");
+  const [planningToSell, setPlanningToSell] = useState(0);
 
   const handleConfirmClick = () => {
     setConfirmed("loading");
@@ -81,6 +87,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
   const { scrollDirection } = useDetectScrollUpDown();
 
   const initiateFullFillMent = async () => {
+    // console.log(foundOffer);
     if (!foundOffer || foundOffer === undefined) return;
     const _fulfillment: IFullfillmentEvent = {
       fulfillmentBy: foundOffer.offerEvent.from,
@@ -101,7 +108,6 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
       _fulfillment
     );
     var lll = await data.wait();
-    console.log(lll);
     let toAddress = Buffer.from(
       foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
       "hex"
@@ -111,12 +117,36 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
     setInitatedata(data);
   };
 
+  useEffect(() => {
+    if (!foundOffer || foundOffer === undefined) return;
+
+    let toAddress = Buffer.from(
+      foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
+      "hex"
+    );
+    let hashAdress = generateTrustlexAddress(toAddress, "10");
+    setTo(`${hashAdress}`);
+    let planningToSell_ = Number(
+      ethers.utils.formatEther(foundOffer.offerDetailsInJson.offerQuantity)
+    ); //offerQuantity
+
+    setPlanningToSell(planningToSell_);
+
+    setEthValue(planningToSell_);
+  }, [foundOffer?.offerEvent?.to?.toString()]);
+
   // useEffect(() => {
   //   if (!listenedOfferData || listenedOfferData === undefined) return;
   //   initiateFullFillMent();
   // }, [listenedOfferData]);
 
   if (!isOpened) return null;
+  let BTCAmount = Number(
+    (
+      (ethValue / data[1].props.children[0]) *
+      data[2].props.children[0]
+    ).toFixed(3)
+  );
 
   return (
     <Drawer
@@ -168,12 +198,28 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
             )}
           </Grid>
           <Grid className={styles.heading}>
-            <Grid.Col span={11}>
+            <Grid.Col span={12}>
               <Text component="h1" className={styles.title}>
                 <span className={styles.buy}>Buy:</span>
                 <input
+                  type="number"
+                  step="any"
+                  min={0}
                   value={ethValue}
-                  onChange={(e) => setEthValue(Number(e.target.value))}
+                  max={planningToSell}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value);
+                    if (isNaN(value)) {
+                      setEthValue(0);
+                    } else {
+                      setEthValue(Number(value));
+                    }
+
+                    // if (isNaN(ethValue)) {
+                    //   setEthValue(Number(e.target.value));
+                    // }
+                    // setEthValue(Number(e.target.value));
+                  }}
                   className={styles.input}
                 />
                 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />
@@ -294,6 +340,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                   {activeStep === 2 ? <StepFilledSvg /> : <StepSvg />}
                 </div>
                 <h2 className={styles.stepCount}>Step 2</h2>
+                {/* <img src="https://chart.googleapis.com/chart?chs=225x225&chld=L|2&cht=qr&chl=bitcoin:1MoLoCh1srp6jjQgPmwSf5Be5PU98NJHgx?amount=.01%26label=Moloch.net%26message=Donation" /> */}
               </div>
               <div className={styles.stepsContentsContainer}>
                 <div className={styles.stepContent}>
@@ -315,17 +362,15 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                         />
                       </div>
                     }
-                    {/* <img src="/images/qr-code.png" className={styles.qrImage} /> */}
+                    <img
+                      src={`https://chart.googleapis.com/chart?chs=225x225&chld=L|2&cht=qr&chl=bitcoin:${to}?amount=${BTCAmount}%26label=Trustlex%26message=Buying_Ether`}
+                      className={styles.qrImage}
+                    />
                     <div className={styles.sendTo}>
                       <span>
                         Send &nbsp;
                         <CurrencyDisplay
-                          amount={Number(
-                            (
-                              (ethValue / data[1].props.children[0]) *
-                              data[2].props.children[0]
-                            ).toFixed(3)
-                          )}
+                          amount={BTCAmount}
                           type={CurrencyEnum.BTC}
                         />{" "}
                         Bitcoins to:

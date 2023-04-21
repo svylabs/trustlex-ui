@@ -13,10 +13,10 @@ export const NumberToTime = (time: string) => {
   const timeNumber = parseInt(time);
 
   return timeNumber === 24 * 60 * 60 * 60
-    ? "1d"
+    ? "1 d"
     : timeNumber === 10 * 60 * 60 * 60
-    ? "10hrs"
-    : "5hrs";
+    ? "10 hrs"
+    : "5 hrs";
 };
 
 export const TimestampTofromNow = (time: string) => {
@@ -26,4 +26,10 @@ export const TimestampTofromNow = (time: string) => {
     "ddd MMM DD YYYY HH:mm:ss GMT Z"
   ).fromNow();
   return "Initiated " + timeString;
+};
+
+export const TimeToDateFormat = (time: string) => {
+  const timeNumber = parseInt(time) * 1000;
+  const timeString = moment(new Date(timeNumber)).format("D MMM ,h:mm:ss A");
+  return timeString;
 };

@@ -35,7 +35,11 @@ import {
 import BtcToSatoshiConverter from "~/utils/BtcToSatoshiConverter";
 import { IListenedOfferData } from "~/interfaces/IOfferdata";
 import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
-import { NumberToTime, TimeToNumber } from "~/utils/TimeConverter";
+import {
+  NumberToTime,
+  TimeToNumber,
+  TimeToDateFormat,
+} from "~/utils/TimeConverter";
 import { ethers } from "ethers";
 import {
   Wallet,
@@ -131,8 +135,33 @@ const Exchange = (props: Props) => {
 
   const getTableData = (offers: IListenedOfferData[]) => {
     return offers.map((offer: IListenedOfferData) => {
+      console.log(offer);
+      const price_per_ETH_in_BTC =
+        Number(
+          SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)
+        ) /
+        Number(
+          ethers.utils.formatEther(offer.offerDetailsInJson.offerQuantity)
+        );
+      const satoshisToReceive = Number(
+        offer.offerDetailsInJson.satoshisToReceive
+      );
+      const satoshisReserved = Number(
+        offer.offerDetailsInJson.satoshisReserved
+      );
+      const satoshisReceived = Number(
+        offer.offerDetailsInJson.satoshisReceived
+      );
+      const left_to_buy =
+        Number(
+          SatoshiToBtcConverter(
+            satoshisToReceive - (satoshisReserved + satoshisReceived)
+          )
+        ) / price_per_ETH_in_BTC;
+
       return [
-        offer.offerDetailsInJson.offeredBlockNumber,
+        // offer.offerDetailsInJson.offeredBlockNumber,
+        offer.offerEvent.to.toString(),
         <>
           {ethers.utils.formatEther(offer.offerDetailsInJson.offerQuantity)}{" "}
           <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />
@@ -146,27 +175,17 @@ const Exchange = (props: Props) => {
           {CurrencyEnum.BTC}
         </>,
         <>
-          {(
-            Number(
-              SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)
-            ) /
-            Number(
-              ethers.utils.formatEther(offer.offerDetailsInJson.offerQuantity)
-            )
-          ).toFixed(4)}{" "}
+          {price_per_ETH_in_BTC.toFixed(4)}{" "}
           <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
           {CurrencyEnum.BTC}
         </>,
         <>
-          {Number(
-            SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)
-          ) -
-            2 * Number(offer.offerDetailsInJson.satoshisReserved)}{" "}
+          {left_to_buy}{" "}
           <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />
           {CurrencyEnum.ETH}
         </>,
         NumberToTime(offer.offerDetailsInJson.offerValidTill),
-        offer.offerDetailsInJson.orderedTime,
+        TimeToDateFormat(offer.offerDetailsInJson.orderedTime),
       ];
     });
   };

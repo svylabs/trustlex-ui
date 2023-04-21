@@ -94,6 +94,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
     };
 
     console.log(foundOffer, _fulfillment);
+
     const data = await InitializeFullfillment(
       context.contract,
       foundOffer.offerEvent.to,
@@ -101,7 +102,10 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
     );
     var lll = await data.wait();
     console.log(lll);
-    let toAddress = Buffer.from(foundOffer.offerDetailsInJson.bitcoinAddress.substring(2), "hex");
+    let toAddress = Buffer.from(
+      foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
+      "hex"
+    );
     let hashAdress = generateTrustlexAddress(toAddress, "10");
     setTo(`${hashAdress}`);
     setInitatedata(data);
@@ -167,10 +171,22 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
             <Grid.Col span={11}>
               <Text component="h1" className={styles.title}>
                 <span className={styles.buy}>Buy:</span>
-                <input value={ethValue} onChange={(e) => setEthValue(Number(e.target.value))} className={styles.input} />
+                <input
+                  value={ethValue}
+                  onChange={(e) => setEthValue(Number(e.target.value))}
+                  className={styles.input}
+                />
                 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />
                 <span className={styles.for}>with</span>
-                <CurrencyDisplay amount={Number((ethValue / data[1].props.children[0] * data[2].props.children[0]).toFixed(3))} type={CurrencyEnum.BTC} />{" "}
+                <CurrencyDisplay
+                  amount={Number(
+                    (
+                      (ethValue / data[1].props.children[0]) *
+                      data[2].props.children[0]
+                    ).toFixed(3)
+                  )}
+                  type={CurrencyEnum.BTC}
+                />{" "}
               </Text>
             </Grid.Col>
           </Grid>
@@ -187,8 +203,9 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                 <div className={styles.stepContent}>
                   <div className={styles.spacing} />
                   <div
-                    className={`${styles.stepItem} ${checked === "allow" && styles.activeStepItem
-                      }`}
+                    className={`${styles.stepItem} ${
+                      checked === "allow" && styles.activeStepItem
+                    }`}
                     onClick={() => setChecked("allow")}
                   >
                     <div className={styles.checkboxContainer}>
@@ -205,8 +222,9 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                   </div>
 
                   <div
-                    className={`${styles.stepItem} ${checked !== "allow" && styles.activeStepItem
-                      }`}
+                    className={`${styles.stepItem} ${
+                      checked !== "allow" && styles.activeStepItem
+                    }`}
                     onClick={() => setChecked("notAllow")}
                   >
                     <div className={styles.checkboxContainer}>
@@ -292,21 +310,27 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                             width: "100%",
                             height: "100%",
                           }}
-                        // bgColor="#7C7C7C00"
-                        // fgColor="#7C7C7C"
+                          // bgColor="#7C7C7C00"
+                          // fgColor="#7C7C7C"
                         />
                       </div>
                     }
                     {/* <img src="/images/qr-code.png" className={styles.qrImage} /> */}
                     <div className={styles.sendTo}>
-                      <span>Send &nbsp;
-                        <CurrencyDisplay amount={Number((ethValue / data[1].props.children[0] * data[2].props.children[0]).toFixed(3))} type={CurrencyEnum.BTC} />{" "}
-                        Bitcoins to:</span>
-                      {mobileView ? (
-                        <span>{to}</span>
-                      ) : (
-                        <span>{to}</span>
-                      )}
+                      <span>
+                        Send &nbsp;
+                        <CurrencyDisplay
+                          amount={Number(
+                            (
+                              (ethValue / data[1].props.children[0]) *
+                              data[2].props.children[0]
+                            ).toFixed(3)
+                          )}
+                          type={CurrencyEnum.BTC}
+                        />{" "}
+                        Bitcoins to:
+                      </span>
+                      {mobileView ? <span>{to}</span> : <span>{to}</span>}
                     </div>
                   </div>
                   <div className={styles.colletaralTextContainer}>
@@ -355,8 +379,9 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                   </div>
                   <div className={styles.spacing} />
                   <div
-                    className={`${styles.stepItem} ${styles.proofCheckbox} ${verified && styles.activeStepItem
-                      }`}
+                    className={`${styles.stepItem} ${styles.proofCheckbox} ${
+                      verified && styles.activeStepItem
+                    }`}
                     onClick={() => setVerified(!verified)}
                   >
                     <div className={styles.checkboxContainer}>

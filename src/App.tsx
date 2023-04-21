@@ -12,10 +12,16 @@ import {
   findMetaMaskAccount,
   getBalance,
   listOffers,
+  InitializeFullfillment,
+  listInitializeFullfillment,
 } from "./service/AppService";
 import IUserInputData from "./interfaces/IUserInputData";
 import swapArrayElements from "./utils/swapArray";
-import { IListenedOfferData, IOffersResult } from "./interfaces/IOfferdata";
+import {
+  IListenedOfferData,
+  IOffersResult,
+  IinitiatedFullfillmentResult,
+} from "./interfaces/IOfferdata";
 import { ethers } from "ethers";
 import { ContractMap } from "./Context/AppConfig";
 import useLocalstorage from "./hooks/useLocalstorage";
@@ -29,24 +35,33 @@ export default function App() {
   const [selectedToken, setSelectedToken] = useState(
     tokenData ? tokenData.toUpperCase() : "ETH"
   );
-  const [listenedOfferData, setListenedOfferData] = useState<
-    IOffersResult
-  >({ fromBlock: 0, toBlock: 0, offers: [] });
+  const [listenedOfferData, setListenedOfferData] = useState<IOffersResult>({
+    fromBlock: 0,
+    toBlock: 0,
+    offers: [],
+  });
+
+  const [listenedOngoinMySwapData, setlistenedOngoinMySwapData] =
+    useState<IinitiatedFullfillmentResult>({
+      fromBlock: 0,
+      toBlock: 0,
+      offers: [],
+    });
 
   const userData = get("userInputData", true);
   const [userInputData, setUserInputData] = useState<IUserInputData>(
     userData
       ? userData
       : {
-        setLimit: true,
-        limit: "",
-        activeExchange: [
-          { currency: "btc", value: "" },
-          { currency: "eth", value: "" },
-          { currency: "sol", value: "" },
-          { currency: "doge", value: "" },
-        ],
-      }
+          setLimit: true,
+          limit: "",
+          activeExchange: [
+            { currency: "btc", value: "" },
+            { currency: "eth", value: "" },
+            { currency: "sol", value: "" },
+            { currency: "doge", value: "" },
+          ],
+        }
   );
 
   useEffect(() => {
@@ -78,15 +93,16 @@ export default function App() {
           }
         });
 
-        connect(provider, ContractMap[selectedToken].address).then((trustlex) => {
-          if (trustlex) {
-            setContract(trustlex as ethers.Contract);
+        connect(provider, ContractMap[selectedToken].address).then(
+          (trustlex) => {
+            if (trustlex) {
+              setContract(trustlex as ethers.Contract);
+            }
           }
-        });
+        );
       });
     }
-
-  }, [])
+  }, []);
 
   const swapChange = () => {
     setUserInputData((prev) => {
@@ -133,7 +149,14 @@ export default function App() {
             setContract(trustlex as ethers.Contract);
             const offers = await listOffers(trustlex);
             setListenedOfferData(offers);
+
+            const InitializeFullfillmentData = await listInitializeFullfillment(
+              trustlex
+            );
+            // console.log(InitializeFullfillmentData);
+            setlistenedOngoinMySwapData(InitializeFullfillmentData);
           }
+
           findMetaMaskAccount().then((account) => {
             if (account !== null) {
               setAccount(account);
@@ -176,6 +199,8 @@ export default function App() {
             dropDownChange,
             listenedOfferData,
             setListenedOfferData,
+            listenedOngoinMySwapData,
+            setlistenedOngoinMySwapData,
           }}
         >
           <Layout>

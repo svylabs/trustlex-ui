@@ -1,4 +1,5 @@
 import React from "react";
+import moment from "moment";
 
 export const TimeToNumber = (time: string) => {
   return time === "1d"
@@ -16,4 +17,13 @@ export const NumberToTime = (time: string) => {
     : timeNumber === 10 * 60 * 60 * 60
     ? "10hrs"
     : "5hrs";
+};
+
+export const TimestampTofromNow = (time: string) => {
+  const timeNumber = parseInt(time) * 1000;
+  const timeString = moment(
+    new Date(timeNumber),
+    "ddd MMM DD YYYY HH:mm:ss GMT Z"
+  ).fromNow();
+  return "Initiated " + timeString;
 };

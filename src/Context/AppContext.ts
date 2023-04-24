@@ -3,6 +3,7 @@ import {
   IListenedOfferData,
   IOffersResult,
   IinitiatedFullfillmentResult,
+  IOffersResultByNonEvent,
 } from "~/interfaces/IOfferdata";
 import { ethers } from "ethers";
 
@@ -25,8 +26,23 @@ export const AppContext = createContext<null | {
   dropDownChange: (from: string, to: string) => void;
   listenedOfferData: IOffersResult;
   setListenedOfferData: React.Dispatch<React.SetStateAction<IOffersResult>>;
+
+  listenedOfferDataByNonEvent: IOffersResultByNonEvent;
+  setListenedOfferDataByNonEvent: React.Dispatch<
+    React.SetStateAction<IOffersResultByNonEvent>
+  >;
+
   listenedOngoinMySwapData: IinitiatedFullfillmentResult;
   setlistenedOngoinMySwapData: React.Dispatch<
     React.SetStateAction<IinitiatedFullfillmentResult>
   >;
+
+  isMoreTableDataLoading: boolean;
+  setMoreTableDataLoading: React.Dispatch<React.SetStateAction<boolean>>;
+
+  exchangeLoadingText: string;
+  setExchangeLoadingText: React.Dispatch<React.SetStateAction<string>>;
+
+  exchangeListCurrentPage: string;
+  setExchangeListCurrentPage: React.Dispatch<React.SetStateAction<number>>;
 }>(null);

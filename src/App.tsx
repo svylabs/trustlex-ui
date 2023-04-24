@@ -14,6 +14,7 @@ import {
   listOffers,
   InitializeFullfillment,
   listInitializeFullfillment,
+  getOffersList,
 } from "./service/AppService";
 import IUserInputData from "./interfaces/IUserInputData";
 import swapArrayElements from "./utils/swapArray";
@@ -21,10 +22,12 @@ import {
   IListenedOfferData,
   IOffersResult,
   IinitiatedFullfillmentResult,
+  IOffersResultByNonEvent,
 } from "./interfaces/IOfferdata";
 import { ethers } from "ethers";
 import { ContractMap } from "./Context/AppConfig";
 import useLocalstorage from "./hooks/useLocalstorage";
+import { PAGE_SIZE } from "~/Context/Constants";
 
 export default function App() {
   const { get, set, remove } = useLocalstorage();
@@ -40,6 +43,16 @@ export default function App() {
     toBlock: 0,
     offers: [],
   });
+  const [isMoreTableDataLoading, setMoreTableDataLoading] = useState(false);
+  const [exchangeLoadingText, setExchangeLoadingText] = useState<string>("");
+  const [exchangeListCurrentPage, setExchangeListCurrentPage] =
+    useState<number>(1);
+
+  const [listenedOfferDataByNonEvent, setListenedOfferDataByNonEvent] =
+    useState<IOffersResultByNonEvent>({
+      totalOffers: 0,
+      offers: [],
+    });
 
   const [listenedOngoinMySwapData, setlistenedOngoinMySwapData] =
     useState<IinitiatedFullfillmentResult>({
@@ -143,12 +156,26 @@ export default function App() {
     const { ethereum } = window;
     if (ethereum) {
       const provider = new ethers.providers.Web3Provider(ethereum);
+
+      setMoreTableDataLoading(true);
+      setExchangeLoadingText("Connecting to Network");
       connect(provider, ContractMap[selectedToken].address).then(
         async (trustlex) => {
           if (trustlex) {
             setContract(trustlex as ethers.Contract);
             const offers = await listOffers(trustlex);
             setListenedOfferData(offers);
+
+            setMoreTableDataLoading(true);
+            setExchangeLoadingText("Loading List");
+            let limit = PAGE_SIZE;
+            let offset = 0;
+            const offersList = await getOffersList(trustlex, offset, limit);
+            setListenedOfferDataByNonEvent(offersList);
+            setExchangeListCurrentPage(1);
+
+            setMoreTableDataLoading(false);
+            setExchangeLoadingText("");
 
             const InitializeFullfillmentData = await listInitializeFullfillment(
               trustlex
@@ -201,6 +228,14 @@ export default function App() {
             setListenedOfferData,
             listenedOngoinMySwapData,
             setlistenedOngoinMySwapData,
+            listenedOfferDataByNonEvent,
+            setListenedOfferDataByNonEvent,
+            isMoreTableDataLoading,
+            setMoreTableDataLoading,
+            exchangeLoadingText,
+            setExchangeLoadingText,
+            exchangeListCurrentPage,
+            setExchangeListCurrentPage,
           }}
         >
           <Layout>

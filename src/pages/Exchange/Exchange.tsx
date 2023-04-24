@@ -31,6 +31,8 @@ import {
   connect,
   getOffers,
   listOffers,
+  getTotalOffers,
+  getOffersList,
 } from "~/service/AppService";
 import BtcToSatoshiConverter from "~/utils/BtcToSatoshiConverter";
 import { IListenedOfferData } from "~/interfaces/IOfferdata";
@@ -49,7 +51,11 @@ import {
 import GenerateWalletDrawer from "~/components/GenerateWalletDrawer/GenerateWalletDrawer";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 import MainLayout from "~/components/MainLayout/MainLayout";
-import { MAX_BLOCKS_TO_QUERY, MAX_ITERATIONS } from "~/Context/Constants";
+import {
+  MAX_BLOCKS_TO_QUERY,
+  MAX_ITERATIONS,
+  PAGE_SIZE,
+} from "~/Context/Constants";
 import Loading from "~/components/Loading/Loading";
 type Props = {};
 
@@ -87,8 +93,6 @@ const mobileTableDummyData: string[][] = new Array(5).fill([
 ]);
 
 const Exchange = (props: Props) => {
-  const [isMoreTableDataLoading, setMoreTableDataLoading] = useState(false);
-
   const [rowData, setRowData] = useState<(string | ReactNode)[] | null>(null);
 
   const [generateAddress, setGenerateAddress] = useState("");
@@ -107,6 +111,14 @@ const Exchange = (props: Props) => {
     setListenedOfferData,
     userInputData,
     setUserInputData,
+    listenedOfferDataByNonEvent,
+    setListenedOfferDataByNonEvent,
+    isMoreTableDataLoading,
+    setMoreTableDataLoading,
+    exchangeLoadingText,
+    setExchangeLoadingText,
+    exchangeListCurrentPage,
+    setExchangeListCurrentPage,
   } = context;
   const [exchangeData, setExchangeData] = useState({
     address: "",
@@ -167,7 +179,8 @@ const Exchange = (props: Props) => {
 
       return [
         // offer.offerDetailsInJson.offeredBlockNumber,
-        offer.offerEvent.to.toString(),
+        // offer.offerEvent.to.toString(),
+        offer.offerDetailsInJson.offerId,
         <>
           {offerQuantity}{" "}
           <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />
@@ -194,15 +207,17 @@ const Exchange = (props: Props) => {
     });
   };
 
-  let data = getTableData(listenedOfferData.offers);
+  // let data = getTableData(listenedOfferData.offers);
+  // console.log("data", data);
 
   const [generatedBitcoinData, setGeneratedBitcoinData] =
     useState<Wallet | null>(null);
-  const [tableData, setTableData] = useState<(string | JSX.Element)[][]>(data);
+  // const [tableData, setTableData] = useState<(string | JSX.Element)[][]>(data);
+  const [tableData, setTableData] = useState<(string | JSX.Element)[][]>([]);
   const [generateWalletDrawerOpen, setGenerateWalletDrawerOpen] =
     useState(false);
 
-  const loadMoreOffers = () => {
+  const loadMoreOffers = async () => {
     setMoreTableDataLoading(true);
     let fromBlock = Math.max(
       0,
@@ -222,7 +237,41 @@ const Exchange = (props: Props) => {
       setListenedOfferData(listenedOffers);
       setTableData(getTableData(listenedOffers.offers));
       setMoreTableDataLoading(false);
+      console.log(listenedOffers);
     });
+  };
+  const loadMoreOffersByNonEvent = async () => {
+    setMoreTableDataLoading(true);
+
+    let offset: number = parseFloat(exchangeListCurrentPage) * PAGE_SIZE;
+    let limit: number = PAGE_SIZE + offset;
+    callOffersListService(offset, limit).then((offers) => {
+      const listenedOffersByNonEvent = {
+        totalOffers: offers.totalOffers,
+        offers: [...listenedOfferDataByNonEvent.offers, ...offers.offers],
+      };
+      setListenedOfferDataByNonEvent(listenedOffersByNonEvent);
+      setTableData(getTableData(listenedOffersByNonEvent.offers));
+      setMoreTableDataLoading(false);
+      setExchangeListCurrentPage(parseInt(exchangeListCurrentPage) + 1);
+      console.log(listenedOffersByNonEvent);
+    });
+  };
+
+  const showLoadMoreButton = () => {
+    let totalLoadOffers: number =
+      parseFloat(exchangeListCurrentPage) * PAGE_SIZE;
+    if (listenedOfferDataByNonEvent.totalOffers > totalLoadOffers) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const callOffersListService = async (offset: number, limit: number) => {
+    const offersList = await getOffersList(context.contract, offset, limit);
+    // console.log(offersList);
+    return offersList;
   };
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -262,6 +311,8 @@ const Exchange = (props: Props) => {
         setConfirm("confirmed");
         setTimeout(() => {
           setConfirm("none");
+          setAddOffer(false);
+          //fertch the data again
         }, 3000);
       }
     } catch {
@@ -372,13 +423,20 @@ const Exchange = (props: Props) => {
   const listenEvent = async () => {
     await listentotheEvent();
   };
+  // useEffect(() => {
+  //   listenEvent();
+  //   listOffers(context.contract).then((offers) => {
+  //     setListenedOfferData(offers);
+  //     setTableData(getTableData(offers.offers));
+  //   });
+  // }, [hashedOfferData]);
+
   useEffect(() => {
-    listenEvent();
-    listOffers(context.contract).then((offers) => {
-      setListenedOfferData(offers);
-      setTableData(getTableData(offers.offers));
-    });
-  }, [hashedOfferData]);
+    if (listenedOfferDataByNonEvent?.offers) {
+      const result = getTableData(listenedOfferDataByNonEvent?.offers);
+      setTableData(result);
+    }
+  }, [listenedOfferDataByNonEvent]);
 
   const handleGenerateBitcoinWallet = async () => {
     const data = generateBitcoinWallet();
@@ -458,7 +516,9 @@ const Exchange = (props: Props) => {
                               label="Address to receive Bitcoin"
                               placeholder="Click Button ->"
                               value={exchangeData.address}
-                              style={{ width: "78%" }}
+                              style={{
+                                width: "78%",
+                              }}
                               disabled
                               onChange={handleAddressChange}
                             />
@@ -498,7 +558,7 @@ const Exchange = (props: Props) => {
                         loading={confirm === "loading" ? true : false}
                         onClick={handleOfferConfirm}
                       >
-                        Confirm
+                        {confirm === "loading" ? "Confirming" : "Confirm"}
                       </Button>
                     ) : (
                       <div className={styles.confirmed}>
@@ -553,13 +613,27 @@ const Exchange = (props: Props) => {
             </div>
             <br />
             <Center>
-              <ActionButton
-                variant={"transparent"}
-                loading={isMoreTableDataLoading}
-                onClick={loadMoreOffers}
-              >
-                Load more
-              </ActionButton>
+              {exchangeLoadingText != "" ? (
+                <ActionButton
+                  variant={"transparent"}
+                  loading={isMoreTableDataLoading}
+                >
+                  {exchangeLoadingText}
+                </ActionButton>
+              ) : (
+                ""
+              )}
+              {showLoadMoreButton() == true ? (
+                <ActionButton
+                  variant={"transparent"}
+                  loading={isMoreTableDataLoading}
+                  onClick={loadMoreOffersByNonEvent}
+                >
+                  Load More
+                </ActionButton>
+              ) : (
+                ""
+              )}
             </Center>
           </div>
         </GradientBackgroundContainer>

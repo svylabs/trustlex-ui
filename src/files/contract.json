@@ -81,98 +81,18 @@
       "type": "event"
     },
     {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "initializedFulfillments",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "fulfillmentBy",
-          "type": "address"
-        },
-        {
-          "internalType": "uint64",
-          "name": "quantityRequested",
-          "type": "uint64"
-        },
-        {
-          "internalType": "uint32",
-          "name": "expiryTime",
-          "type": "uint32"
-        },
-        {
-          "internalType": "uint256",
-          "name": "totalCollateralAdded",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "collateralAddedBy",
-          "type": "address"
-        },
-        {
-          "internalType": "uint32",
-          "name": "fulfilledTime",
-          "type": "uint32"
-        },
-        {
-          "internalType": "bool",
-          "name": "allowAnyoneToSubmitPaymentProofForFee",
-          "type": "bool"
-        },
-        {
-          "internalType": "bool",
-          "name": "allowAnyoneToAddCollateralForFee",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
+      "inputs": [],
+      "name": "addEthCollateral",
+      "outputs": [],
+      "stateMutability": "payable",
       "type": "function"
     },
     {
       "inputs": [
         {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "offers",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "offerQuantity",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "offeredBy",
-          "type": "address"
-        },
-        {
-          "internalType": "uint32",
-          "name": "offerValidTill",
-          "type": "uint32"
-        },
-        {
-          "internalType": "uint32",
-          "name": "orderedTime",
-          "type": "uint32"
-        },
-        {
-          "internalType": "uint32",
-          "name": "offeredBlockNumber",
-          "type": "uint32"
+          "internalType": "uint64",
+          "name": "satoshis",
+          "type": "uint64"
         },
         {
           "internalType": "bytes20",
@@ -180,40 +100,49 @@
           "type": "bytes20"
         },
         {
-          "internalType": "uint64",
-          "name": "satoshisToReceive",
-          "type": "uint64"
-        },
-        {
-          "internalType": "uint64",
-          "name": "satoshisReceived",
-          "type": "uint64"
-        },
-        {
-          "internalType": "uint64",
-          "name": "satoshisReserved",
-          "type": "uint64"
-        },
-        {
-          "internalType": "uint8",
-          "name": "collateralPer3Hours",
-          "type": "uint8"
+          "internalType": "uint32",
+          "name": "offerValidTill",
+          "type": "uint32"
         }
       ],
-      "stateMutability": "view",
+      "name": "addOfferWithEth",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint64",
+          "name": "satoshis",
+          "type": "uint64"
+        },
+        {
+          "internalType": "bytes20",
+          "name": "bitcoinAddress",
+          "type": "bytes20"
+        },
+        {
+          "internalType": "uint32",
+          "name": "offerValidTill",
+          "type": "uint32"
+        }
+      ],
+      "name": "addOfferWithToken",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
       "inputs": [],
-      "name": "orderBookCompactMetadata",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
+      "name": "addTokenCollateral",
+      "outputs": [],
+      "stateMutability": "payable",
       "type": "function"
     },
     {
@@ -243,15 +172,9 @@
     },
     {
       "inputs": [],
-      "name": "getTotalOrders",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
+      "name": "extendOffer",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -348,54 +271,75 @@
       "type": "function"
     },
     {
-      "inputs": [
+      "inputs": [],
+      "name": "getTotalOffers",
+      "outputs": [
         {
-          "internalType": "uint64",
-          "name": "satoshis",
-          "type": "uint64"
-        },
-        {
-          "internalType": "bytes20",
-          "name": "bitcoinAddress",
-          "type": "bytes20"
-        },
-        {
-          "internalType": "uint32",
-          "name": "offerValidTill",
-          "type": "uint32"
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
-      "name": "addOfferWithEth",
-      "outputs": [],
-      "stateMutability": "payable",
+      "stateMutability": "view",
       "type": "function"
     },
     {
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "value",
+          "name": "",
           "type": "uint256"
         },
         {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "initializedFulfillments",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "fulfillmentBy",
+          "type": "address"
+        },
+        {
           "internalType": "uint64",
-          "name": "satoshis",
+          "name": "quantityRequested",
           "type": "uint64"
         },
         {
-          "internalType": "bytes20",
-          "name": "bitcoinAddress",
-          "type": "bytes20"
+          "internalType": "uint32",
+          "name": "expiryTime",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "totalCollateralAdded",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "collateralAddedBy",
+          "type": "address"
         },
         {
           "internalType": "uint32",
-          "name": "offerValidTill",
+          "name": "fulfilledTime",
           "type": "uint32"
+        },
+        {
+          "internalType": "bool",
+          "name": "allowAnyoneToSubmitPaymentProofForFee",
+          "type": "bool"
+        },
+        {
+          "internalType": "bool",
+          "name": "allowAnyoneToAddCollateralForFee",
+          "type": "bool"
         }
       ],
-      "name": "addOfferWithToken",
-      "outputs": [],
-      "stateMutability": "nonpayable",
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -459,6 +403,90 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "liquidateCollateral",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "offers",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "offerQuantity",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "offeredBy",
+          "type": "address"
+        },
+        {
+          "internalType": "uint32",
+          "name": "offerValidTill",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint32",
+          "name": "orderedTime",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint32",
+          "name": "offeredBlockNumber",
+          "type": "uint32"
+        },
+        {
+          "internalType": "bytes20",
+          "name": "bitcoinAddress",
+          "type": "bytes20"
+        },
+        {
+          "internalType": "uint64",
+          "name": "satoshisToReceive",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint64",
+          "name": "satoshisReceived",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint64",
+          "name": "satoshisReserved",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint8",
+          "name": "collateralPer3Hours",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "orderBookCompactMetadata",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "uint256",
@@ -489,34 +517,6 @@
       "name": "submitPaymentProof",
       "outputs": [],
       "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "addEthCollateral",
-      "outputs": [],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "addTokenCollateral",
-      "outputs": [],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "extendOffer",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "liquidateCollateral",
-      "outputs": [],
-      "stateMutability": "payable",
       "type": "function"
     }
   ]

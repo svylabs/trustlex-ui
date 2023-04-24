@@ -9,6 +9,7 @@ import {
   IOfferdata,
   IinitiatedFullfillmentResult,
   IListInitiatedFullfillmentData,
+  IOffersResultByNonEvent,
 } from "~/interfaces/IOfferdata";
 import axios from "axios";
 import { MAX_BLOCKS_TO_QUERY, MAX_ITERATIONS } from "~/Context/Constants";
@@ -107,6 +108,18 @@ export const connect = async (
   }
 };
 
+export const getTotalOffers = async (trustLex: ethers.Contract | undefined) => {
+  try {
+    if (!trustLex) return false;
+
+    let offerData = await trustLex.getTotalOffers();
+    return offerData.toString();
+  } catch (error) {
+    console.log(error);
+    return;
+  }
+};
+
 export const getOffers = async (
   trustLex: ethers.Contract | undefined,
   offerId: any
@@ -146,6 +159,51 @@ export const AddOfferWithEth = async (
     console.log(error);
   }
 };
+
+// new function to fetch the list of offers
+export const getOffersList = async (
+  trustLex: ethers.Contract | undefined,
+  offset: number,
+  limit: number
+) => {
+  try {
+    if (!trustLex) {
+      console.log("trustLex is not defined", trustLex);
+      return <IOffersResultByNonEvent>{ totalOffers: 0, offers: [] };
+    }
+    console.log(offset, limit);
+    let TotalOffers = await trustLex.getTotalOffers();
+    TotalOffers = TotalOffers.toString();
+    const promises = [];
+    for (let i = offset; i < limit && i < TotalOffers; i++) {
+      const offerData = await getOffers(trustLex, i);
+      const offerDetailsInJson = {
+        offerId: i.toString(),
+        offerQuantity: offerData[0].toString(),
+        offeredBy: offerData[1].toString(),
+        offerValidTill: offerData[2].toString(),
+        orderedTime: offerData[3].toString(),
+        offeredBlockNumber: offerData[4].toString(),
+        bitcoinAddress: offerData[5].toString(),
+        satoshisToReceive: offerData[6].toString(),
+        satoshisReceived: offerData[7].toString(),
+        satoshisReserved: offerData[8].toString(),
+        collateralPer3Hours: offerData[9].toString(),
+      };
+      promises.push({ offerDetailsInJson });
+    }
+    const offersList = await Promise.all(promises);
+    return <IOffersResultByNonEvent>{
+      totalOffers: TotalOffers,
+      offers: offersList,
+    };
+  } catch (error) {
+    console.log(error);
+    return <IOffersResultByNonEvent>{ totalOffers: 0, offers: [] };
+  }
+};
+
+// Old method to fetch the list by events
 export const listOffers = async (
   trustLex: ethers.Contract | undefined,
   fromBlock: number = 0,
@@ -184,6 +242,7 @@ export const listOffers = async (
         const offerData = await getOffers(trustLex, offerEvent.to);
         // console.log(offerData);
         const offerDetailsInJson = {
+          offerId: offerEvent.to.toString(),
           offerQuantity: offerData[0].toString(),
           offeredBy: offerData[1].toString(),
           offerValidTill: offerData[2].toString(),

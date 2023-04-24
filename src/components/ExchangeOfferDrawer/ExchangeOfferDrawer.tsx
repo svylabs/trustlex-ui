@@ -55,7 +55,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
       return offer.offerEvent.to.toString() == data[0];
     });
 
-  console.log(foundOffer, data, listenedOfferData);
+  // console.log(foundOffer, data, listenedOfferData);
   useAutoHideScrollbar(rootRef);
 
   const [isInitiatng, setIsInitating] = useState("");

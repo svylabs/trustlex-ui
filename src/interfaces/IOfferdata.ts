@@ -1,4 +1,5 @@
 export interface IOfferdata {
+  offerId: string;
   offerQuantity: string;
   offeredBy: string;
   offerValidTill: string;
@@ -43,6 +44,10 @@ export interface IOffersResult {
   offers: IListenedOfferData[];
 }
 
+export interface IOffersResultByNonEvent {
+  totalOffers: number;
+  offers: IListenedOfferData[];
+}
 export interface IListInitiatedFullfillmentData {
   offerEvent: IInitilizedFullfillmentEvent;
   offerDetailsInJson: IOfferdata;

@@ -42,7 +42,7 @@ const InstantWallet = ({ data, generatedAddress }: IInstantWallet) => {
     if (inputData.password !== inputData.confirmPassword)
       return alert("Password and confirm password does not match");
     if (data === null) return alert("Data is null");
-
+    // console.log(data, inputData.password)
     const encryptedData = encryptWallet(data, inputData.password);
 
     setInputData({

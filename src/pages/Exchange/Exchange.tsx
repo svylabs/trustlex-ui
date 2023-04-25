@@ -21,6 +21,7 @@ import {
 import { CurrencyEnum } from "~/enums/CurrencyEnum";
 import { VariantsEnum } from "~/enums/VariantsEnum";
 import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";
+import { EthtoWei, WeitoEth } from "~/utils/Ether.utills";
 import styles from "./Exchange.module.scss";
 import SeeMoreButton from "~/components/SeeMoreButton/SeeMoreButton";
 import ExchangeOfferDrawer from "~/components/ExchangeOfferDrawer/ExchangeOfferDrawer";
@@ -55,31 +56,10 @@ import {
   MAX_BLOCKS_TO_QUERY,
   MAX_ITERATIONS,
   PAGE_SIZE,
+  OfferListOrderBy,
 } from "~/Context/Constants";
 import Loading from "~/components/Loading/Loading";
 type Props = {};
-
-// const tableDummyData: string[][] = new Array(5).fill([
-//   1211,
-//   <>
-//     10 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />{" "}
-//     {CurrencyEnum.ETH}
-//   </>,
-//   <>
-//     0.078 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
-//     {CurrencyEnum.BTC}
-//   </>,
-//   <>
-//     0.078 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
-//     {CurrencyEnum.BTC}
-//   </>,
-//   <>
-//     1 out of 10 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />{" "}
-//     {CurrencyEnum.ETH}
-//   </>,
-//   "1h",
-//   "09 Jan, 13:45pm",
-// ]);
 
 const mobileTableDummyData: string[][] = new Array(5).fill([
   1211,
@@ -117,8 +97,12 @@ const Exchange = (props: Props) => {
     setMoreTableDataLoading,
     exchangeLoadingText,
     setExchangeLoadingText,
-    exchangeListCurrentPage,
-    setExchangeListCurrentPage,
+    totalOffers,
+    setTotalOffers,
+    fromOfferId,
+    setFromOfferId,
+    refreshOffersListKey,
+    setRefreshOffersListKey,
   } = context;
   const [exchangeData, setExchangeData] = useState({
     address: "",
@@ -243,33 +227,31 @@ const Exchange = (props: Props) => {
   const loadMoreOffersByNonEvent = async () => {
     setMoreTableDataLoading(true);
 
-    let offset: number = parseFloat(exchangeListCurrentPage) * PAGE_SIZE;
-    let limit: number = PAGE_SIZE + offset;
-    callOffersListService(offset, limit).then((offers) => {
+    callOffersListService().then((offers) => {
       const listenedOffersByNonEvent = {
-        totalOffers: offers.totalOffers,
         offers: [...listenedOfferDataByNonEvent.offers, ...offers.offers],
       };
       setListenedOfferDataByNonEvent(listenedOffersByNonEvent);
       setTableData(getTableData(listenedOffersByNonEvent.offers));
       setMoreTableDataLoading(false);
-      setExchangeListCurrentPage(parseInt(exchangeListCurrentPage) + 1);
+
+      let fromOfferId_ =
+        fromOfferId - PAGE_SIZE > 0 ? fromOfferId - PAGE_SIZE : 0;
+      setFromOfferId(fromOfferId_);
       console.log(listenedOffersByNonEvent);
     });
   };
 
   const showLoadMoreButton = () => {
-    let totalLoadOffers: number =
-      parseFloat(exchangeListCurrentPage) * PAGE_SIZE;
-    if (listenedOfferDataByNonEvent.totalOffers > totalLoadOffers) {
+    if (fromOfferId > 0 && exchangeLoadingText == "") {
       return true;
     } else {
       return false;
     }
   };
 
-  const callOffersListService = async (offset: number, limit: number) => {
-    const offersList = await getOffersList(context.contract, offset, limit);
+  const callOffersListService = async () => {
+    const offersList = await getOffersList(context.contract, fromOfferId);
     // console.log(offersList);
     return offersList;
   };
@@ -299,7 +281,10 @@ const Exchange = (props: Props) => {
     setConfirm("loading");
     try {
       console.log(generatedBitcoinData?.pubkeyHash.toString("hex"));
+
+      let inputEther: string = userInputData.activeExchange[1].value;
       const data = {
+        weieth: EthtoWei(inputEther),
         satoshis: BtcToSatoshiConverter(userInputData.activeExchange[0].value),
         bitcoinAddress: generatedBitcoinData?.pubkeyHash.toString("hex"),
         offerValidTill: TimeToNumber(exchangeData.valid),
@@ -313,9 +298,10 @@ const Exchange = (props: Props) => {
           setConfirm("none");
           setAddOffer(false);
           //fertch the data again
+          setRefreshOffersListKey(refreshOffersListKey + 1);
         }, 3000);
       }
-    } catch {
+    } catch (error) {
       setConfirm("none");
     }
   };

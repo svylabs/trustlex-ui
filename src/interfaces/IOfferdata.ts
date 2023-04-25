@@ -45,7 +45,6 @@ export interface IOffersResult {
 }
 
 export interface IOffersResultByNonEvent {
-  totalOffers: number;
   offers: IListenedOfferData[];
 }
 export interface IListInitiatedFullfillmentData {
@@ -57,4 +56,9 @@ export interface IinitiatedFullfillmentResult {
   fromBlock: number;
   toBlock: "latest" | number;
   offers: IListInitiatedFullfillmentData[];
+}
+
+export enum OrderBy {
+  ASC = "asc",
+  DESC = "desc",
 }

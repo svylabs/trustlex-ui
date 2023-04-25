@@ -15,6 +15,7 @@ import {
   InitializeFullfillment,
   listInitializeFullfillment,
   getOffersList,
+  getTotalOffers,
 } from "./service/AppService";
 import IUserInputData from "./interfaces/IUserInputData";
 import swapArrayElements from "./utils/swapArray";
@@ -23,16 +24,20 @@ import {
   IOffersResult,
   IinitiatedFullfillmentResult,
   IOffersResultByNonEvent,
+  OrderBy,
 } from "./interfaces/IOfferdata";
 import { ethers } from "ethers";
 import { ContractMap } from "./Context/AppConfig";
 import useLocalstorage from "./hooks/useLocalstorage";
-import { PAGE_SIZE } from "~/Context/Constants";
+import { PAGE_SIZE, OfferListOrderBy } from "~/Context/Constants";
+import { ToastContainer, toast } from "react-toastify";
 
 export default function App() {
   const { get, set, remove } = useLocalstorage();
   const [account, setAccount] = useState("");
   const [balance, setBalance] = useState("");
+  const [totalOffers, setTotalOffers] = useState(0);
+  const [fromOfferId, setFromOfferId] = useState(0);
   const [contract, setContract] = useState<ethers.Contract>();
   const tokenData = get("selectedToken", false);
   const [selectedToken, setSelectedToken] = useState(
@@ -45,12 +50,10 @@ export default function App() {
   });
   const [isMoreTableDataLoading, setMoreTableDataLoading] = useState(false);
   const [exchangeLoadingText, setExchangeLoadingText] = useState<string>("");
-  const [exchangeListCurrentPage, setExchangeListCurrentPage] =
-    useState<number>(1);
+  const [refreshOffersListKey, setRefreshOffersListKey] = useState<number>(1);
 
   const [listenedOfferDataByNonEvent, setListenedOfferDataByNonEvent] =
     useState<IOffersResultByNonEvent>({
-      totalOffers: 0,
       offers: [],
     });
 
@@ -158,6 +161,7 @@ export default function App() {
       const provider = new ethers.providers.Web3Provider(ethereum);
 
       setMoreTableDataLoading(true);
+      setListenedOfferDataByNonEvent({ offers: [] });
       setExchangeLoadingText("Connecting to Network");
       connect(provider, ContractMap[selectedToken].address).then(
         async (trustlex) => {
@@ -168,12 +172,17 @@ export default function App() {
 
             setMoreTableDataLoading(true);
             setExchangeLoadingText("Loading List");
-            let limit = PAGE_SIZE;
-            let offset = 0;
-            const offersList = await getOffersList(trustlex, offset, limit);
-            setListenedOfferDataByNonEvent(offersList);
-            setExchangeListCurrentPage(1);
+            let totalOffers = await getTotalOffers(trustlex);
+            setTotalOffers(totalOffers);
 
+            let fromOfferId = totalOffers;
+
+            let offersList = await getOffersList(trustlex, fromOfferId);
+            fromOfferId =
+              fromOfferId - PAGE_SIZE > 0 ? fromOfferId - PAGE_SIZE : 0;
+            setFromOfferId(fromOfferId);
+            console.log(totalOffers, totalOffers, fromOfferId, offersList);
+            setListenedOfferDataByNonEvent(offersList);
             setMoreTableDataLoading(false);
             setExchangeLoadingText("");
 
@@ -201,7 +210,7 @@ export default function App() {
       setAccount("");
       setBalance("");
     };
-  }, []);
+  }, [refreshOffersListKey]);
 
   return (
     <MantineProvider
@@ -234,11 +243,17 @@ export default function App() {
             setMoreTableDataLoading,
             exchangeLoadingText,
             setExchangeLoadingText,
-            exchangeListCurrentPage,
-            setExchangeListCurrentPage,
+            totalOffers,
+            setTotalOffers,
+            fromOfferId,
+            setFromOfferId,
+            refreshOffersListKey,
+            setRefreshOffersListKey,
+            toast,
           }}
         >
           <Layout>
+            <ToastContainer />
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/exchange" element={<Exchange />} />

@@ -43,6 +43,12 @@ export const AppContext = createContext<null | {
   exchangeLoadingText: string;
   setExchangeLoadingText: React.Dispatch<React.SetStateAction<string>>;
 
-  exchangeListCurrentPage: string;
-  setExchangeListCurrentPage: React.Dispatch<React.SetStateAction<number>>;
+  totalOffers: number;
+  setTotalOffers: React.Dispatch<React.SetStateAction<number>>;
+
+  fromOfferId: number;
+  setFromOfferId: React.Dispatch<React.SetStateAction<number>>;
+  refreshOffersListKey: number;
+  setRefreshOffersListKey: React.Dispatch<React.SetStateAction<number>>;
+  toast: any;
 }>(null);

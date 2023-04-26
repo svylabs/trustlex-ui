@@ -1,3 +1,4 @@
+import React from "react";
 import { IAddOfferWithEth } from "~/interfaces/IAddOfferWithEth";
 import abi from "../files/contract.json";
 import { Wallet, ethers } from "ethers";
@@ -15,8 +16,38 @@ import axios from "axios";
 import { PAGE_SIZE } from "~/Context/Constants";
 import { MAX_BLOCKS_TO_QUERY, MAX_ITERATIONS } from "~/Context/Constants";
 import { EthtoWei, WeitoEth } from "~/utils/Ether.utills";
+import { AppContext } from "~/Context/AppContext";
+import { ToastContainer, toast } from "react-toastify";
 
 const getEthereumObject = () => window.ethereum;
+
+export const showSuccessMessage = (message: string) => {
+  // let message = "Transaction successfully done !";
+  toast.success(message, {
+    position: toast.POSITION.TOP_RIGHT,
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "colored", //light, dark,colored
+  });
+};
+
+export const showErrorMessage = (message: string) => {
+  // let message = "Transaction successfully done !";
+  toast.error(message, {
+    position: toast.POSITION.TOP_RIGHT,
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "colored", //light, dark,colored
+  });
+};
 
 export const findMetaMaskAccount = async () => {
   try {
@@ -24,7 +55,8 @@ export const findMetaMaskAccount = async () => {
     if (!ethereum || ethereum.request === undefined) {
       return false;
     }
-    const accounts = await ethereum.request({ method: "eth_accounts" });
+
+    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
     if (accounts.length !== 0) {
       const account = accounts[0];
       return account;
@@ -32,6 +64,7 @@ export const findMetaMaskAccount = async () => {
       return false;
     }
   } catch (error) {
+    console.log(error);
     return false;
   }
 };
@@ -43,11 +76,10 @@ export const connectToMetamask = async () => {
       alert("Get MetaMask!");
       return false;
     }
-
+    // console.log(ethereum.request);
     const accounts = await ethereum.request({
       method: "eth_requestAccounts",
     });
-
     return accounts[0];
   } catch (error) {
     console.log(error);
@@ -59,8 +91,9 @@ export const getBalance = async (address: string) => {
     if (typeof window.ethereum !== undefined) {
       const { ethereum } = window;
       const provider = new ethers.providers.Web3Provider(ethereum);
-      const balance = await provider.getBalance(address);
-      return ethers.utils.formatEther(balance);
+      let balance: any = await provider.getBalance(address);
+      balance = (+ethers.utils.formatEther(balance)).toFixed(4);
+      return balance;
     } else {
       return false;
     }
@@ -108,6 +141,7 @@ export const connect = async (
       return false;
     }
   } catch (error) {
+    console.log(error);
     return false;
   }
 };
@@ -147,19 +181,25 @@ export const AddOfferWithEth = async (
   trustLex: ethers.Contract | undefined,
   data: IAddOfferWithEth
 ) => {
-  const { weieth, satoshis, bitcoinAddress, offerValidTill } = data;
+  const { weieth, satoshis, bitcoinAddress, offerValidTill, account } = data;
 
   try {
-    if (!trustLex) return false;
+    if (!trustLex) {
+      let message = "trustLex is not defined";
+      showErrorMessage(message);
+      throw new Error(message);
+    }
+
     // Get the ETH account
-    const account = await connectToMetamask();
+    // const account = await connectToMetamask();
     // Get the ETH balance
     const EthBalance = await getBalance(account);
     const userInputEth = WeitoEth(weieth);
 
     if (userInputEth > EthBalance) {
-      alert("Your ETH balance is low !");
-      throw new Error("Your ETH balance is low !");
+      let message = "Your ETH balance is low !";
+      showErrorMessage(message);
+      throw new Error(message);
     }
 
     const addOffer = await trustLex.addOfferWithEth(

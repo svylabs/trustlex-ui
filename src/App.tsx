@@ -31,6 +31,8 @@ import { ContractMap } from "./Context/AppConfig";
 import useLocalstorage from "./hooks/useLocalstorage";
 import { PAGE_SIZE, OfferListOrderBy } from "~/Context/Constants";
 import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { number } from "bitcoinjs-lib/src/script";
 
 export default function App() {
   const { get, set, remove } = useLocalstorage();
@@ -181,7 +183,7 @@ export default function App() {
             fromOfferId =
               fromOfferId - PAGE_SIZE > 0 ? fromOfferId - PAGE_SIZE : 0;
             setFromOfferId(fromOfferId);
-            console.log(totalOffers, totalOffers, fromOfferId, offersList);
+            // console.log(totalOffers, totalOffers, fromOfferId, offersList);
             setListenedOfferDataByNonEvent(offersList);
             setMoreTableDataLoading(false);
             setExchangeLoadingText("");
@@ -249,11 +251,11 @@ export default function App() {
             setFromOfferId,
             refreshOffersListKey,
             setRefreshOffersListKey,
-            toast,
           }}
         >
           <Layout>
             <ToastContainer />
+
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/exchange" element={<Exchange />} />

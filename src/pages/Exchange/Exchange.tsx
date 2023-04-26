@@ -103,7 +103,9 @@ const Exchange = (props: Props) => {
     setFromOfferId,
     refreshOffersListKey,
     setRefreshOffersListKey,
+    account,
   } = context;
+
   const [exchangeData, setExchangeData] = useState({
     address: "",
     valid:
@@ -288,9 +290,11 @@ const Exchange = (props: Props) => {
         satoshis: BtcToSatoshiConverter(userInputData.activeExchange[0].value),
         bitcoinAddress: generatedBitcoinData?.pubkeyHash.toString("hex"),
         offerValidTill: TimeToNumber(exchangeData.valid),
+        account: "0xf72B8291b10eC381e55DE4788F6EBBB7425cF34e",
       };
 
       const addedOffer = await AddOfferWithEth(context.contract, data);
+      console.log(addedOffer);
       if (addedOffer.hash !== "") {
         setHashedOfferData(addedOffer.hash);
         setConfirm("confirmed");

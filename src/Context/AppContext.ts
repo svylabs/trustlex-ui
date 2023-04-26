@@ -50,5 +50,4 @@ export const AppContext = createContext<null | {
   setFromOfferId: React.Dispatch<React.SetStateAction<number>>;
   refreshOffersListKey: number;
   setRefreshOffersListKey: React.Dispatch<React.SetStateAction<number>>;
-  toast: any;
 }>(null);

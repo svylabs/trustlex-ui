@@ -14,7 +14,11 @@ import useDetectScrollUpDown from "~/hooks/useDetectScrollUpDown";
 import Countdown from "~/utils/Countdown";
 import { AppContext } from "~/Context/AppContext";
 import { IFullfillmentEvent } from "~/interfaces/IOfferdata";
-import { InitializeFullfillment } from "~/service/AppService";
+import {
+  InitializeFullfillment,
+  showSuccessMessage,
+  showErrorMessage,
+} from "~/service/AppService";
 import { QRCodeCanvas } from "qrcode.react";
 import { address } from "bitcoinjs-lib";
 import { generateTrustlexAddress } from "~/utils/BitcoinUtils";
@@ -34,7 +38,15 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
   const { mobileView } = useWindowDimensions();
   const rootRef = useRef(null);
   const context = useContext(AppContext);
-  const [ethValue, setEthValue] = useState(0);
+  const [ethValue, setEthValue] = useState<number | string>(0);
+
+  const [checked, setChecked] = useState("allow");
+  const [activeStep, setActiveStep] = useState(1);
+  const [verified, setVerified] = useState(false);
+  const [confirmed, setConfirmed] = useState("");
+  const [initatedata, setInitatedata]: any = useState([]);
+  const [to, setTo] = useState("");
+  const [planningToSell, setPlanningToSell] = useState(0);
 
   useEffect(() => {
     if (data === null) {
@@ -60,6 +72,19 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
 
   const [isInitiatng, setIsInitating] = useState("");
   const handleInitate = async () => {
+    // validate the eth value
+    let buyAmount: number = ethValue as number;
+
+    if (buyAmount <= 0) {
+      showErrorMessage("Please enter buy amount greater than 0 !");
+      return false;
+    } else if (buyAmount > planningToSell) {
+      showErrorMessage(
+        `Buy amount can not be greater that offer quanity ${planningToSell} !`
+      );
+      return false;
+    }
+
     setIsInitating("loading");
     await initiateFullFillMent();
     setIsInitating("initiated");
@@ -68,14 +93,6 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
     //   setIsInitating("initiated");
     // }, 1000 * 120);
   };
-
-  const [checked, setChecked] = useState("allow");
-  const [activeStep, setActiveStep] = useState(1);
-  const [verified, setVerified] = useState(false);
-  const [confirmed, setConfirmed] = useState("");
-  const [initatedata, setInitatedata]: any = useState([]);
-  const [to, setTo] = useState("");
-  const [planningToSell, setPlanningToSell] = useState(0);
 
   const handleConfirmClick = () => {
     setConfirmed("loading");
@@ -210,7 +227,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                   onChange={(e) => {
                     const value = parseFloat(e.target.value);
                     if (isNaN(value)) {
-                      setEthValue(0);
+                      setEthValue("");
                     } else {
                       setEthValue(Number(value));
                     }

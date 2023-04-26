@@ -4,6 +4,11 @@ import Button from "~/components/Button/Button";
 import { VariantsEnum } from "~/enums/VariantsEnum";
 import { Icon } from "@iconify/react";
 import { useState } from "react";
+import PaperWallet from "./PaperWallet";
+import ReactToPrint, { useReactToPrint } from "react-to-print";
+import React, { useRef } from "react";
+import { showSuccessMessage, showErrorMessage } from "~/service/AppService";
+
 import { Wallet, decryptWallet, encryptWallet } from "~/utils/BitcoinUtils";
 interface IInstantWallet {
   data: Wallet | null;
@@ -11,6 +16,8 @@ interface IInstantWallet {
 }
 
 const InstantWallet = ({ data, generatedAddress }: IInstantWallet) => {
+  const componentRef = useRef(null);
+
   const [inputData, setInputData] = useState({
     password: "",
     confirmPassword: "",
@@ -37,22 +44,38 @@ const InstantWallet = ({ data, generatedAddress }: IInstantWallet) => {
   };
 
   const handleDownloadWalletClick = () => {
-    if (inputData.password === "" || inputData.confirmPassword === "")
-      return alert("Password or Confirm Password is required");
-    if (inputData.password !== inputData.confirmPassword)
-      return alert("Password and confirm password does not match");
-    if (data === null) return alert("Data is null");
-    // console.log(data, inputData.password)
-    const encryptedData = encryptWallet(data, inputData.password);
+    if (inputData.password === "" || inputData.confirmPassword === "") {
+      // alert("Password or Confirm Password is required");
+      showErrorMessage("Password or Confirm Password is required");
+      return false;
+    }
 
-    setInputData({
-      password: "",
-      confirmPassword: "",
-    });
+    if (inputData.password !== inputData.confirmPassword) {
+      showErrorMessage("Password and confirm password does not match");
+      return false;
+    }
 
-    if (!encryptedData) return alert("Error encrypting wallet");
-    const decryptedData = decryptWallet(encryptedData, inputData.password);
+    if (data === null) {
+      showErrorMessage("Data is null");
+      return false;
+    }
+    // console.log(data, inputData.password);
+    // const encryptedData = encryptWallet(data, inputData.password);
+
+    // setInputData({
+    //   password: "",
+    //   confirmPassword: "",
+    // });
+
+    // if (!encryptedData) return alert("Error encrypting wallet");
+    // const decryptedData = decryptWallet(encryptedData, inputData.password);
+
+    handlePrint();
   };
+
+  const handlePrint = useReactToPrint({
+    content: () => componentRef.current,
+  });
 
   return (
     <div className={styles.instantWalletRoot}>
@@ -79,6 +102,7 @@ const InstantWallet = ({ data, generatedAddress }: IInstantWallet) => {
         value={inputData.confirmPassword}
         onChange={handleConfirmPasswordChange}
       />
+
       <Button
         variant={VariantsEnum.outlinePrimary}
         radius={10}
@@ -98,6 +122,18 @@ const InstantWallet = ({ data, generatedAddress }: IInstantWallet) => {
         * Please make sure you backup the wallet file and password. The wallet
         file and password are both needed to recover any funds received
       </p>
+
+      {/* <ReactToPrint
+        trigger={() => <button>Print this out!</button>}
+        content={() => componentRef.current}
+      /> */}
+      <div style={{ display: "none" }}>
+        <PaperWallet
+          generatedAddress={generatedAddress}
+          data={data}
+          ref={componentRef}
+        />
+      </div>
     </div>
   );
 };

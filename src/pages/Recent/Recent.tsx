@@ -7,10 +7,20 @@ import RecentOngoingTable from "~/components/RecentOngoingTable/RecentOngoingTab
 import Tabs from "~/components/Tabs/Tabs";
 import { HistoryTableData, OngoingTableData } from "~/data/recentPage";
 import styles from "./Recent.module.scss";
-import { useState } from "react";
+import React, { useState } from "react";
 import AllSwapTable from "~/components/AllSwapTable/AllSwapTable";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 import MainLayout from "~/components/MainLayout/MainLayout";
+
+import { IFullfillmentEvent } from "~/interfaces/IOfferdata";
+import { MAX_BLOCKS_TO_QUERY, MAX_ITERATIONS } from "~/Context/Constants";
+import { AppContext } from "~/Context/AppContext";
+import { CurrencyEnum } from "~/enums/CurrencyEnum";
+import { StatusEnum } from "~/enums/StatusEnum";
+import { ethers } from "ethers";
+import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
+import { TimestampTofromNow } from "~/utils/TimeConverter";
+
 type Props = {};
 
 const Recent = (props: Props) => {
@@ -42,10 +52,19 @@ const Recent = (props: Props) => {
 export default Recent;
 
 function MySwaps() {
+  const context = React.useContext(AppContext);
+  if (context === null) {
+    return <>Loading...</>;
+  }
+
+  const { listenedOngoinMySwapData, setlistenedOngoinMySwapData } = context;
+  const [tableData, setTableData] = useState([]);
   const [isMoreOngoingLoading, setMoreOngoingDataLoading] = useState(false);
   const [isMoreHistoryLoading, setMoreHistoryLoading] = useState(false);
+
   const loadMoreOngoing = () => {
     setMoreOngoingDataLoading(true);
+
     setTimeout(() => {
       setMoreOngoingDataLoading(false);
     }, 2000);
@@ -56,6 +75,42 @@ function MySwaps() {
       setMoreHistoryLoading(false);
     }, 2000);
   };
+
+  const OngoingTableData2 = listenedOngoinMySwapData?.offers.map(
+    (value, key) => {
+      let fulfillmentBy: string = value?.offersFullfillmentJson.fulfillmentBy;
+      let row = {
+        orderNumber: value.offerEvent.fulfillmentId.toString().slice(-6),
+        planningToSell: {
+          amount: Number(
+            ethers.utils.formatEther(value.offerDetailsInJson.offerQuantity)
+          ),
+          type: CurrencyEnum.ETH,
+        },
+        planningToBuy: {
+          amount: Number(
+            Number(
+              SatoshiToBtcConverter(value.offerDetailsInJson.satoshisToReceive)
+            ).toFixed(4)
+          ),
+          type: CurrencyEnum.BTC,
+        },
+        rateInBTC: Number(
+          Number(
+            Number(
+              SatoshiToBtcConverter(value.offerDetailsInJson.satoshisToReceive)
+            ) /
+              Number(
+                ethers.utils.formatEther(value.offerDetailsInJson.offerQuantity)
+              )
+          ).toFixed(4)
+        ),
+        progress: TimestampTofromNow(value?.offersFullfillmentJson.expiryTime),
+      };
+      // console.log(row);
+      return row;
+    }
+  );
 
   return (
     <div className={styles.panelCont}>
@@ -72,7 +127,8 @@ function MySwaps() {
                 "Progress",
                 "Actions",
               ]}
-              data={OngoingTableData}
+              data={OngoingTableData2}
+              // data={tableData}
             />
           </div>
           <div className={styles.recentMobileTable}>

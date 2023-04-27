@@ -14,12 +14,18 @@ import useDetectScrollUpDown from "~/hooks/useDetectScrollUpDown";
 import Countdown from "~/utils/Countdown";
 import { AppContext } from "~/Context/AppContext";
 import { IFullfillmentEvent } from "~/interfaces/IOfferdata";
-import { InitializeFullfillment } from "~/service/AppService";
+import {
+  InitializeFullfillment,
+  showSuccessMessage,
+  showErrorMessage,
+} from "~/service/AppService";
 import { QRCodeCanvas } from "qrcode.react";
 import { address } from "bitcoinjs-lib";
 import { generateTrustlexAddress } from "~/utils/BitcoinUtils";
 import ImageIcon from "../ImageIcon/ImageIcon";
 import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";
+import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
+import { ethers } from "ethers";
 
 type Props = {
   isOpened: boolean;
@@ -28,10 +34,19 @@ type Props = {
 };
 
 const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
+  // console.log(data);
   const { mobileView } = useWindowDimensions();
   const rootRef = useRef(null);
   const context = useContext(AppContext);
-  const [ethValue, setEthValue] = useState(0);
+  const [ethValue, setEthValue] = useState<number | string>(0);
+
+  const [checked, setChecked] = useState("allow");
+  const [activeStep, setActiveStep] = useState(1);
+  const [verified, setVerified] = useState(false);
+  const [confirmed, setConfirmed] = useState("");
+  const [initatedata, setInitatedata]: any = useState([]);
+  const [to, setTo] = useState("");
+  const [planningToSell, setPlanningToSell] = useState(0);
 
   useEffect(() => {
     if (data === null) {
@@ -47,14 +62,29 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
 
   const foundOffer =
     data &&
-    listenedOfferData.offers.find(
-      (offer) => offer.offerDetailsInJson.offeredBlockNumber === data[0]
-    );
-  // console.log(foundOffer);
+    listenedOfferData.offers.find((offer) => {
+      // return offer.offerDetailsInJson.offeredBlockNumber === data[0]
+      return offer.offerEvent.to.toString() == data[0];
+    });
+
+  // console.log(foundOffer, data, listenedOfferData);
   useAutoHideScrollbar(rootRef);
 
   const [isInitiatng, setIsInitating] = useState("");
   const handleInitate = async () => {
+    // validate the eth value
+    let buyAmount: number = ethValue as number;
+
+    if (buyAmount <= 0) {
+      showErrorMessage("Please enter buy amount greater than 0 !");
+      return false;
+    } else if (buyAmount > planningToSell) {
+      showErrorMessage(
+        `Buy amount can not be greater that offer quanity ${planningToSell} !`
+      );
+      return false;
+    }
+
     setIsInitating("loading");
     await initiateFullFillMent();
     setIsInitating("initiated");
@@ -63,13 +93,6 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
     //   setIsInitating("initiated");
     // }, 1000 * 120);
   };
-
-  const [checked, setChecked] = useState("allow");
-  const [activeStep, setActiveStep] = useState(1);
-  const [verified, setVerified] = useState(false);
-  const [confirmed, setConfirmed] = useState("");
-  const [initatedata, setInitatedata]: any = useState([]);
-  const [to, setTo] = useState("");
 
   const handleConfirmClick = () => {
     setConfirmed("loading");
@@ -81,6 +104,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
   const { scrollDirection } = useDetectScrollUpDown();
 
   const initiateFullFillMent = async () => {
+    // console.log(foundOffer);
     if (!foundOffer || foundOffer === undefined) return;
     const _fulfillment: IFullfillmentEvent = {
       fulfillmentBy: foundOffer.offerEvent.from,
@@ -94,18 +118,39 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
     };
 
     console.log(foundOffer, _fulfillment);
+
     const data = await InitializeFullfillment(
       context.contract,
       foundOffer.offerEvent.to,
       _fulfillment
     );
     var lll = await data.wait();
-    console.log(lll);
-    let toAddress = Buffer.from(foundOffer.offerDetailsInJson.bitcoinAddress.substring(2), "hex");
+    let toAddress = Buffer.from(
+      foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
+      "hex"
+    );
     let hashAdress = generateTrustlexAddress(toAddress, "10");
     setTo(`${hashAdress}`);
     setInitatedata(data);
   };
+
+  useEffect(() => {
+    if (!foundOffer || foundOffer === undefined) return;
+
+    let toAddress = Buffer.from(
+      foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
+      "hex"
+    );
+    let hashAdress = generateTrustlexAddress(toAddress, "10");
+    setTo(`${hashAdress}`);
+    let planningToSell_ = Number(
+      ethers.utils.formatEther(foundOffer.offerDetailsInJson.offerQuantity)
+    ); //offerQuantity
+
+    setPlanningToSell(planningToSell_);
+
+    setEthValue(planningToSell_);
+  }, [foundOffer?.offerEvent?.to?.toString()]);
 
   // useEffect(() => {
   //   if (!listenedOfferData || listenedOfferData === undefined) return;
@@ -113,6 +158,12 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
   // }, [listenedOfferData]);
 
   if (!isOpened) return null;
+  let BTCAmount = Number(
+    (
+      (ethValue / data[1].props.children[0]) *
+      data[2].props.children[0]
+    ).toFixed(3)
+  );
 
   return (
     <Drawer
@@ -164,13 +215,41 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
             )}
           </Grid>
           <Grid className={styles.heading}>
-            <Grid.Col span={11}>
+            <Grid.Col span={12}>
               <Text component="h1" className={styles.title}>
                 <span className={styles.buy}>Buy:</span>
-                <input value={ethValue} onChange={(e) => setEthValue(Number(e.target.value))} className={styles.input} />
+                <input
+                  type="number"
+                  step="any"
+                  min={0}
+                  value={ethValue}
+                  max={planningToSell}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value);
+                    if (isNaN(value)) {
+                      setEthValue("");
+                    } else {
+                      setEthValue(Number(value));
+                    }
+
+                    // if (isNaN(ethValue)) {
+                    //   setEthValue(Number(e.target.value));
+                    // }
+                    // setEthValue(Number(e.target.value));
+                  }}
+                  className={styles.input}
+                />
                 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />
                 <span className={styles.for}>with</span>
-                <CurrencyDisplay amount={Number((ethValue / data[1].props.children[0] * data[2].props.children[0]).toFixed(3))} type={CurrencyEnum.BTC} />{" "}
+                <CurrencyDisplay
+                  amount={Number(
+                    (
+                      (ethValue / data[1].props.children[0]) *
+                      data[2].props.children[0]
+                    ).toFixed(3)
+                  )}
+                  type={CurrencyEnum.BTC}
+                />{" "}
               </Text>
             </Grid.Col>
           </Grid>
@@ -187,8 +266,9 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                 <div className={styles.stepContent}>
                   <div className={styles.spacing} />
                   <div
-                    className={`${styles.stepItem} ${checked === "allow" && styles.activeStepItem
-                      }`}
+                    className={`${styles.stepItem} ${
+                      checked === "allow" && styles.activeStepItem
+                    }`}
                     onClick={() => setChecked("allow")}
                   >
                     <div className={styles.checkboxContainer}>
@@ -205,8 +285,9 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                   </div>
 
                   <div
-                    className={`${styles.stepItem} ${checked !== "allow" && styles.activeStepItem
-                      }`}
+                    className={`${styles.stepItem} ${
+                      checked !== "allow" && styles.activeStepItem
+                    }`}
                     onClick={() => setChecked("notAllow")}
                   >
                     <div className={styles.checkboxContainer}>
@@ -276,6 +357,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                   {activeStep === 2 ? <StepFilledSvg /> : <StepSvg />}
                 </div>
                 <h2 className={styles.stepCount}>Step 2</h2>
+                {/* <img src="https://chart.googleapis.com/chart?chs=225x225&chld=L|2&cht=qr&chl=bitcoin:1MoLoCh1srp6jjQgPmwSf5Be5PU98NJHgx?amount=.01%26label=Moloch.net%26message=Donation" /> */}
               </div>
               <div className={styles.stepsContentsContainer}>
                 <div className={styles.stepContent}>
@@ -292,21 +374,25 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                             width: "100%",
                             height: "100%",
                           }}
-                        // bgColor="#7C7C7C00"
-                        // fgColor="#7C7C7C"
+                          // bgColor="#7C7C7C00"
+                          // fgColor="#7C7C7C"
                         />
                       </div>
                     }
-                    {/* <img src="/images/qr-code.png" className={styles.qrImage} /> */}
+                    <img
+                      src={`https://chart.googleapis.com/chart?chs=225x225&chld=L|2&cht=qr&chl=bitcoin:${to}?amount=${BTCAmount}%26label=Trustlex%26message=Buying_Ether`}
+                      className={styles.qrImage}
+                    />
                     <div className={styles.sendTo}>
-                      <span>Send &nbsp;
-                        <CurrencyDisplay amount={Number((ethValue / data[1].props.children[0] * data[2].props.children[0]).toFixed(3))} type={CurrencyEnum.BTC} />{" "}
-                        Bitcoins to:</span>
-                      {mobileView ? (
-                        <span>{to}</span>
-                      ) : (
-                        <span>{to}</span>
-                      )}
+                      <span>
+                        Send &nbsp;
+                        <CurrencyDisplay
+                          amount={BTCAmount}
+                          type={CurrencyEnum.BTC}
+                        />{" "}
+                        Bitcoins to:
+                      </span>
+                      {mobileView ? <span>{to}</span> : <span>{to}</span>}
                     </div>
                   </div>
                   <div className={styles.colletaralTextContainer}>
@@ -355,8 +441,9 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                   </div>
                   <div className={styles.spacing} />
                   <div
-                    className={`${styles.stepItem} ${styles.proofCheckbox} ${verified && styles.activeStepItem
-                      }`}
+                    className={`${styles.stepItem} ${styles.proofCheckbox} ${
+                      verified && styles.activeStepItem
+                    }`}
                     onClick={() => setVerified(!verified)}
                   >
                     <div className={styles.checkboxContainer}>

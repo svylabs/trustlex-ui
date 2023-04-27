@@ -4,7 +4,11 @@ import { Icon } from "@iconify/react";
 import { Button } from "@mantine/core";
 import { useContext, useState } from "react";
 import { AppContext } from "~/Context/AppContext";
-import { connectToMetamask } from "~/service/AppService";
+import {
+  connectToMetamask,
+  showErrorMessage,
+  showSuccessMessage,
+} from "~/service/AppService";
 import SendBtcDrawer from "~/components/SendBtc/SendBtcDrawer/SendBtcDrawer";
 import SendBtcBox from "~/components/SendBtc/SendBtcBox/SendBtcBox";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
@@ -17,24 +21,31 @@ const Navbar = (props: Props) => {
   if (context === null) {
     return <>Loading...</>;
   }
-  const { account, setAccount } = context;
+  const { account, setAccount, balance } = context;
 
   const handleConnect = async () => {
-    if (account !== "") {
+    if (account !== "" && (account as unknown as boolean) != false) {
       console.log("Account already connected");
       return;
     } else {
       const connect = await connectToMetamask();
       if (!connect) {
-        alert("Failed to connect");
+        let message: string = "Failed to connect";
+        // alert("Failed to connect");
+        showErrorMessage(message);
       }
+
       setAccount(connect);
     }
   };
 
   const ethDropdownItems = [
     {
-      title: account !== "" ? "Connected" : "Connect to Metamask",
+      title:
+        account !== "" && (account as unknown as boolean) != false
+          ? // ? `Connected to ${account} \n Balance ${balance} ETH`
+            `Connected`
+          : "Connect to Metamask",
       href: "",
       onClick: handleConnect,
     },

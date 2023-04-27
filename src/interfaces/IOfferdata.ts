@@ -1,4 +1,5 @@
 export interface IOfferdata {
+  offerId: string;
   offerQuantity: string;
   offeredBy: string;
   offerValidTill: string;
@@ -15,6 +16,12 @@ export interface INewOfferEvent {
   from: string;
   to: string;
 }
+
+export interface IInitilizedFullfillmentEvent {
+  claimedBy: string;
+  offerId: string;
+  fulfillmentId: string;
+}
 export interface IFullfillmentEvent {
   fulfillmentBy: string;
   quantityRequested: string;
@@ -26,7 +33,6 @@ export interface IFullfillmentEvent {
   collateralAddedBy: string;
 }
 
-
 export interface IListenedOfferData {
   offerEvent: INewOfferEvent;
   offerDetailsInJson: IOfferdata;
@@ -36,4 +42,23 @@ export interface IOffersResult {
   fromBlock: number;
   toBlock: "latest" | number;
   offers: IListenedOfferData[];
+}
+
+export interface IOffersResultByNonEvent {
+  offers: IListenedOfferData[];
+}
+export interface IListInitiatedFullfillmentData {
+  offerEvent: IInitilizedFullfillmentEvent;
+  offerDetailsInJson: IOfferdata;
+  offersFullfillmentJson: IFullfillmentEvent;
+}
+export interface IinitiatedFullfillmentResult {
+  fromBlock: number;
+  toBlock: "latest" | number;
+  offers: IListInitiatedFullfillmentData[];
+}
+
+export enum OrderBy {
+  ASC = "asc",
+  DESC = "desc",
 }

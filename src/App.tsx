@@ -12,41 +12,74 @@ import {
   findMetaMaskAccount,
   getBalance,
   listOffers,
+  InitializeFullfillment,
+  listInitializeFullfillment,
+  getOffersList,
+  getTotalOffers,
 } from "./service/AppService";
 import IUserInputData from "./interfaces/IUserInputData";
 import swapArrayElements from "./utils/swapArray";
-import { IListenedOfferData, IOffersResult } from "./interfaces/IOfferdata";
+import {
+  IListenedOfferData,
+  IOffersResult,
+  IinitiatedFullfillmentResult,
+  IOffersResultByNonEvent,
+  OrderBy,
+} from "./interfaces/IOfferdata";
 import { ethers } from "ethers";
 import { ContractMap } from "./Context/AppConfig";
 import useLocalstorage from "./hooks/useLocalstorage";
+import { PAGE_SIZE, OfferListOrderBy } from "~/Context/Constants";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { number } from "bitcoinjs-lib/src/script";
 
 export default function App() {
   const { get, set, remove } = useLocalstorage();
   const [account, setAccount] = useState("");
   const [balance, setBalance] = useState("");
+  const [totalOffers, setTotalOffers] = useState(0);
+  const [fromOfferId, setFromOfferId] = useState(0);
   const [contract, setContract] = useState<ethers.Contract>();
   const tokenData = get("selectedToken", false);
   const [selectedToken, setSelectedToken] = useState(
     tokenData ? tokenData.toUpperCase() : "ETH"
   );
-  const [listenedOfferData, setListenedOfferData] = useState<
-    IOffersResult
-  >({ fromBlock: 0, toBlock: 0, offers: [] });
+  const [listenedOfferData, setListenedOfferData] = useState<IOffersResult>({
+    fromBlock: 0,
+    toBlock: 0,
+    offers: [],
+  });
+  const [isMoreTableDataLoading, setMoreTableDataLoading] = useState(false);
+  const [exchangeLoadingText, setExchangeLoadingText] = useState<string>("");
+  const [refreshOffersListKey, setRefreshOffersListKey] = useState<number>(1);
+
+  const [listenedOfferDataByNonEvent, setListenedOfferDataByNonEvent] =
+    useState<IOffersResultByNonEvent>({
+      offers: [],
+    });
+
+  const [listenedOngoinMySwapData, setlistenedOngoinMySwapData] =
+    useState<IinitiatedFullfillmentResult>({
+      fromBlock: 0,
+      toBlock: 0,
+      offers: [],
+    });
 
   const userData = get("userInputData", true);
   const [userInputData, setUserInputData] = useState<IUserInputData>(
     userData
       ? userData
       : {
-        setLimit: true,
-        limit: "",
-        activeExchange: [
-          { currency: "btc", value: "" },
-          { currency: "eth", value: "" },
-          { currency: "sol", value: "" },
-          { currency: "doge", value: "" },
-        ],
-      }
+          setLimit: true,
+          limit: "",
+          activeExchange: [
+            { currency: "btc", value: "" },
+            { currency: "eth", value: "" },
+            { currency: "sol", value: "" },
+            { currency: "doge", value: "" },
+          ],
+        }
   );
 
   useEffect(() => {
@@ -78,15 +111,16 @@ export default function App() {
           }
         });
 
-        connect(provider, ContractMap[selectedToken].address).then((trustlex) => {
-          if (trustlex) {
-            setContract(trustlex as ethers.Contract);
+        connect(provider, ContractMap[selectedToken].address).then(
+          (trustlex) => {
+            if (trustlex) {
+              setContract(trustlex as ethers.Contract);
+            }
           }
-        });
+        );
       });
     }
-
-  }, [])
+  }, []);
 
   const swapChange = () => {
     setUserInputData((prev) => {
@@ -127,13 +161,40 @@ export default function App() {
     const { ethereum } = window;
     if (ethereum) {
       const provider = new ethers.providers.Web3Provider(ethereum);
+
+      setMoreTableDataLoading(true);
+      setListenedOfferDataByNonEvent({ offers: [] });
+      setExchangeLoadingText("Connecting to Network");
       connect(provider, ContractMap[selectedToken].address).then(
         async (trustlex) => {
           if (trustlex) {
             setContract(trustlex as ethers.Contract);
             const offers = await listOffers(trustlex);
             setListenedOfferData(offers);
+
+            setMoreTableDataLoading(true);
+            setExchangeLoadingText("Loading List");
+            let totalOffers = await getTotalOffers(trustlex);
+            setTotalOffers(totalOffers);
+
+            let fromOfferId = totalOffers;
+
+            let offersList = await getOffersList(trustlex, fromOfferId);
+            fromOfferId =
+              fromOfferId - PAGE_SIZE > 0 ? fromOfferId - PAGE_SIZE : 0;
+            setFromOfferId(fromOfferId);
+            // console.log(totalOffers, totalOffers, fromOfferId, offersList);
+            setListenedOfferDataByNonEvent(offersList);
+            setMoreTableDataLoading(false);
+            setExchangeLoadingText("");
+
+            const InitializeFullfillmentData = await listInitializeFullfillment(
+              trustlex
+            );
+            // console.log(InitializeFullfillmentData);
+            setlistenedOngoinMySwapData(InitializeFullfillmentData);
           }
+
           findMetaMaskAccount().then((account) => {
             if (account !== null) {
               setAccount(account);
@@ -151,7 +212,7 @@ export default function App() {
       setAccount("");
       setBalance("");
     };
-  }, []);
+  }, [refreshOffersListKey]);
 
   return (
     <MantineProvider
@@ -176,9 +237,25 @@ export default function App() {
             dropDownChange,
             listenedOfferData,
             setListenedOfferData,
+            listenedOngoinMySwapData,
+            setlistenedOngoinMySwapData,
+            listenedOfferDataByNonEvent,
+            setListenedOfferDataByNonEvent,
+            isMoreTableDataLoading,
+            setMoreTableDataLoading,
+            exchangeLoadingText,
+            setExchangeLoadingText,
+            totalOffers,
+            setTotalOffers,
+            fromOfferId,
+            setFromOfferId,
+            refreshOffersListKey,
+            setRefreshOffersListKey,
           }}
         >
           <Layout>
+            <ToastContainer />
+
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/exchange" element={<Exchange />} />

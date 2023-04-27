@@ -21,6 +21,7 @@ import {
 import { CurrencyEnum } from "~/enums/CurrencyEnum";
 import { VariantsEnum } from "~/enums/VariantsEnum";
 import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";
+import { EthtoWei, WeitoEth } from "~/utils/Ether.utills";
 import styles from "./Exchange.module.scss";
 import SeeMoreButton from "~/components/SeeMoreButton/SeeMoreButton";
 import ExchangeOfferDrawer from "~/components/ExchangeOfferDrawer/ExchangeOfferDrawer";
@@ -31,11 +32,17 @@ import {
   connect,
   getOffers,
   listOffers,
+  getTotalOffers,
+  getOffersList,
 } from "~/service/AppService";
 import BtcToSatoshiConverter from "~/utils/BtcToSatoshiConverter";
 import { IListenedOfferData } from "~/interfaces/IOfferdata";
 import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
-import { NumberToTime, TimeToNumber } from "~/utils/TimeConverter";
+import {
+  NumberToTime,
+  TimeToNumber,
+  TimeToDateFormat,
+} from "~/utils/TimeConverter";
 import { ethers } from "ethers";
 import {
   Wallet,
@@ -45,31 +52,14 @@ import {
 import GenerateWalletDrawer from "~/components/GenerateWalletDrawer/GenerateWalletDrawer";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 import MainLayout from "~/components/MainLayout/MainLayout";
-import { MAX_BLOCKS_TO_QUERY, MAX_ITERATIONS } from "~/Context/Constants";
+import {
+  MAX_BLOCKS_TO_QUERY,
+  MAX_ITERATIONS,
+  PAGE_SIZE,
+  OfferListOrderBy,
+} from "~/Context/Constants";
 import Loading from "~/components/Loading/Loading";
 type Props = {};
-
-// const tableDummyData: string[][] = new Array(5).fill([
-//   1211,
-//   <>
-//     10 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />{" "}
-//     {CurrencyEnum.ETH}
-//   </>,
-//   <>
-//     0.078 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
-//     {CurrencyEnum.BTC}
-//   </>,
-//   <>
-//     0.078 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
-//     {CurrencyEnum.BTC}
-//   </>,
-//   <>
-//     1 out of 10 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />{" "}
-//     {CurrencyEnum.ETH}
-//   </>,
-//   "1h",
-//   "09 Jan, 13:45pm",
-// ]);
 
 const mobileTableDummyData: string[][] = new Array(5).fill([
   1211,
@@ -83,8 +73,6 @@ const mobileTableDummyData: string[][] = new Array(5).fill([
 ]);
 
 const Exchange = (props: Props) => {
-  const [isMoreTableDataLoading, setMoreTableDataLoading] = useState(false);
-
   const [rowData, setRowData] = useState<(string | ReactNode)[] | null>(null);
 
   const [generateAddress, setGenerateAddress] = useState("");
@@ -103,7 +91,21 @@ const Exchange = (props: Props) => {
     setListenedOfferData,
     userInputData,
     setUserInputData,
+    listenedOfferDataByNonEvent,
+    setListenedOfferDataByNonEvent,
+    isMoreTableDataLoading,
+    setMoreTableDataLoading,
+    exchangeLoadingText,
+    setExchangeLoadingText,
+    totalOffers,
+    setTotalOffers,
+    fromOfferId,
+    setFromOfferId,
+    refreshOffersListKey,
+    setRefreshOffersListKey,
+    account,
   } = context;
+
   const [exchangeData, setExchangeData] = useState({
     address: "",
     valid:
@@ -131,55 +133,77 @@ const Exchange = (props: Props) => {
 
   const getTableData = (offers: IListenedOfferData[]) => {
     return offers.map((offer: IListenedOfferData) => {
+      // console.log(offer);
+      const planningToSell = Number(
+        SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)
+      ).toFixed(4);
+      const offerQuantity = ethers.utils.formatEther(
+        offer.offerDetailsInJson.offerQuantity
+      );
+      const price_per_ETH_in_BTC =
+        Number(
+          SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)
+        ) /
+        Number(
+          ethers.utils.formatEther(offer.offerDetailsInJson.offerQuantity)
+        );
+      const satoshisToReceive = Number(
+        offer.offerDetailsInJson.satoshisToReceive
+      );
+      const satoshisReserved = Number(
+        offer.offerDetailsInJson.satoshisReserved
+      );
+      const satoshisReceived = Number(
+        offer.offerDetailsInJson.satoshisReceived
+      );
+      const left_to_buy =
+        Number(
+          SatoshiToBtcConverter(
+            satoshisToReceive - (satoshisReserved + satoshisReceived)
+          )
+        ) / price_per_ETH_in_BTC;
+
       return [
-        offer.offerDetailsInJson.offeredBlockNumber,
+        // offer.offerDetailsInJson.offeredBlockNumber,
+        // offer.offerEvent.to.toString(),
+        offer.offerDetailsInJson.offerId,
         <>
-          {ethers.utils.formatEther(offer.offerDetailsInJson.offerQuantity)}{" "}
+          {offerQuantity}{" "}
           <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />
           {CurrencyEnum.ETH}
         </>,
         <>
-          {Number(
-            SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)
-          ).toFixed(4)}{" "}
+          {planningToSell}{" "}
           <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
           {CurrencyEnum.BTC}
         </>,
         <>
-          {(
-            Number(
-              SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)
-            ) /
-            Number(
-              ethers.utils.formatEther(offer.offerDetailsInJson.offerQuantity)
-            )
-          ).toFixed(4)}{" "}
+          {price_per_ETH_in_BTC.toFixed(4)}{" "}
           <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
           {CurrencyEnum.BTC}
         </>,
         <>
-          {Number(
-            SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)
-          ) -
-            2 * Number(offer.offerDetailsInJson.satoshisReserved)}{" "}
+          {left_to_buy}{" "}
           <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />
           {CurrencyEnum.ETH}
         </>,
         NumberToTime(offer.offerDetailsInJson.offerValidTill),
-        offer.offerDetailsInJson.orderedTime,
+        TimeToDateFormat(offer.offerDetailsInJson.orderedTime),
       ];
     });
   };
 
-  let data = getTableData(listenedOfferData.offers);
+  // let data = getTableData(listenedOfferData.offers);
+  // console.log("data", data);
 
   const [generatedBitcoinData, setGeneratedBitcoinData] =
     useState<Wallet | null>(null);
-  const [tableData, setTableData] = useState<(string | JSX.Element)[][]>(data);
+  // const [tableData, setTableData] = useState<(string | JSX.Element)[][]>(data);
+  const [tableData, setTableData] = useState<(string | JSX.Element)[][]>([]);
   const [generateWalletDrawerOpen, setGenerateWalletDrawerOpen] =
     useState(false);
 
-  const loadMoreOffers = () => {
+  const loadMoreOffers = async () => {
     setMoreTableDataLoading(true);
     let fromBlock = Math.max(
       0,
@@ -199,7 +223,39 @@ const Exchange = (props: Props) => {
       setListenedOfferData(listenedOffers);
       setTableData(getTableData(listenedOffers.offers));
       setMoreTableDataLoading(false);
+      console.log(listenedOffers);
     });
+  };
+  const loadMoreOffersByNonEvent = async () => {
+    setMoreTableDataLoading(true);
+
+    callOffersListService().then((offers) => {
+      const listenedOffersByNonEvent = {
+        offers: [...listenedOfferDataByNonEvent.offers, ...offers.offers],
+      };
+      setListenedOfferDataByNonEvent(listenedOffersByNonEvent);
+      setTableData(getTableData(listenedOffersByNonEvent.offers));
+      setMoreTableDataLoading(false);
+
+      let fromOfferId_ =
+        fromOfferId - PAGE_SIZE > 0 ? fromOfferId - PAGE_SIZE : 0;
+      setFromOfferId(fromOfferId_);
+      console.log(listenedOffersByNonEvent);
+    });
+  };
+
+  const showLoadMoreButton = () => {
+    if (fromOfferId > 0 && exchangeLoadingText == "") {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const callOffersListService = async () => {
+    const offersList = await getOffersList(context.contract, fromOfferId);
+    // console.log(offersList);
+    return offersList;
   };
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -227,21 +283,29 @@ const Exchange = (props: Props) => {
     setConfirm("loading");
     try {
       console.log(generatedBitcoinData?.pubkeyHash.toString("hex"));
+
+      let inputEther: string = userInputData.activeExchange[1].value;
       const data = {
+        weieth: EthtoWei(inputEther),
         satoshis: BtcToSatoshiConverter(userInputData.activeExchange[0].value),
         bitcoinAddress: generatedBitcoinData?.pubkeyHash.toString("hex"),
         offerValidTill: TimeToNumber(exchangeData.valid),
+        account: "0xf72B8291b10eC381e55DE4788F6EBBB7425cF34e",
       };
 
       const addedOffer = await AddOfferWithEth(context.contract, data);
+      console.log(addedOffer);
       if (addedOffer.hash !== "") {
         setHashedOfferData(addedOffer.hash);
         setConfirm("confirmed");
         setTimeout(() => {
           setConfirm("none");
+          setAddOffer(false);
+          //fertch the data again
+          setRefreshOffersListKey(refreshOffersListKey + 1);
         }, 3000);
       }
-    } catch {
+    } catch (error) {
       setConfirm("none");
     }
   };
@@ -349,13 +413,20 @@ const Exchange = (props: Props) => {
   const listenEvent = async () => {
     await listentotheEvent();
   };
+  // useEffect(() => {
+  //   listenEvent();
+  //   listOffers(context.contract).then((offers) => {
+  //     setListenedOfferData(offers);
+  //     setTableData(getTableData(offers.offers));
+  //   });
+  // }, [hashedOfferData]);
+
   useEffect(() => {
-    listenEvent();
-    listOffers(context.contract).then((offers) => {
-      setListenedOfferData(offers);
-      setTableData(getTableData(offers.offers));
-    });
-  }, [hashedOfferData]);
+    if (listenedOfferDataByNonEvent?.offers) {
+      const result = getTableData(listenedOfferDataByNonEvent?.offers);
+      setTableData(result);
+    }
+  }, [listenedOfferDataByNonEvent]);
 
   const handleGenerateBitcoinWallet = async () => {
     const data = generateBitcoinWallet();
@@ -435,7 +506,9 @@ const Exchange = (props: Props) => {
                               label="Address to receive Bitcoin"
                               placeholder="Click Button ->"
                               value={exchangeData.address}
-                              style={{ width: "78%" }}
+                              style={{
+                                width: "78%",
+                              }}
                               disabled
                               onChange={handleAddressChange}
                             />
@@ -475,7 +548,7 @@ const Exchange = (props: Props) => {
                         loading={confirm === "loading" ? true : false}
                         onClick={handleOfferConfirm}
                       >
-                        Confirm
+                        {confirm === "loading" ? "Confirming" : "Confirm"}
                       </Button>
                     ) : (
                       <div className={styles.confirmed}>
@@ -530,13 +603,27 @@ const Exchange = (props: Props) => {
             </div>
             <br />
             <Center>
-              <ActionButton
-                variant={"transparent"}
-                loading={isMoreTableDataLoading}
-                onClick={loadMoreOffers}
-              >
-                Load more
-              </ActionButton>
+              {exchangeLoadingText != "" ? (
+                <ActionButton
+                  variant={"transparent"}
+                  loading={isMoreTableDataLoading}
+                >
+                  {exchangeLoadingText}
+                </ActionButton>
+              ) : (
+                ""
+              )}
+              {showLoadMoreButton() == true ? (
+                <ActionButton
+                  variant={"transparent"}
+                  loading={isMoreTableDataLoading}
+                  onClick={loadMoreOffersByNonEvent}
+                >
+                  Load More
+                </ActionButton>
+              ) : (
+                ""
+              )}
             </Center>
           </div>
         </GradientBackgroundContainer>

@@ -71,6 +71,15 @@ const Navbar = (props: Props) => {
         >
           <Icon icon="material-symbols:menu-rounded" className={styles.icon} />
         </Button>
+        {account != "" ? (
+          <>
+            <div>
+              Connected To: {account} ({balance} ETH)
+            </div>
+          </>
+        ) : (
+          ""
+        )}
       </div>
       <div className={styles.right}>
         <div className={styles.btcNavbutton}>

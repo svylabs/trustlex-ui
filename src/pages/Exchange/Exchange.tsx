@@ -34,6 +34,9 @@ import {
   listOffers,
   getTotalOffers,
   getOffersList,
+  showErrorMessage,
+  showSuccessMessage,
+  addOfferWithToken,
 } from "~/service/AppService";
 import BtcToSatoshiConverter from "~/utils/BtcToSatoshiConverter";
 import { IListenedOfferData } from "~/interfaces/IOfferdata";
@@ -56,7 +59,7 @@ import {
   MAX_BLOCKS_TO_QUERY,
   MAX_ITERATIONS,
   PAGE_SIZE,
-  OfferListOrderBy,
+  ERC20TokenKey,
 } from "~/Context/Constants";
 import Loading from "~/components/Loading/Loading";
 type Props = {};
@@ -280,30 +283,58 @@ const Exchange = (props: Props) => {
 
   const [hashedOfferData, setHashedOfferData] = useState("");
   const handleOfferConfirm = async () => {
-    setConfirm("loading");
     try {
-      console.log(generatedBitcoinData?.pubkeyHash.toString("hex"));
+      let bitcoinAddress = generatedBitcoinData?.pubkeyHash.toString("hex");
+      if (bitcoinAddress === undefined) {
+        showErrorMessage(
+          "Address to receive Bitcoin is empty. Please click on Generate in Browser button."
+        );
+        return false;
+      }
+      setConfirm("loading");
 
       let inputEther: string = userInputData.activeExchange[1].value;
-      const data = {
-        weieth: EthtoWei(inputEther),
-        satoshis: BtcToSatoshiConverter(userInputData.activeExchange[0].value),
-        bitcoinAddress: generatedBitcoinData?.pubkeyHash.toString("hex"),
-        offerValidTill: TimeToNumber(exchangeData.valid),
-        account: "0xf72B8291b10eC381e55DE4788F6EBBB7425cF34e",
-      };
 
-      const addedOffer = await AddOfferWithEth(context.contract, data);
-      console.log(addedOffer);
-      if (addedOffer.hash !== "") {
+      let addedOffer;
+      let sellCurrecny = userInputData?.activeExchange[1]?.currency;
+      if (sellCurrecny === "eth") {
+        const data = {
+          weieth: EthtoWei(inputEther),
+          satoshis: BtcToSatoshiConverter(
+            userInputData.activeExchange[0].value
+          ),
+          bitcoinAddress: generatedBitcoinData?.pubkeyHash.toString("hex"),
+          offerValidTill: TimeToNumber(exchangeData.valid),
+          account: account,
+        };
+        addedOffer = await AddOfferWithEth(context.contract, data);
+      } else if (sellCurrecny === ERC20TokenKey) {
+        const data = {
+          tokens: inputEther,
+          satoshis: BtcToSatoshiConverter(
+            userInputData.activeExchange[0].value
+          ),
+          bitcoinAddress: generatedBitcoinData?.pubkeyHash.toString("hex"),
+          offerValidTill: TimeToNumber(exchangeData.valid),
+          account: account,
+        };
+        addedOffer = await addOfferWithToken(data);
+      } else {
+      }
+
+      let addedOfferHash = addedOffer?.hash;
+
+      if (addedOfferHash !== "" && addedOffer !== false) {
         setHashedOfferData(addedOffer.hash);
         setConfirm("confirmed");
         setTimeout(() => {
           setConfirm("none");
           setAddOffer(false);
-          //fertch the data again
+
           setRefreshOffersListKey(refreshOffersListKey + 1);
         }, 3000);
+      } else {
+        setConfirm("none");
       }
     } catch (error) {
       setConfirm("none");

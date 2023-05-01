@@ -1,10 +1,16 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { VariantsEnum } from "~/enums/VariantsEnum";
 import Button from "../Button/Button";
 import ExchangeGridLayout from "../ExchangeGridLayout/ExchangeGridLayout";
 import ImageIcon from "../ImageIcon/ImageIcon";
 import { InputWithSelect } from "../InputWithSelect/InputWithSelect";
 import { AppContext } from "~/Context/AppContext";
+import {
+  ERC20TokenKey,
+  ERC20TokenLabel,
+  ERC20TokenValue,
+} from "~/Context/Constants";
+
 const currencyObjects: {
   [key: string]: {
     label: string;
@@ -14,7 +20,7 @@ const currencyObjects: {
 } = {
   eth: {
     label: "ETH",
-    value: "ethereum",
+    value: "Ethereum",
     icon: <ImageIcon image={"/icons/ethereum-2.svg"} />,
   },
   btc: {
@@ -22,18 +28,14 @@ const currencyObjects: {
     value: "bitcoin",
     icon: <ImageIcon image={"/icons/bitcoin.svg"} />,
   },
-  sol: {
-    label: "SOL",
-    value: "solana",
-    icon: <ImageIcon image={"/icons/bitcoin.svg"} />,
-  },
-  doge: {
-    label: "DOGE",
-    value: "doge",
+
+  [ERC20TokenKey]: {
+    label: ERC20TokenLabel,
+    value: ERC20TokenValue,
     icon: <ImageIcon image={"/icons/bitcoin.svg"} />,
   },
 };
-
+console.log(currencyObjects);
 type Props = {};
 
 const ExchangeSwapGroup = (props: Props) => {
@@ -42,7 +44,20 @@ const ExchangeSwapGroup = (props: Props) => {
     return <>Loading...</>;
   }
 
-  const { balance, userInputData, setUserInputData, swapChange } = context;
+  const { balance, userInputData, setUserInputData, swapChange, erc20balance } =
+    context;
+  const [sellBalance, setSellBalnce] = useState<string>("0");
+
+  useEffect(() => {
+    let sellCurrecny = userInputData?.activeExchange[1]?.currency;
+    if (sellCurrecny === "eth") {
+      setSellBalnce(balance);
+    } else if (sellCurrecny === ERC20TokenKey) {
+      setSellBalnce(erc20balance);
+    } else {
+      setSellBalnce("10");
+    }
+  }, [userInputData?.activeExchange[1]?.currency, balance, erc20balance]);
 
   const filteredForLeft = userInputData.activeExchange
     .filter((item, index) => {
@@ -64,10 +79,19 @@ const ExchangeSwapGroup = (props: Props) => {
       }
     })
     .map((item) => currencyObjects[item.currency]);
+
   const rightItems =
     userInputData.activeExchange[1].currency !== "btc"
       ? filteredForRight
-      : [currencyObjects[userInputData.activeExchange[1].currency]];
+      : [currencyObjects[userInputData?.activeExchange[1]?.currency]];
+
+  // console.log(
+  //   userInputData.activeExchange,
+  //   filteredForLeft,
+  //   leftItems,
+  //   filteredForRight,
+  //   rightItems
+  // );
 
   const handleLeftDataChange = async (
     e: React.ChangeEvent<HTMLInputElement>
@@ -132,11 +156,9 @@ const ExchangeSwapGroup = (props: Props) => {
             value={userInputData.activeExchange[1].value}
             onChange={handleRightDataChange}
             placeholder="Enter pay amount"
-            label={`Pay with (In your wallet: ${
-              userInputData.activeExchange[1].currency === "eth" ? balance : 10
-            } ${
-              currencyObjects[userInputData.activeExchange[1].currency].value
-            })`}
+            label={`Pay with (In your wallet: ${sellBalance} ${
+              currencyObjects[userInputData.activeExchange[1]?.currency]?.value
+            } )`}
           />
         }
       />

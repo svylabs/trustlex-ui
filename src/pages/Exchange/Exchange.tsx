@@ -40,6 +40,7 @@ import {
 } from "~/service/AppService";
 import BtcToSatoshiConverter from "~/utils/BtcToSatoshiConverter";
 import { IListenedOfferData } from "~/interfaces/IOfferdata";
+import { PaperWalletDownloadedEnum } from "~/interfaces/IExchannge";
 import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
 import {
   NumberToTime,
@@ -62,6 +63,7 @@ import {
   ERC20TokenKey,
 } from "~/Context/Constants";
 import Loading from "~/components/Loading/Loading";
+
 type Props = {};
 
 const mobileTableDummyData: string[][] = new Array(5).fill([
@@ -83,6 +85,10 @@ const Exchange = (props: Props) => {
   const [confirm, setConfirm] = useState("none");
 
   const [addOffer, setAddOffer] = useState(false);
+  const [showAddOfferButton, setShowAddOfferButton] = useState(true);
+
+  const [paperWalletDownloaded, setPaperWalletDownloaded] =
+    useState<PaperWalletDownloadedEnum>(PaperWalletDownloadedEnum.NotGenerated);
 
   const context = React.useContext(AppContext);
   if (context === null) {
@@ -462,6 +468,7 @@ const Exchange = (props: Props) => {
   const handleGenerateBitcoinWallet = async () => {
     const data = generateBitcoinWallet();
     setGeneratedBitcoinData(data);
+    setPaperWalletDownloaded(PaperWalletDownloadedEnum.Generated);
   };
 
   useEffect(() => {
@@ -472,6 +479,16 @@ const Exchange = (props: Props) => {
 
   // handleGenerateBitcoinWallet();
   const { mobileView } = useWindowDimensions();
+
+  const generateWalletDrawerhandleClose = () => {
+    if (paperWalletDownloaded == PaperWalletDownloadedEnum.Generated) {
+      showErrorMessage(
+        "Please download the wallet first. Otherwise you will lost the payment amount! "
+      );
+      return false;
+    }
+    setGenerateWalletDrawerOpen(false);
+  };
 
   return (
     <MainLayout
@@ -617,6 +634,7 @@ const Exchange = (props: Props) => {
                 onRowClick={(data) => {
                   setRowData(data);
                 }}
+                showAddOfferButton={showAddOfferButton}
               />
             </div>
             <div className={styles.mobileTableInner}>
@@ -630,6 +648,7 @@ const Exchange = (props: Props) => {
                 verticalSpacing={"md"}
                 horizontalSpacing={"xs"}
                 onRowClick={(data) => setRowData(data)}
+                showAddOfferButton={showAddOfferButton}
               />
             </div>
             <br />
@@ -667,10 +686,12 @@ const Exchange = (props: Props) => {
 
       <div className={styles.overlay}>
         <GenerateWalletDrawer
-          onClose={() => setGenerateWalletDrawerOpen(false)}
+          onClose={generateWalletDrawerhandleClose}
           open={generateWalletDrawerOpen}
           data={generatedBitcoinData}
           generateAddress={setGenerateAddress}
+          setPaperWalletDownloaded={setPaperWalletDownloaded}
+          paperWalletDownloaded={paperWalletDownloaded}
         />
       </div>
     </MainLayout>

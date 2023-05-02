@@ -48,7 +48,7 @@ export const connectToMetamask = async () => {
   try {
     const ethereum = getEthereumObject();
     if (!ethereum || ethereum.request === undefined) {
-      alert("Get MetaMask!");
+      showErrorMessage("Get MetaMask!");
       return false;
     }
     // console.log(ethereum.request);

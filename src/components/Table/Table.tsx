@@ -10,7 +10,8 @@ interface Props extends TableProps {
   onRowClick?: (data: (string | ReactNode)[]) => void;
   setOffer?: any;
   addOffer?: boolean;
-  OfferModal?: any
+  OfferModal?: any;
+  showAddOfferButton: boolean;
 }
 
 const Table = ({
@@ -22,6 +23,7 @@ const Table = ({
   setOffer,
   addOffer,
   OfferModal,
+  showAddOfferButton = false,
   ...props
 }: Props) => {
   const tableContainerRef = React.useRef(null);
@@ -32,14 +34,22 @@ const Table = ({
     <div className={styles.root}>
       {tableCaption !== "" && (
         <div className={styles.heading}>
-          {!addOffer ?
+          {showAddOfferButton ? (
             <>
-              <h2 className={styles.caption}>{tableCaption}</h2>
-              <button onClick={() => setOffer(true)} >Add your offers</button>
-
-            </> :
-            <div className={styles.font1}>Existing offers</div>
-          }
+              {!addOffer ? (
+                <>
+                  <h2 className={styles.caption}>{tableCaption}</h2>
+                  <button onClick={() => setOffer(true)}>
+                    Add your offers
+                  </button>
+                </>
+              ) : (
+                <div className={styles.font1}>Existing offers</div>
+              )}
+            </>
+          ) : (
+            <>{showAddOfferButton}</>
+          )}
         </div>
       )}
       {/* {addOffer &&
@@ -69,8 +79,9 @@ const Table = ({
           <tbody className={styles.tbody}>
             {data.map((row, index) => (
               <tr
-                className={`${styles.tr} ${onRowClick !== undefined && styles.pointer
-                  }`}
+                className={`${styles.tr} ${
+                  onRowClick !== undefined && styles.pointer
+                }`}
                 key={index}
                 onClick={() => {
                   if (onRowClick !== undefined) onRowClick(row);

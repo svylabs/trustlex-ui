@@ -50,4 +50,6 @@ export const AppContext = createContext<null | {
   setFromOfferId: React.Dispatch<React.SetStateAction<number>>;
   refreshOffersListKey: number;
   setRefreshOffersListKey: React.Dispatch<React.SetStateAction<number>>;
+  erc20balance: string;
+  setERC20balance: React.Dispatch<React.SetStateAction<string>>;
 }>(null);

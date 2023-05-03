@@ -1,7 +1,7 @@
 import { TextInput, TextInputProps } from "@mantine/core";
 import styles from "./Input.module.scss";
 
-interface Props extends TextInputProps { }
+interface Props extends TextInputProps {}
 
 const Input = ({
   placeholder,
@@ -23,7 +23,7 @@ const Input = ({
       {...props}
       classNames={styles}
       type={type}
-      placeholder={placeholder}
+      placeholder={"placeholder"}
       value={value}
       label={label}
       rightSection={rightSection}

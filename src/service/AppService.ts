@@ -3,6 +3,9 @@ import { IAddOfferWithEth } from "~/interfaces/IAddOfferWithEth";
 import abi from "../files/contract.json";
 import { Wallet, ethers } from "ethers";
 import { IAddOfferWithToken } from "~/interfaces/IAddOfferWithToken";
+import erc20ContractABI from "~/files/erc20Contract.json";
+import { ERC20 } from "~/Context/AppConfig";
+import { ContractMap } from "~/Context/AppConfig";
 import {
   IFullfillmentEvent,
   IListenedOfferData,
@@ -20,34 +23,6 @@ import { AppContext } from "~/Context/AppContext";
 import { ToastContainer, toast } from "react-toastify";
 
 const getEthereumObject = () => window.ethereum;
-
-export const showSuccessMessage = (message: string) => {
-  // let message = "Transaction successfully done !";
-  toast.success(message, {
-    position: toast.POSITION.TOP_RIGHT,
-    autoClose: 5000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-    progress: undefined,
-    theme: "colored", //light, dark,colored
-  });
-};
-
-export const showErrorMessage = (message: string) => {
-  // let message = "Transaction successfully done !";
-  toast.error(message, {
-    position: toast.POSITION.TOP_RIGHT,
-    autoClose: 5000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-    progress: undefined,
-    theme: "colored", //light, dark,colored
-  });
-};
 
 export const findMetaMaskAccount = async () => {
   try {
@@ -73,7 +48,7 @@ export const connectToMetamask = async () => {
   try {
     const ethereum = getEthereumObject();
     if (!ethereum || ethereum.request === undefined) {
-      alert("Get MetaMask!");
+      showErrorMessage("Get MetaMask!");
       return false;
     }
     // console.log(ethereum.request);
@@ -83,21 +58,6 @@ export const connectToMetamask = async () => {
     return accounts[0];
   } catch (error) {
     console.log(error);
-    return false;
-  }
-};
-export const getBalance = async (address: string) => {
-  try {
-    if (typeof window.ethereum !== undefined) {
-      const { ethereum } = window;
-      const provider = new ethers.providers.Web3Provider(ethereum);
-      let balance: any = await provider.getBalance(address);
-      balance = (+ethers.utils.formatEther(balance)).toFixed(4);
-      return balance;
-    } else {
-      return false;
-    }
-  } catch (error) {
     return false;
   }
 };
@@ -143,6 +103,49 @@ export const connect = async (
   } catch (error) {
     console.log(error);
     return false;
+  }
+};
+
+export const getBalance = async (address: string) => {
+  try {
+    if (typeof window.ethereum !== undefined) {
+      const { ethereum } = window;
+      const provider = new ethers.providers.Web3Provider(ethereum);
+      let balance: any = await provider.getBalance(address);
+      balance = (+ethers.utils.formatEther(balance)).toFixed(4);
+      return balance;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    return false;
+  }
+};
+
+export const getERC20TokenBalance = async (
+  address: string
+): Promise<number> => {
+  try {
+    if (typeof window.ethereum !== undefined) {
+      const { ethereum } = window;
+      const provider = new ethers.providers.Web3Provider(ethereum);
+
+      const signer = provider.getSigner();
+      const erc20TokenContract = new ethers.Contract(
+        ERC20.address,
+        erc20ContractABI.abi,
+        signer
+      );
+
+      let balance = await erc20TokenContract.balanceOf(address);
+      balance = +ethers.utils.formatEther(balance);
+      return balance;
+    } else {
+      return 0;
+    }
+  } catch (error) {
+    console.log(error);
+    return 0;
   }
 };
 
@@ -216,59 +219,69 @@ export const AddOfferWithEth = async (
   }
 };
 
-// new function to fetch the list of offers
-// export const getOffersList = async (
-//   trustLex: ethers.Contract | undefined,
-//   offset: number,
-//   limit: number,
-//   OrderByData: OrderBy
-// ) => {
-//   try {
-//     if (!trustLex) {
-//       console.log("trustLex is not defined", trustLex);
-//       return <IOffersResultByNonEvent>{ totalOffers: 0, offers: [] };
-//     }
-//     console.log(offset, limit);
-//     let TotalOffers = await trustLex.getTotalOffers();
-//     TotalOffers = TotalOffers.toString();
+export const addOfferWithToken = async (data: IAddOfferWithToken) => {
+  // first approve contract to spend the tokens
+  try {
+    if (typeof window.ethereum !== undefined) {
+      const { ethereum } = window;
+      const provider = new ethers.providers.Web3Provider(ethereum);
+      let accounts = await provider.send("eth_requestAccounts", []);
+      const signer = provider.getSigner();
+      const erc20TokenContract = new ethers.Contract(
+        ERC20.address,
+        erc20ContractABI.abi,
+        signer
+      );
+      let tokens = data.tokens;
+      // To do Add the balance validation check
+      let accountOwnerBal: number = await getERC20TokenBalance(accounts[0]);
+      if (accountOwnerBal < (tokens as number)) {
+        showErrorMessage("Your token balance is low.");
+        return false;
+      }
 
-//     const promises = [];
-//     for (
-//       let i = OrderByData == OrderBy.ASC ? offset : offset - 1;
-//       OrderByData == OrderBy.ASC
-//         ? i < limit && i < TotalOffers
-//         : i >= offset - limit && i >= 0;
-//       OrderByData == OrderBy.ASC ? i++ : i--
-//     ) {
-//       // console.log(i);
-//       const offerData = await getOffers(trustLex, i);
-//       const offerDetailsInJson = {
-//         offerId: i.toString(),
-//         offerQuantity: offerData[0].toString(),
-//         offeredBy: offerData[1].toString(),
-//         offerValidTill: offerData[2].toString(),
-//         orderedTime: offerData[3].toString(),
-//         offeredBlockNumber: offerData[4].toString(),
-//         bitcoinAddress: offerData[5].toString(),
-//         satoshisToReceive: offerData[6].toString(),
-//         satoshisReceived: offerData[7].toString(),
-//         satoshisReserved: offerData[8].toString(),
-//         collateralPer3Hours: offerData[9].toString(),
-//       };
-//       promises.push({ offerDetailsInJson });
-//     }
-//     const offersList = await Promise.all(promises);
-//     return <IOffersResultByNonEvent>{
-//       totalOffers: TotalOffers,
-//       offers: offersList,
-//     };
-//   } catch (error) {
-//     console.log(error);
-//     return <IOffersResultByNonEvent>{ totalOffers: 0, offers: [] };
-//   }
-// };
+      let spender = ContractMap.Token.address;
+      tokens = EthtoWei(tokens as string);
+      console.log(
+        tokens,
+        data.satoshis,
+        "0x" + data.bitcoinAddress,
+        data.offerValidTill
+      );
 
-// new function to fetch the list of offers
+      let transaction = await erc20TokenContract.increaseAllowance(
+        spender,
+        tokens
+      );
+      await transaction.wait();
+      console.log(transaction);
+
+      // create the contract instance
+      let OrderBookContractForTokenAddress = spender;
+      const OrderBookContractForToken = new ethers.Contract(
+        OrderBookContractForTokenAddress,
+        abi.abi,
+        signer
+      );
+      let transaction2 = await OrderBookContractForToken.addOfferWithToken(
+        tokens,
+        data.satoshis,
+        "0x" + data.bitcoinAddress,
+        data.offerValidTill
+      );
+      await transaction2.wait();
+      console.log(transaction2);
+      return transaction2;
+    } else {
+      showErrorMessage("Metamask not found!");
+      return false;
+    }
+  } catch (error: any) {
+    let message = error?.message;
+    console.log(error);
+    return false;
+  }
+};
 
 export const getOffersList = async (
   trustLex: ethers.Contract | undefined,
@@ -548,21 +561,30 @@ export const InitializeFullfillment = async (
   }
 };
 
-export const AddOfferWithToken = async (
-  trustLex: ethers.Contract | undefined,
-  data: IAddOfferWithToken
-) => {
-  try {
-    if (!trustLex) return false;
-    const addOffer = await trustLex.addOfferWithToken(
-      data.value,
-      data.satoshis,
-      data.bitcoinAddress,
-      data.offerValidTill
-    );
-    await addOffer.wait();
-    return addOffer;
-  } catch (error) {
-    console.log(error);
-  }
+export const showSuccessMessage = (message: string) => {
+  // let message = "Transaction successfully done !";
+  toast.success(message, {
+    position: toast.POSITION.TOP_RIGHT,
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "colored", //light, dark,colored
+  });
+};
+
+export const showErrorMessage = (message: string) => {
+  // let message = "Transaction successfully done !";
+  toast.error(message, {
+    position: toast.POSITION.TOP_RIGHT,
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "colored", //light, dark,colored
+  });
 };

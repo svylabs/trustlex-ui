@@ -30,9 +30,10 @@ export const generateBitcoinWallet = (): Wallet => {
 };
 
 export const encryptWallet = (keyPair: Wallet, password: string): string => {
-  const encryptedKey = bip38.encrypt(keyPair.privateKey, true, password);
+  // const encryptedKey = bip38.encrypt(keyPair.privateKey, true, password);
+  const encryptedKey = window.bip38_encrypt(keyPair.privateKey, true, password);
   return JSON.stringify({
-    address: bitcoin.payments.p2wpkh({ pubkey: keyPair.publicKey }),
+    address: bitcoin.payments.p2wpkh({ pubkey: keyPair.publicKey })?.address,
     publicKey: keyPair.publicKey.toString("hex"),
     encryptedPrivateKey: encryptedKey,
   });
@@ -40,7 +41,11 @@ export const encryptWallet = (keyPair: Wallet, password: string): string => {
 
 export const decryptWallet = (walletJSON: string, password: string): Wallet => {
   const wallet = JSON.parse(walletJSON) as OfflineWallet;
-  const decryptedKey = bip38.decrypt(wallet.encryptedPrivateKey, password);
+  // const decryptedKey = bip38.decrypt(wallet.encryptedPrivateKey, password);
+  const decryptedKey = window.bip38_decrypt(
+    wallet.encryptedPrivateKey,
+    password
+  );
   return {
     privateKey: decryptedKey.privateKey,
     publicKey: Buffer.from(wallet.publicKey, "hex"),

@@ -34,9 +34,13 @@ import {
   listOffers,
   getTotalOffers,
   getOffersList,
+  showErrorMessage,
+  showSuccessMessage,
+  addOfferWithToken,
 } from "~/service/AppService";
 import BtcToSatoshiConverter from "~/utils/BtcToSatoshiConverter";
 import { IListenedOfferData } from "~/interfaces/IOfferdata";
+import { PaperWalletDownloadedEnum } from "~/interfaces/IExchannge";
 import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
 import {
   NumberToTime,
@@ -56,9 +60,10 @@ import {
   MAX_BLOCKS_TO_QUERY,
   MAX_ITERATIONS,
   PAGE_SIZE,
-  OfferListOrderBy,
+  ERC20TokenKey,
 } from "~/Context/Constants";
 import Loading from "~/components/Loading/Loading";
+
 type Props = {};
 
 const mobileTableDummyData: string[][] = new Array(5).fill([
@@ -80,6 +85,10 @@ const Exchange = (props: Props) => {
   const [confirm, setConfirm] = useState("none");
 
   const [addOffer, setAddOffer] = useState(false);
+  const [showAddOfferButton, setShowAddOfferButton] = useState(true);
+
+  const [paperWalletDownloaded, setPaperWalletDownloaded] =
+    useState<PaperWalletDownloadedEnum>(PaperWalletDownloadedEnum.NotGenerated);
 
   const context = React.useContext(AppContext);
   if (context === null) {
@@ -280,30 +289,58 @@ const Exchange = (props: Props) => {
 
   const [hashedOfferData, setHashedOfferData] = useState("");
   const handleOfferConfirm = async () => {
-    setConfirm("loading");
     try {
-      console.log(generatedBitcoinData?.pubkeyHash.toString("hex"));
+      let bitcoinAddress = generatedBitcoinData?.pubkeyHash.toString("hex");
+      if (bitcoinAddress === undefined) {
+        showErrorMessage(
+          "Address to receive Bitcoin is empty. Please click on Generate in Browser button."
+        );
+        return false;
+      }
+      setConfirm("loading");
 
       let inputEther: string = userInputData.activeExchange[1].value;
-      const data = {
-        weieth: EthtoWei(inputEther),
-        satoshis: BtcToSatoshiConverter(userInputData.activeExchange[0].value),
-        bitcoinAddress: generatedBitcoinData?.pubkeyHash.toString("hex"),
-        offerValidTill: TimeToNumber(exchangeData.valid),
-        account: "0xf72B8291b10eC381e55DE4788F6EBBB7425cF34e",
-      };
 
-      const addedOffer = await AddOfferWithEth(context.contract, data);
-      console.log(addedOffer);
-      if (addedOffer.hash !== "") {
+      let addedOffer;
+      let sellCurrecny = userInputData?.activeExchange[1]?.currency;
+      if (sellCurrecny === "eth") {
+        const data = {
+          weieth: EthtoWei(inputEther),
+          satoshis: BtcToSatoshiConverter(
+            userInputData.activeExchange[0].value
+          ),
+          bitcoinAddress: generatedBitcoinData?.pubkeyHash.toString("hex"),
+          offerValidTill: TimeToNumber(exchangeData.valid),
+          account: account,
+        };
+        addedOffer = await AddOfferWithEth(context.contract, data);
+      } else if (sellCurrecny === ERC20TokenKey) {
+        const data = {
+          tokens: inputEther,
+          satoshis: BtcToSatoshiConverter(
+            userInputData.activeExchange[0].value
+          ),
+          bitcoinAddress: generatedBitcoinData?.pubkeyHash.toString("hex"),
+          offerValidTill: TimeToNumber(exchangeData.valid),
+          account: account,
+        };
+        addedOffer = await addOfferWithToken(data);
+      } else {
+      }
+
+      let addedOfferHash = addedOffer?.hash;
+
+      if (addedOfferHash !== "" && addedOffer !== false) {
         setHashedOfferData(addedOffer.hash);
         setConfirm("confirmed");
         setTimeout(() => {
           setConfirm("none");
           setAddOffer(false);
-          //fertch the data again
+
           setRefreshOffersListKey(refreshOffersListKey + 1);
         }, 3000);
+      } else {
+        setConfirm("none");
       }
     } catch (error) {
       setConfirm("none");
@@ -431,6 +468,7 @@ const Exchange = (props: Props) => {
   const handleGenerateBitcoinWallet = async () => {
     const data = generateBitcoinWallet();
     setGeneratedBitcoinData(data);
+    setPaperWalletDownloaded(PaperWalletDownloadedEnum.Generated);
   };
 
   useEffect(() => {
@@ -441,6 +479,16 @@ const Exchange = (props: Props) => {
 
   // handleGenerateBitcoinWallet();
   const { mobileView } = useWindowDimensions();
+
+  const generateWalletDrawerhandleClose = () => {
+    if (paperWalletDownloaded == PaperWalletDownloadedEnum.Generated) {
+      showErrorMessage(
+        "Please download the wallet first. Otherwise you will lost the payment amount! "
+      );
+      return false;
+    }
+    setGenerateWalletDrawerOpen(false);
+  };
 
   return (
     <MainLayout
@@ -586,6 +634,7 @@ const Exchange = (props: Props) => {
                 onRowClick={(data) => {
                   setRowData(data);
                 }}
+                showAddOfferButton={showAddOfferButton}
               />
             </div>
             <div className={styles.mobileTableInner}>
@@ -599,6 +648,7 @@ const Exchange = (props: Props) => {
                 verticalSpacing={"md"}
                 horizontalSpacing={"xs"}
                 onRowClick={(data) => setRowData(data)}
+                showAddOfferButton={showAddOfferButton}
               />
             </div>
             <br />
@@ -636,10 +686,12 @@ const Exchange = (props: Props) => {
 
       <div className={styles.overlay}>
         <GenerateWalletDrawer
-          onClose={() => setGenerateWalletDrawerOpen(false)}
+          onClose={generateWalletDrawerhandleClose}
           open={generateWalletDrawerOpen}
           data={generatedBitcoinData}
           generateAddress={setGenerateAddress}
+          setPaperWalletDownloaded={setPaperWalletDownloaded}
+          paperWalletDownloaded={paperWalletDownloaded}
         />
       </div>
     </MainLayout>

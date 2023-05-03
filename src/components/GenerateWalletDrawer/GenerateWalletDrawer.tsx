@@ -12,14 +12,26 @@ import useAutoHideScrollbar from "~/hooks/useAutoHideScrollBar";
 import { useEffect, useRef, useState } from "react";
 import useDetectOutsideClick from "~/hooks/useDetectOutsideClick";
 import { Wallet, generateTrustlexAddress } from "~/utils/BitcoinUtils";
+import { PaperWalletDownloadedEnum } from "~/interfaces/IExchannge";
 interface IProps {
   open: boolean;
   onClose: () => void;
   data: Wallet | null;
   generateAddress: any;
+  setPaperWalletDownloaded: (
+    paperWalletDownloaded: PaperWalletDownloadedEnum
+  ) => void;
+  paperWalletDownloaded: PaperWalletDownloadedEnum;
 }
 
-const GenerateWalletDrawer = ({ open, onClose, data, generateAddress }: IProps) => {
+const GenerateWalletDrawer = ({
+  open,
+  onClose,
+  data,
+  generateAddress,
+  setPaperWalletDownloaded,
+  paperWalletDownloaded,
+}: IProps) => {
   const { mobileView, tabletView } = useWindowDimensions();
 
   const mobileContentRef = useRef(null);
@@ -39,7 +51,13 @@ const GenerateWalletDrawer = ({ open, onClose, data, generateAddress }: IProps) 
             colorLeft={"#FEBD3893"}
             bgImage="/images/Rectangle.svg"
           >
-            <GenerateWalletContent onClose={onClose} data={data} generateAddress={generateAddress} />
+            <GenerateWalletContent
+              onClose={onClose}
+              data={data}
+              generateAddress={generateAddress}
+              setPaperWalletDownloaded={setPaperWalletDownloaded}
+              paperWalletDownloaded={paperWalletDownloaded}
+            />
           </GradientBackgroundContainer>
         </div>
       </div>
@@ -61,7 +79,13 @@ const GenerateWalletDrawer = ({ open, onClose, data, generateAddress }: IProps) 
         colorLeft={"#FEBD3893"}
         bgImage="/images/Rectangle.svg"
       >
-        <GenerateWalletContent onClose={onClose} data={data} generateAddress={generateAddress} />
+        <GenerateWalletContent
+          onClose={onClose}
+          data={data}
+          generateAddress={generateAddress}
+          setPaperWalletDownloaded={setPaperWalletDownloaded}
+          paperWalletDownloaded={paperWalletDownloaded}
+        />
       </GradientBackgroundContainer>
     </Drawer>
   );
@@ -70,11 +94,17 @@ const GenerateWalletDrawer = ({ open, onClose, data, generateAddress }: IProps) 
 const GenerateWalletContent = ({
   onClose,
   data,
-  generateAddress
+  generateAddress,
+  setPaperWalletDownloaded,
+  paperWalletDownloaded,
 }: {
   onClose: () => void;
   data: Wallet | null;
-  generateAddress: any
+  generateAddress: any;
+  setPaperWalletDownloaded: (
+    paperWalletDownloaded: PaperWalletDownloadedEnum
+  ) => void;
+  paperWalletDownloaded: PaperWalletDownloadedEnum;
 }) => {
   const { mobileView } = useWindowDimensions();
   const generateWalletRef = useRef(null);
@@ -132,7 +162,12 @@ const GenerateWalletContent = ({
           {
             value: "instant-wallet",
             children: (
-              <InstantWallet data={data} generatedAddress={generatedAddress} />
+              <InstantWallet
+                data={data}
+                generatedAddress={generatedAddress}
+                setPaperWalletDownloaded={setPaperWalletDownloaded}
+                paperWalletDownloaded={paperWalletDownloaded}
+              />
             ),
           },
           {

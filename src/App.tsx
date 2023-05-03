@@ -16,9 +16,11 @@ import {
   listInitializeFullfillment,
   getOffersList,
   getTotalOffers,
+  getERC20TokenBalance,
 } from "./service/AppService";
 import IUserInputData from "./interfaces/IUserInputData";
 import swapArrayElements from "./utils/swapArray";
+import { formatERC20Tokens } from "./utils/Ether.utills";
 import {
   IListenedOfferData,
   IOffersResult,
@@ -29,7 +31,7 @@ import {
 import { ethers } from "ethers";
 import { ContractMap } from "./Context/AppConfig";
 import useLocalstorage from "./hooks/useLocalstorage";
-import { PAGE_SIZE, OfferListOrderBy } from "~/Context/Constants";
+import { PAGE_SIZE, activeExchange } from "~/Context/Constants";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { number } from "bitcoinjs-lib/src/script";
@@ -45,6 +47,10 @@ export default function App() {
   const [selectedToken, setSelectedToken] = useState(
     tokenData ? tokenData.toUpperCase() : "ETH"
   );
+  const [erc20balance, setERC20balance] = useState("");
+  const [erc20TokenContract, setERC20TokenContract] =
+    useState<ethers.Contract>();
+
   const [listenedOfferData, setListenedOfferData] = useState<IOffersResult>({
     fromBlock: 0,
     toBlock: 0,
@@ -73,17 +79,13 @@ export default function App() {
       : {
           setLimit: true,
           limit: "",
-          activeExchange: [
-            { currency: "btc", value: "" },
-            { currency: "eth", value: "" },
-            { currency: "sol", value: "" },
-            { currency: "doge", value: "" },
-          ],
+          activeExchange: activeExchange,
         }
   );
 
   useEffect(() => {
     set("userInputData", userInputData);
+    console.log(userInputData);
   }, [userInputData]);
 
   useEffect(() => {
@@ -103,21 +105,24 @@ export default function App() {
     if (ethereum) {
       const provider = new ethers.providers.Web3Provider(ethereum);
 
-      (ethereum as any).on("accountsChanged", function (accounts: any) {
-        setAccount(accounts[0]);
-        getBalance(accounts[0]).then((balance) => {
-          if (balance) {
-            setBalance(balance);
-          }
-        });
-
-        connect(provider, ContractMap[selectedToken].address).then(
-          (trustlex) => {
-            if (trustlex) {
-              setContract(trustlex as ethers.Contract);
-            }
-          }
+      (ethereum as any).on("accountsChanged", async function (accounts: any) {
+        let trustlex = await connect(
+          provider,
+          ContractMap[selectedToken].address
         );
+        if (trustlex) {
+          setContract(trustlex as ethers.Contract);
+        }
+
+        setAccount(accounts[0]);
+        let balance = await getBalance(accounts[0]);
+        if (balance) {
+          setBalance(balance);
+        }
+
+        let tokenBalance_ = await getERC20TokenBalance(accounts[0]);
+        let tokenBalance = formatERC20Tokens(tokenBalance_);
+        setERC20balance(tokenBalance);
       });
     }
   }, []);
@@ -158,60 +163,66 @@ export default function App() {
   };
 
   useEffect(() => {
-    const { ethereum } = window;
-    if (ethereum) {
-      const provider = new ethers.providers.Web3Provider(ethereum);
+    (async () => {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
 
-      setMoreTableDataLoading(true);
-      setListenedOfferDataByNonEvent({ offers: [] });
-      setExchangeLoadingText("Connecting to Network");
-      connect(provider, ContractMap[selectedToken].address).then(
-        async (trustlex) => {
-          if (trustlex) {
-            setContract(trustlex as ethers.Contract);
-            const offers = await listOffers(trustlex);
-            setListenedOfferData(offers);
+        setMoreTableDataLoading(true);
+        setListenedOfferDataByNonEvent({ offers: [] });
+        setExchangeLoadingText("Connecting to Network");
 
-            setMoreTableDataLoading(true);
-            setExchangeLoadingText("Loading List");
-            let totalOffers = await getTotalOffers(trustlex);
-            setTotalOffers(totalOffers);
+        let trustlex = await connect(
+          provider,
+          ContractMap[selectedToken].address
+        );
+        if (trustlex) {
+          setContract(trustlex as ethers.Contract);
+          const offers = await listOffers(trustlex);
+          setListenedOfferData(offers);
 
-            let fromOfferId = totalOffers;
+          setMoreTableDataLoading(true);
+          setExchangeLoadingText("Loading List");
+          let totalOffers = await getTotalOffers(trustlex);
+          setTotalOffers(totalOffers);
 
-            let offersList = await getOffersList(trustlex, fromOfferId);
-            fromOfferId =
-              fromOfferId - PAGE_SIZE > 0 ? fromOfferId - PAGE_SIZE : 0;
-            setFromOfferId(fromOfferId);
-            // console.log(totalOffers, totalOffers, fromOfferId, offersList);
-            setListenedOfferDataByNonEvent(offersList);
-            setMoreTableDataLoading(false);
-            setExchangeLoadingText("");
+          let fromOfferId = totalOffers;
 
-            const InitializeFullfillmentData = await listInitializeFullfillment(
-              trustlex
-            );
-            // console.log(InitializeFullfillmentData);
-            setlistenedOngoinMySwapData(InitializeFullfillmentData);
-          }
+          let offersList = await getOffersList(trustlex, fromOfferId);
+          fromOfferId =
+            fromOfferId - PAGE_SIZE > 0 ? fromOfferId - PAGE_SIZE : 0;
+          setFromOfferId(fromOfferId);
+          // console.log(totalOffers, totalOffers, fromOfferId, offersList);
+          setListenedOfferDataByNonEvent(offersList);
+          setMoreTableDataLoading(false);
+          setExchangeLoadingText("");
 
-          findMetaMaskAccount().then((account) => {
-            if (account !== null) {
-              setAccount(account);
-              getBalance(account).then((balance) => {
-                if (balance) {
-                  setBalance(balance);
-                }
-              });
+          const InitializeFullfillmentData = await listInitializeFullfillment(
+            trustlex
+          );
+          // console.log(InitializeFullfillmentData);
+          setlistenedOngoinMySwapData(InitializeFullfillmentData);
+        }
+
+        let account = await findMetaMaskAccount();
+        if (account !== null) {
+          setAccount(account);
+          getBalance(account).then((balance) => {
+            if (balance) {
+              setBalance(balance);
             }
           });
         }
-      );
-    }
-    return () => {
-      setAccount("");
-      setBalance("");
-    };
+
+        let tokenBalance_ = await getERC20TokenBalance(account);
+        let tokenBalance = formatERC20Tokens(tokenBalance_);
+        setERC20balance(tokenBalance);
+      }
+      return () => {
+        setAccount("");
+        setBalance("");
+      };
+    })();
   }, [refreshOffersListKey]);
 
   return (
@@ -251,6 +262,8 @@ export default function App() {
             setFromOfferId,
             refreshOffersListKey,
             setRefreshOffersListKey,
+            erc20balance,
+            setERC20balance,
           }}
         >
           <Layout>

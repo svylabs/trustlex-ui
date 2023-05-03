@@ -8,20 +8,44 @@ import PaperWallet from "./PaperWallet";
 import ReactToPrint, { useReactToPrint } from "react-to-print";
 import React, { useRef } from "react";
 import { showSuccessMessage, showErrorMessage } from "~/service/AppService";
+import { PaperWalletDownloadedEnum } from "~/interfaces/IExchannge";
 
-import { Wallet, decryptWallet, encryptWallet } from "~/utils/BitcoinUtils";
+import {
+  Wallet,
+  decryptWallet,
+  encryptWallet,
+  OfflineWallet,
+} from "~/utils/BitcoinUtils";
 interface IInstantWallet {
   data: Wallet | null;
   generatedAddress: string;
+  setPaperWalletDownloaded: (
+    paperWalletDownloaded: PaperWalletDownloadedEnum
+  ) => void;
+  paperWalletDownloaded: PaperWalletDownloadedEnum;
 }
 
-const InstantWallet = ({ data, generatedAddress }: IInstantWallet) => {
+const InstantWallet = ({
+  data,
+  generatedAddress,
+  setPaperWalletDownloaded,
+  paperWalletDownloaded,
+}: IInstantWallet) => {
   const componentRef = useRef(null);
 
   const [inputData, setInputData] = useState({
     password: "",
     confirmPassword: "",
   });
+  const [walletEncryptedData, setWalletEncryptedData] = useState<OfflineWallet>(
+    {
+      address: "",
+      publicKey: "",
+      encryptedPrivateKey: "",
+    }
+  );
+  const [paperWalletKey, setPaperWalletKey] = useState<number>(1);
+  const [download, setDownload] = useState("none");
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputData((prev) => {
@@ -45,7 +69,6 @@ const InstantWallet = ({ data, generatedAddress }: IInstantWallet) => {
 
   const handleDownloadWalletClick = () => {
     if (inputData.password === "" || inputData.confirmPassword === "") {
-      // alert("Password or Confirm Password is required");
       showErrorMessage("Password or Confirm Password is required");
       return false;
     }
@@ -59,18 +82,46 @@ const InstantWallet = ({ data, generatedAddress }: IInstantWallet) => {
       showErrorMessage("Data is null");
       return false;
     }
+    // console.log("click on handleDownloadWalletClick");
     // console.log(data, inputData.password);
-    // const encryptedData = encryptWallet(data, inputData.password);
+    setDownload("loading");
 
-    // setInputData({
-    //   password: "",
-    //   confirmPassword: "",
-    // });
+    const encryptedDataString = encryptWallet(data, inputData.password);
 
-    // if (!encryptedData) return alert("Error encrypting wallet");
-    // const decryptedData = decryptWallet(encryptedData, inputData.password);
+    setWalletEncryptedData(JSON.parse(encryptedDataString));
+    setPaperWalletKey(paperWalletKey + 1);
 
-    handlePrint();
+    let encryptedPrivateKey =
+      JSON.parse(encryptedDataString).encryptedPrivateKey;
+    let address = JSON.parse(encryptedDataString).address.address;
+
+    setInputData({
+      password: "",
+      confirmPassword: "",
+    });
+
+    if (!encryptedDataString)
+      return showErrorMessage("Error encrypting wallet");
+    // const decryptedData = decryptWallet(
+    //   encryptedDataString,
+    //   inputData.password
+    // );
+    // console.log("decryptedData", decryptedData);
+
+    const jsonString = `data:text/json;chatset=utf-8,${encodeURIComponent(
+      encryptedDataString
+    )}`;
+    const link = document.createElement("a");
+    link.href = jsonString;
+    link.download = "wallet.json";
+
+    link.click();
+    window.setTimeout(function () {
+      setDownload("none");
+    }, 15000);
+    // handlePrint();
+
+    setPaperWalletDownloaded(PaperWalletDownloadedEnum.Downloaded);
   };
 
   const handlePrint = useReactToPrint({
@@ -104,7 +155,6 @@ const InstantWallet = ({ data, generatedAddress }: IInstantWallet) => {
       />
 
       <Button
-        variant={VariantsEnum.outlinePrimary}
         radius={10}
         compact={false}
         rightIcon={<Icon icon="radix-icons:download" fontSize={20} />}
@@ -113,10 +163,14 @@ const InstantWallet = ({ data, generatedAddress }: IInstantWallet) => {
           backgroundColor: "transparent",
           marginTop: "16px",
         }}
+        variant={
+          download === "loading" ? VariantsEnum.outline : VariantsEnum.primary
+        }
+        loading={download === "loading" ? true : false}
         fullWidth
         onClick={handleDownloadWalletClick}
       >
-        Download Wallet
+        {download === "loading" ? "Downloading Wallet" : "Download Wallet"}
       </Button>
       <p className={styles.subText}>
         * Please make sure you backup the wallet file and password. The wallet
@@ -131,7 +185,9 @@ const InstantWallet = ({ data, generatedAddress }: IInstantWallet) => {
         <PaperWallet
           generatedAddress={generatedAddress}
           data={data}
+          walletEncryptedData={walletEncryptedData}
           ref={componentRef}
+          key={paperWalletKey}
         />
       </div>
     </div>

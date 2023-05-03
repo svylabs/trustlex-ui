@@ -152,19 +152,31 @@
           }
 
           .sendToContainer {
-            display: flex;
+            // display: flex;
             align-items: center;
             gap: 1rem;
             padding: 0 0 2rem 0;
             border-bottom: 1px solid #707070;
 
             .sendTo {
+              margin-top:15px !important;
               display: flex;
               flex-direction: column;
+              gap: 5px;
+              width: 100%;
 
               >span {
                 font-weight: 500;
                 font-size: 16px;
+              }
+              >span.toAddress {
+                font-weight: 600;
+                font-size: 16px;
+                line-height: 19px;
+                text-decoration: underline;
+                color: #ffffff;
+                text-align: center;
+                overflow-wrap: break-word;
               }
             }
           }
@@ -407,6 +419,6 @@ margin: 0;
 }
 
 .qrImage {
-  width: 60px;
-  height: 62px;
+  width: 150px;
+  // height: 150px;
 }

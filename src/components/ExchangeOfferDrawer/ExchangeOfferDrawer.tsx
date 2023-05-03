@@ -58,16 +58,18 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
     return <>Loading...</>;
   }
 
-  const { listenedOfferData } = context;
+  const { listenedOfferData, listenedOfferDataByNonEvent } = context;
 
   const foundOffer =
     data &&
-    listenedOfferData.offers.find((offer) => {
+    // listenedOfferData.offers.find((offer) => {
+    listenedOfferDataByNonEvent.offers.find((offer) => {
       // return offer.offerDetailsInJson.offeredBlockNumber === data[0]
-      return offer.offerEvent.to.toString() == data[0];
+      return offer.offerDetailsInJson.offerId === data[0];
+      // return offer.offerEvent.to.toString() == data[0];
     });
 
-  // console.log(foundOffer, data, listenedOfferData);
+  console.log(foundOffer, data, listenedOfferData, listenedOfferDataByNonEvent);
   useAutoHideScrollbar(rootRef);
 
   const [isInitiatng, setIsInitating] = useState("");
@@ -136,11 +138,10 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
 
   useEffect(() => {
     if (!foundOffer || foundOffer === undefined) return;
+    let bitcoinAddress = foundOffer.offerDetailsInJson.bitcoinAddress;
+    console.log(bitcoinAddress);
 
-    let toAddress = Buffer.from(
-      foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
-      "hex"
-    );
+    let toAddress = Buffer.from(bitcoinAddress.substring(2), "hex");
     let hashAdress = generateTrustlexAddress(toAddress, "10");
     setTo(`${hashAdress}`);
     let planningToSell_ = Number(
@@ -150,7 +151,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
     setPlanningToSell(planningToSell_);
 
     setEthValue(planningToSell_);
-  }, [foundOffer?.offerEvent?.to?.toString()]);
+  }, [foundOffer?.offerDetailsInJson?.offerId]);
 
   // useEffect(() => {
   //   if (!listenedOfferData || listenedOfferData === undefined) return;
@@ -368,7 +369,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                         {/* values can be set anything but should a string */}
                         {/* Can use JSON.stringify(value) to make string of any values like arrays */}
                         {/* Can use JSON.parse(value) to parse the value in arrays */}
-                        <QRCodeCanvas
+                        {/* <QRCodeCanvas
                           value={initatedata ? initatedata.to : "Random value"}
                           style={{
                             width: "100%",
@@ -376,13 +377,14 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                           }}
                           // bgColor="#7C7C7C00"
                           // fgColor="#7C7C7C"
+                        /> */}
+                        <img
+                          src={`https://chart.googleapis.com/chart?chs=250x250&chld=L|2&cht=qr&chl=bitcoin:${to}?amount=${BTCAmount}%26label=Trustlex%26message=Buying_Ether`}
+                          className={styles.qrImage}
                         />
                       </div>
                     }
-                    <img
-                      src={`https://chart.googleapis.com/chart?chs=225x225&chld=L|2&cht=qr&chl=bitcoin:${to}?amount=${BTCAmount}%26label=Trustlex%26message=Buying_Ether`}
-                      className={styles.qrImage}
-                    />
+
                     <div className={styles.sendTo}>
                       <span>
                         Send &nbsp;
@@ -390,9 +392,13 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                           amount={BTCAmount}
                           type={CurrencyEnum.BTC}
                         />{" "}
-                        Bitcoins to:
+                        Bitcoins To:
                       </span>
-                      {mobileView ? <span>{to}</span> : <span>{to}</span>}
+                      {mobileView ? (
+                        <span className={styles.toAddress}>{to}</span>
+                      ) : (
+                        <span className={styles.toAddress}>{to}</span>
+                      )}
                     </div>
                   </div>
                   <div className={styles.colletaralTextContainer}>

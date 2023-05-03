@@ -82,8 +82,7 @@ const InstantWallet = ({
       showErrorMessage("Data is null");
       return false;
     }
-    // console.log("click on handleDownloadWalletClick");
-    // console.log(data, inputData.password);
+
     setDownload("loading");
 
     const encryptedDataString = encryptWallet(data, inputData.password);
@@ -116,9 +115,10 @@ const InstantWallet = ({
     link.download = "wallet.json";
 
     link.click();
-    window.setTimeout(function () {
-      setDownload("none");
-    }, 15000);
+    // window.setTimeout(function () {
+
+    // }, 10000);
+    setDownload("none");
     // handlePrint();
 
     setPaperWalletDownloaded(PaperWalletDownloadedEnum.Downloaded);

@@ -37,6 +37,8 @@ import {
   showErrorMessage,
   showSuccessMessage,
   addOfferWithToken,
+  getOffer,
+  getInitializedFulfillmentsByOfferId,
 } from "~/service/AppService";
 import BtcToSatoshiConverter from "~/utils/BtcToSatoshiConverter";
 import { IListenedOfferData } from "~/interfaces/IOfferdata";
@@ -62,6 +64,7 @@ import {
   PAGE_SIZE,
   ERC20TokenKey,
 } from "~/Context/Constants";
+import { IFullfillmentResult } from "~/interfaces/IOfferdata";
 import Loading from "~/components/Loading/Loading";
 
 type Props = {};
@@ -79,6 +82,9 @@ const mobileTableDummyData: string[][] = new Array(5).fill([
 
 const Exchange = (props: Props) => {
   const [rowData, setRowData] = useState<(string | ReactNode)[] | null>(null);
+  const [rowFullFillmentData, setRowFullFillmentData] = useState<
+    IFullfillmentResult | undefined
+  >();
 
   const [generateAddress, setGenerateAddress] = useState("");
 
@@ -113,6 +119,7 @@ const Exchange = (props: Props) => {
     refreshOffersListKey,
     setRefreshOffersListKey,
     account,
+    contract,
   } = context;
 
   const [exchangeData, setExchangeData] = useState({
@@ -313,6 +320,7 @@ const Exchange = (props: Props) => {
           offerValidTill: TimeToNumber(exchangeData.valid),
           account: account,
         };
+
         addedOffer = await AddOfferWithEth(context.contract, data);
       } else if (sellCurrecny === ERC20TokenKey) {
         const data = {
@@ -490,6 +498,31 @@ const Exchange = (props: Props) => {
     setGenerateWalletDrawerOpen(false);
   };
 
+  const handleRowClick = async (data: [7]) => {
+    if (account == "") {
+      showErrorMessage("Please wait ,your account is not connected !");
+      return false;
+    }
+    let offerId = data[0];
+    // get the Fulfillments By OfferId
+    let FullfillmentResult: IFullfillmentResult[] =
+      await getInitializedFulfillmentsByOfferId(contract, offerId);
+
+    let fullfillmentResult: IFullfillmentResult | undefined =
+      FullfillmentResult &&
+      FullfillmentResult.find((fullfillmentResult) => {
+        return (
+          fullfillmentResult.fulfillmentRequest.fulfillmentBy.toLowerCase() ===
+          account.toLowerCase()
+        );
+      });
+    console.log(fullfillmentResult);
+    console.log("clicked on row");
+
+    setRowData(data);
+    setRowFullFillmentData(fullfillmentResult);
+  };
+
   return (
     <MainLayout
       title="Exchange"
@@ -631,9 +664,7 @@ const Exchange = (props: Props) => {
                 // OfferModal={AddOfferModal}
                 setOffer={setAddOffer}
                 verticalSpacing={"md"}
-                onRowClick={(data) => {
-                  setRowData(data);
-                }}
+                onRowClick={handleRowClick}
                 showAddOfferButton={showAddOfferButton}
               />
             </div>
@@ -647,7 +678,7 @@ const Exchange = (props: Props) => {
                 addOffer={addOffer}
                 verticalSpacing={"md"}
                 horizontalSpacing={"xs"}
-                onRowClick={(data) => setRowData(data)}
+                onRowClick={handleRowClick}
                 showAddOfferButton={showAddOfferButton}
               />
             </div>
@@ -682,6 +713,8 @@ const Exchange = (props: Props) => {
         onClose={() => setRowData(null)}
         isOpened={rowData !== null ? true : false}
         data={rowData}
+        account={account}
+        rowFullFillmentData={rowFullFillmentData}
       />
 
       <div className={styles.overlay}>

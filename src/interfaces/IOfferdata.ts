@@ -33,6 +33,11 @@ export interface IFullfillmentEvent {
   collateralAddedBy: string;
 }
 
+export interface IFullfillmentResult {
+  fulfillmentRequest: IFullfillmentEvent;
+  fulfillmentRequestId: string;
+}
+
 export interface IListenedOfferData {
   offerEvent: INewOfferEvent;
   offerDetailsInJson: IOfferdata;

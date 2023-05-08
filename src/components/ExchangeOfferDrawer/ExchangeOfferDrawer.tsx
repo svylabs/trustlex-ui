@@ -9,15 +9,19 @@ import styles from "./ExchangeOfferDrawer.module.scss";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 import { ReactNode, useEffect, useRef, useState, useContext } from "react";
 import useAutoHideScrollbar from "~/hooks/useAutoHideScrollBar";
-import StepSvg, { StepFilledSvg } from "./StepSvg";
+import StepSvg, { StepFilledSvg, StepSuccessFilledSvg } from "./StepSvg";
 import useDetectScrollUpDown from "~/hooks/useDetectScrollUpDown";
 import Countdown from "~/utils/Countdown";
 import { AppContext } from "~/Context/AppContext";
-import { IFullfillmentEvent } from "~/interfaces/IOfferdata";
+import {
+  IFullfillmentEvent,
+  IFullfillmentResult,
+} from "~/interfaces/IOfferdata";
 import {
   InitializeFullfillment,
   showSuccessMessage,
   showErrorMessage,
+  getOffer,
 } from "~/service/AppService";
 import { QRCodeCanvas } from "qrcode.react";
 import { address } from "bitcoinjs-lib";
@@ -31,9 +35,17 @@ type Props = {
   isOpened: boolean;
   onClose: () => void;
   data: any;
+  account: string;
+  rowFullFillmentData: IFullfillmentResult | undefined;
 };
 
-const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
+const ExchangeOfferDrawer = ({
+  isOpened,
+  onClose,
+  data,
+  account,
+  rowFullFillmentData,
+}: Props) => {
   // console.log(data);
   const { mobileView } = useWindowDimensions();
   const rootRef = useRef(null);
@@ -59,7 +71,6 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
   }
 
   const { listenedOfferData, listenedOfferDataByNonEvent } = context;
-
   const foundOffer =
     data &&
     // listenedOfferData.offers.find((offer) => {
@@ -69,7 +80,7 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
       // return offer.offerEvent.to.toString() == data[0];
     });
 
-  console.log(foundOffer, data, listenedOfferData, listenedOfferDataByNonEvent);
+  // console.log(foundOffer, data, listenedOfferData, listenedOfferDataByNonEvent);
   useAutoHideScrollbar(rootRef);
 
   const [isInitiatng, setIsInitating] = useState("");
@@ -88,8 +99,12 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
     }
 
     setIsInitating("loading");
-    await initiateFullFillMent();
-    setIsInitating("initiated");
+    let result = await initiateFullFillMent();
+    if (result == false) {
+      setIsInitating("");
+    } else {
+      setIsInitating("initiated");
+    }
 
     // setTimeout(() => {
     //   setIsInitating("initiated");
@@ -106,44 +121,62 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
   const { scrollDirection } = useDetectScrollUpDown();
 
   const initiateFullFillMent = async () => {
-    // console.log(foundOffer);
-    if (!foundOffer || foundOffer === undefined) return;
+    if (!foundOffer || foundOffer === undefined) {
+      showErrorMessage("Invalid Offer");
+      return false;
+    }
+    if (account == "") {
+      showErrorMessage("Please wait ,your account is not connected !");
+      return false;
+    }
+
     const _fulfillment: IFullfillmentEvent = {
-      fulfillmentBy: foundOffer.offerEvent.from,
+      // fulfillmentBy: foundOffer.offerEvent.from,
+      fulfillmentBy: account,
       quantityRequested: foundOffer.offerDetailsInJson.satoshisToReceive,
       allowAnyoneToSubmitPaymentProofForFee: true,
       allowAnyoneToAddCollateralForFee: true,
       totalCollateralAdded: foundOffer.offerDetailsInJson.collateralPer3Hours,
       expiryTime: foundOffer.offerDetailsInJson.offerValidTill,
       fulfilledTime: 10,
-      collateralAddedBy: foundOffer.offerEvent.from,
+      // collateralAddedBy: foundOffer.offerEvent.from,
+      collateralAddedBy: account,
     };
 
     console.log(foundOffer, _fulfillment);
 
     const data = await InitializeFullfillment(
       context.contract,
-      foundOffer.offerEvent.to,
+      // foundOffer.offerEvent.to,
+      foundOffer.offerDetailsInJson.offerId,
       _fulfillment
     );
-    var lll = await data.wait();
-    let toAddress = Buffer.from(
-      foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
-      "hex"
-    );
-    let hashAdress = generateTrustlexAddress(toAddress, "10");
-    setTo(`${hashAdress}`);
-    setInitatedata(data);
+    if (data) {
+      let event = data?.events[0];
+      let claimedBy = event?.args["claimedBy"];
+      let offerId = event?.args["offerId"]?.toString();
+      let fulfillmentId = event?.args["fulfillmentId"]?.toString();
+      // console.log(event, claimedBy, offerId, fulfillmentId);
+      let toAddress = Buffer.from(
+        foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
+        "hex"
+      );
+      if (fulfillmentId.length % 2 != 0) {
+        fulfillmentId = "0" + fulfillmentId;
+      }
+
+      // console.log(fulfillmentId);
+      let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
+      setTo(`${hashAdress}`);
+      setInitatedata(data);
+      setActiveStep(activeStep + 1);
+    } else {
+      return false;
+    }
   };
 
   useEffect(() => {
     if (!foundOffer || foundOffer === undefined) return;
-    let bitcoinAddress = foundOffer.offerDetailsInJson.bitcoinAddress;
-    console.log(bitcoinAddress);
-
-    let toAddress = Buffer.from(bitcoinAddress.substring(2), "hex");
-    let hashAdress = generateTrustlexAddress(toAddress, "10");
-    setTo(`${hashAdress}`);
     let planningToSell_ = Number(
       ethers.utils.formatEther(foundOffer.offerDetailsInJson.offerQuantity)
     ); //offerQuantity
@@ -151,6 +184,22 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
     setPlanningToSell(planningToSell_);
 
     setEthValue(planningToSell_);
+
+    //if order already initiated
+    if (rowFullFillmentData != undefined) {
+      setIsInitating("initiated");
+      let toAddress = Buffer.from(
+        foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
+        "hex"
+      );
+      let fulfillmentId = rowFullFillmentData.fulfillmentRequestId;
+      if (fulfillmentId.length % 2 != 0) {
+        fulfillmentId = "0" + fulfillmentId;
+      }
+      let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
+      setTo(`${hashAdress}`);
+      setActiveStep(2);
+    }
   }, [foundOffer?.offerDetailsInJson?.offerId]);
 
   // useEffect(() => {
@@ -219,27 +268,33 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
             <Grid.Col span={12}>
               <Text component="h1" className={styles.title}>
                 <span className={styles.buy}>Buy:</span>
-                <input
-                  type="number"
-                  step="any"
-                  min={0}
-                  value={ethValue}
-                  max={planningToSell}
-                  onChange={(e) => {
-                    const value = parseFloat(e.target.value);
-                    if (isNaN(value)) {
-                      setEthValue("");
-                    } else {
-                      setEthValue(Number(value));
-                    }
+                {activeStep === 1 ? (
+                  <>
+                    <input
+                      type="number"
+                      step="any"
+                      min={0}
+                      value={ethValue}
+                      max={planningToSell}
+                      onChange={(e) => {
+                        const value = parseFloat(e.target.value);
+                        if (isNaN(value)) {
+                          setEthValue("");
+                        } else {
+                          setEthValue(Number(value));
+                        }
 
-                    // if (isNaN(ethValue)) {
-                    //   setEthValue(Number(e.target.value));
-                    // }
-                    // setEthValue(Number(e.target.value));
-                  }}
-                  className={styles.input}
-                />
+                        // if (isNaN(ethValue)) {
+                        //   setEthValue(Number(e.target.value));
+                        // }
+                        // setEthValue(Number(e.target.value));
+                      }}
+                      className={styles.input}
+                    />
+                  </>
+                ) : (
+                  <span style={{ marginRight: "10px" }}>{ethValue}</span>
+                )}
                 <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />
                 <span className={styles.for}>with</span>
                 <CurrencyDisplay
@@ -259,7 +314,13 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
             <div className={styles.step}>
               <div className={styles.stepTitle}>
                 <div className={styles.svg}>
-                  {activeStep === 1 ? <StepFilledSvg /> : <StepSvg />}
+                  {activeStep > 1 ? (
+                    <StepSuccessFilledSvg />
+                  ) : activeStep === 1 ? (
+                    <StepFilledSvg />
+                  ) : (
+                    <StepSvg />
+                  )}
                 </div>
                 <h2 className={styles.stepCount}>Step 1</h2>
               </div>
@@ -355,7 +416,15 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
             <div className={styles.step}>
               <div className={styles.stepTitle}>
                 <div className={styles.svg}>
-                  {activeStep === 2 ? <StepFilledSvg /> : <StepSvg />}
+                  {activeStep > 2 ? (
+                    <StepSuccessFilledSvg />
+                  ) : activeStep === 2 ? (
+                    <>
+                      <StepFilledSvg />
+                    </>
+                  ) : (
+                    <StepSvg />
+                  )}
                 </div>
                 <h2 className={styles.stepCount}>Step 2</h2>
                 {/* <img src="https://chart.googleapis.com/chart?chs=225x225&chld=L|2&cht=qr&chl=bitcoin:1MoLoCh1srp6jjQgPmwSf5Be5PU98NJHgx?amount=.01%26label=Moloch.net%26message=Donation" /> */}
@@ -369,19 +438,28 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                         {/* values can be set anything but should a string */}
                         {/* Can use JSON.stringify(value) to make string of any values like arrays */}
                         {/* Can use JSON.parse(value) to parse the value in arrays */}
-                        {/* <QRCodeCanvas
-                          value={initatedata ? initatedata.to : "Random value"}
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                          }}
-                          // bgColor="#7C7C7C00"
-                          // fgColor="#7C7C7C"
-                        /> */}
-                        <img
-                          src={`https://chart.googleapis.com/chart?chs=250x250&chld=L|2&cht=qr&chl=bitcoin:${to}?amount=${BTCAmount}%26label=Trustlex%26message=Buying_Ether`}
-                          className={styles.qrImage}
-                        />
+                        {to == "" ? (
+                          <>
+                            <QRCodeCanvas
+                              value={
+                                initatedata ? initatedata.to : "Random value"
+                              }
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                              }}
+                              // bgColor="#7C7C7C00"
+                              // fgColor="#7C7C7C"
+                            />
+                          </>
+                        ) : (
+                          <>
+                            <img
+                              src={`https://chart.googleapis.com/chart?chs=250x250&chld=L|2&cht=qr&chl=bitcoin:${to}?amount=${BTCAmount}%26label=Trustlex%26message=Buying_Ether`}
+                              className={styles.qrImage}
+                            />
+                          </>
+                        )}
                       </div>
                     }
 
@@ -429,7 +507,13 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
             <div className={styles.step}>
               <div className={styles.stepTitle}>
                 <div className={styles.svg}>
-                  {activeStep === 3 ? <StepFilledSvg /> : <StepSvg />}
+                  {activeStep > 3 ? (
+                    <StepSuccessFilledSvg />
+                  ) : activeStep === 3 ? (
+                    <StepFilledSvg />
+                  ) : (
+                    <StepSvg />
+                  )}
                 </div>
                 <h2 className={styles.stepCount}>Step 3</h2>
               </div>
@@ -450,7 +534,14 @@ const ExchangeOfferDrawer = ({ isOpened, onClose, data }: Props) => {
                     className={`${styles.stepItem} ${styles.proofCheckbox} ${
                       verified && styles.activeStepItem
                     }`}
-                    onClick={() => setVerified(!verified)}
+                    onClick={() => {
+                      setVerified(!verified);
+                      if (verified == false && activeStep == 2) {
+                        setActiveStep(activeStep + 1);
+                      } else if (verified == true && activeStep == 3) {
+                        setActiveStep(activeStep - 1);
+                      }
+                    }}
                   >
                     <div className={styles.checkboxContainer}>
                       <input

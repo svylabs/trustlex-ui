@@ -14,6 +14,7 @@ import {
   IinitiatedFullfillmentResult,
   IListInitiatedFullfillmentData,
   IOffersResultByNonEvent,
+  IFullfillmentResult,
 } from "~/interfaces/IOfferdata";
 import axios from "axios";
 import { PAGE_SIZE } from "~/Context/Constants";
@@ -169,9 +170,22 @@ export const getOffers = async (
     if (!trustLex) return false;
 
     let offerData = await trustLex.offers(offerId);
-    // let tokenContract = await trustLex.tokenContract();
 
-    // console.log("TokenContracts", tokenContract);
+    return offerData;
+  } catch (error) {
+    console.log(error);
+    return;
+  }
+};
+
+export const getOffer = async (
+  trustLex: ethers.Contract | undefined,
+  offerId: any
+) => {
+  try {
+    if (!trustLex) return false;
+
+    let offerData = await trustLex.getOffer(offerId);
 
     return offerData;
   } catch (error) {
@@ -315,6 +329,7 @@ export const getOffersList = async (
         satoshisReceived: offer.satoshisReceived.toString(),
         satoshisReserved: offer.satoshisReserved.toString(),
         collateralPer3Hours: offer.collateralPer3Hours.toString(),
+        fulfillmentRequests: offer.fulfillmentRequests,
       };
       // console.log(offerDetailsInJson);
       promises.push({ offerDetailsInJson });
@@ -476,6 +491,7 @@ export const listInitializeFullfillment = async (
         // return false;
 
         const offerDetailsInJson: IOfferdata = {
+          offerId: offerEvent.offerId,
           offerQuantity: offerData[0].toString(),
           offeredBy: offerData[1].toString(),
           offerValidTill: offerData[2].toString(),
@@ -519,6 +535,7 @@ export const listInitializeFullfillment = async (
   }
 };
 
+// get the perticular fullfillment details by fullfillment id
 export const getInitializedFulfillments = async (
   trustLex: ethers.Contract | undefined,
   offerId: number,
@@ -542,6 +559,21 @@ export const getInitializedFulfillments = async (
   }
 };
 
+export const getInitializedFulfillmentsByOfferId = async (
+  trustLex: ethers.Contract | undefined,
+  offerId: number
+) => {
+  let fullfillmentResult: IFullfillmentResult[] = [];
+  try {
+    if (!trustLex) return false;
+
+    let fullfillmentResult = await trustLex.getInitiateFulfillments(offerId);
+    return fullfillmentResult;
+  } catch (error) {
+    console.log(error);
+    return fullfillmentResult;
+  }
+};
 export const InitializeFullfillment = async (
   trustLex: ethers.Contract | undefined,
   offerId: string,
@@ -555,9 +587,12 @@ export const InitializeFullfillment = async (
     );
 
     await initializeFullfillment.wait();
-    return initializeFullfillment;
-  } catch (error) {
-    console.log(JSON.stringify(error), null, 4);
+    let tx = await initializeFullfillment.wait();
+    return tx;
+  } catch (error: any) {
+    console.log(error?.message);
+    console.log(error);
+    // console.log(JSON.stringify(error), null, 4);
   }
 };
 

@@ -22,6 +22,7 @@ import {
   showSuccessMessage,
   showErrorMessage,
   getOffer,
+  submitPaymentProof,
 } from "~/service/AppService";
 import { QRCodeCanvas } from "qrcode.react";
 import { address } from "bitcoinjs-lib";
@@ -30,6 +31,17 @@ import ImageIcon from "../ImageIcon/ImageIcon";
 import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";
 import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
 import { ethers } from "ethers";
+import { BlockchainExplorerLink } from "~/Context/AppConfig";
+import { getStringForTx } from "~/helpers/commonHelper";
+import { ActionIcon } from "@mantine/core";
+
+import {
+  IconAdjustments,
+  IconClipboardCopy,
+  IconClipboardCheck,
+  IconCopy,
+} from "@tabler/icons-react";
+import { Tooltip } from "@mantine/core";
 
 type Props = {
   isOpened: boolean;
@@ -37,6 +49,9 @@ type Props = {
   data: any;
   account: string;
   rowFullFillmentData: IFullfillmentResult | undefined;
+  contract: ethers.Contract | undefined;
+  refreshOffersListKey: number;
+  setRefreshOffersListKey: (refreshOffersListKey: number) => void;
 };
 
 const ExchangeOfferDrawer = ({
@@ -45,6 +60,9 @@ const ExchangeOfferDrawer = ({
   data,
   account,
   rowFullFillmentData,
+  contract,
+  refreshOffersListKey,
+  setRefreshOffersListKey,
 }: Props) => {
   // console.log(data);
   const { mobileView } = useWindowDimensions();
@@ -59,6 +77,14 @@ const ExchangeOfferDrawer = ({
   const [initatedata, setInitatedata]: any = useState([]);
   const [to, setTo] = useState("");
   const [planningToSell, setPlanningToSell] = useState(0);
+  const [submitPaymentProofTxHash, setSubmitPaymentProofTxHash] = useState("");
+  const [clipboardTxCopy, setClipboardTxCopy] = useState(false);
+  const [isInitiatng, setIsInitating] = useState("");
+  const [offerFulfillmentId, setOfferFulfillmentId] = useState<
+    string | undefined
+  >(undefined);
+
+  const { scrollDirection } = useDetectScrollUpDown();
 
   useEffect(() => {
     if (data === null) {
@@ -83,7 +109,40 @@ const ExchangeOfferDrawer = ({
   // console.log(foundOffer, data, listenedOfferData, listenedOfferDataByNonEvent);
   useAutoHideScrollbar(rootRef);
 
-  const [isInitiatng, setIsInitating] = useState("");
+  useEffect(() => {
+    if (!foundOffer || foundOffer === undefined) return;
+    let planningToSell_ = Number(
+      ethers.utils.formatEther(foundOffer.offerDetailsInJson.offerQuantity)
+    ); //offerQuantity
+
+    setPlanningToSell(planningToSell_);
+
+    setEthValue(planningToSell_);
+
+    //if order already initiated
+    setIsInitating("");
+    setTo("");
+    setActiveStep(1);
+    setVerified(false);
+    setConfirmed("");
+
+    if (rowFullFillmentData != undefined) {
+      setIsInitating("initiated");
+      let toAddress = Buffer.from(
+        foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
+        "hex"
+      );
+      let fulfillmentId = rowFullFillmentData.fulfillmentRequestId;
+      setOfferFulfillmentId(fulfillmentId);
+      if (fulfillmentId.length % 2 != 0) {
+        fulfillmentId = "0" + fulfillmentId;
+      }
+      let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
+      setTo(`${hashAdress}`);
+      setActiveStep(2);
+    }
+  }, [foundOffer?.offerDetailsInJson?.offerId]);
+
   const handleInitate = async () => {
     // validate the eth value
     let buyAmount: number = ethValue as number;
@@ -105,20 +164,10 @@ const ExchangeOfferDrawer = ({
     } else {
       setIsInitating("initiated");
     }
-
     // setTimeout(() => {
     //   setIsInitating("initiated");
     // }, 1000 * 120);
   };
-
-  const handleConfirmClick = () => {
-    setConfirmed("loading");
-    setTimeout(() => {
-      setConfirmed("confirmed");
-    }, 1000 * 120);
-  };
-
-  const { scrollDirection } = useDetectScrollUpDown();
 
   const initiateFullFillMent = async () => {
     if (!foundOffer || foundOffer === undefined) {
@@ -138,7 +187,7 @@ const ExchangeOfferDrawer = ({
       allowAnyoneToAddCollateralForFee: true,
       totalCollateralAdded: foundOffer.offerDetailsInJson.collateralPer3Hours,
       expiryTime: foundOffer.offerDetailsInJson.offerValidTill,
-      fulfilledTime: 10,
+      fulfilledTime: 0,
       // collateralAddedBy: foundOffer.offerEvent.from,
       collateralAddedBy: account,
     };
@@ -157,6 +206,7 @@ const ExchangeOfferDrawer = ({
       let offerId = event?.args["offerId"]?.toString();
       let fulfillmentId = event?.args["fulfillmentId"]?.toString();
       // console.log(event, claimedBy, offerId, fulfillmentId);
+      setOfferFulfillmentId(fulfillmentId);
       let toAddress = Buffer.from(
         foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
         "hex"
@@ -175,32 +225,40 @@ const ExchangeOfferDrawer = ({
     }
   };
 
-  useEffect(() => {
-    if (!foundOffer || foundOffer === undefined) return;
-    let planningToSell_ = Number(
-      ethers.utils.formatEther(foundOffer.offerDetailsInJson.offerQuantity)
-    ); //offerQuantity
-
-    setPlanningToSell(planningToSell_);
-
-    setEthValue(planningToSell_);
-
-    //if order already initiated
-    if (rowFullFillmentData != undefined) {
-      setIsInitating("initiated");
-      let toAddress = Buffer.from(
-        foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
-        "hex"
-      );
-      let fulfillmentId = rowFullFillmentData.fulfillmentRequestId;
-      if (fulfillmentId.length % 2 != 0) {
-        fulfillmentId = "0" + fulfillmentId;
-      }
-      let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
-      setTo(`${hashAdress}`);
-      setActiveStep(2);
+  const handleConfirmClick = async () => {
+    let offerId = foundOffer.offerDetailsInJson.offerId;
+    if (offerFulfillmentId == undefined) {
+      return false;
     }
-  }, [foundOffer?.offerDetailsInJson?.offerId]);
+    setConfirmed("loading");
+    let result = await submitPaymentProof(
+      contract,
+      offerId,
+      offerFulfillmentId
+    );
+    console.log(result);
+    if (result) {
+      setSubmitPaymentProofTxHash(result.transactionHash);
+      setConfirmed("confirmed");
+      showSuccessMessage("Proof has been submitted successfully !");
+      setActiveStep(4);
+      setTimeout(function () {
+        setRefreshOffersListKey(refreshOffersListKey + 1);
+        onClose();
+      }, 5000);
+    } else {
+      showErrorMessage("Something went wrong. Please try again later.");
+      setConfirmed("");
+    }
+  };
+
+  const handleCopyText = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setClipboardTxCopy(true);
+    setTimeout(function () {
+      setClipboardTxCopy(false);
+    }, 2000);
+  };
 
   // useEffect(() => {
   //   if (!listenedOfferData || listenedOfferData === undefined) return;
@@ -535,11 +593,13 @@ const ExchangeOfferDrawer = ({
                       verified && styles.activeStepItem
                     }`}
                     onClick={() => {
-                      setVerified(!verified);
+                      // setVerified(!verified);
                       if (verified == false && activeStep == 2) {
                         setActiveStep(activeStep + 1);
+                        setVerified(true);
                       } else if (verified == true && activeStep == 3) {
                         setActiveStep(activeStep - 1);
+                        setVerified(false);
                       }
                     }}
                   >
@@ -548,9 +608,9 @@ const ExchangeOfferDrawer = ({
                         type="radio"
                         className={styles.checkbox}
                         checked={verified}
-                        onChange={() => {
-                          setVerified(true);
-                        }}
+                        // onChange={() => {
+                        //   setVerified(true);
+                        // }}
                       />
                     </div>
                     <span>I've verified the transaction details</span>
@@ -576,6 +636,11 @@ const ExchangeOfferDrawer = ({
                               ? "unset"
                               : "linear-gradient(180deg, #ffd572 0%, #febd38 100%)",
                         }}
+                        disabled={
+                          confirmed !== "loading" && verified === true
+                            ? false
+                            : true
+                        }
                         loading={confirmed === "loading" ? true : false}
                         onClick={handleConfirmClick}
                       >
@@ -610,12 +675,48 @@ const ExchangeOfferDrawer = ({
                         <div className={styles.transactionLink}>
                           <h6>Link to your transaction</h6>
                           <div className={styles.linkBox}>
-                            <span>trustlex.so/5aa2342esd2...</span>
+                            <span>
+                              {BlockchainExplorerLink}
+                              {getStringForTx(submitPaymentProofTxHash)}
+                            </span>
                             <div className={styles.iconBox}>
-                              <Icon
-                                icon={"tabler:copy"}
-                                className={styles.icon}
-                              />
+                              <Tooltip
+                                label={
+                                  clipboardTxCopy == true ? "Copied" : "Copy"
+                                }
+                                color={
+                                  clipboardTxCopy == true ? "green" : "dark"
+                                }
+                                withArrow
+                              >
+                                <ActionIcon
+                                  size="lg"
+                                  radius="md"
+                                  variant="transparent"
+                                  onClick={() => {
+                                    handleCopyText(
+                                      `${BlockchainExplorerLink}${submitPaymentProofTxHash}`
+                                    );
+                                  }}
+                                >
+                                  {clipboardTxCopy == true ? (
+                                    <>
+                                      <IconClipboardCheck
+                                        size="1.625rem"
+                                        className={styles.icon}
+                                        color="green"
+                                      />
+                                    </>
+                                  ) : (
+                                    <>
+                                      <IconClipboardCopy
+                                        size="1.625rem"
+                                        className={styles.icon}
+                                      />
+                                    </>
+                                  )}
+                                </ActionIcon>
+                              </Tooltip>
                             </div>
                           </div>
                         </div>

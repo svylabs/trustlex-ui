@@ -623,3 +623,23 @@ export const showErrorMessage = (message: string) => {
     theme: "colored", //light, dark,colored
   });
 };
+
+export const submitPaymentProof = async (
+  trustLex: ethers.Contract | undefined,
+  offerId: string,
+  fulfillmentId: string
+) => {
+  try {
+    if (!trustLex) return false;
+    const transaction = await trustLex.submitPaymentProof(
+      offerId,
+      fulfillmentId
+    );
+
+    let tx = await transaction.wait();
+    return tx;
+  } catch (error: any) {
+    console.log(error?.message);
+    console.log(error);
+  }
+};

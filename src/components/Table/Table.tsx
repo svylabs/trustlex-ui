@@ -77,23 +77,34 @@ const Table = ({
             </tr>
           </thead>
           <tbody className={styles.tbody}>
-            {data.map((row, index) => (
-              <tr
-                className={`${styles.tr} ${
-                  onRowClick !== undefined && styles.pointer
-                }`}
-                key={index}
-                onClick={() => {
-                  if (onRowClick !== undefined) onRowClick(row);
-                }}
-              >
-                {row.map((item, index) => (
-                  <td className={styles.td} key={index}>
-                    {item}
-                  </td>
-                ))}
+            {data.length > 0 ? (
+              data.map((row, index) => (
+                <tr
+                  className={`${styles.tr} ${
+                    onRowClick !== undefined && styles.pointer
+                  }`}
+                  key={index}
+                  onClick={() => {
+                    if (onRowClick !== undefined) onRowClick(row);
+                  }}
+                >
+                  {row.map((item, index) => (
+                    <td className={styles.td} key={index}>
+                      {item}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan={7}
+                  style={{ textAlign: "center", fontWeight: 700 }}
+                >
+                  No record found
+                </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </MantineTable>
       </div>

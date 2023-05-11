@@ -261,6 +261,11 @@
                   "internalType": "bool",
                   "name": "allowAnyoneToAddCollateralForFee",
                   "type": "bool"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "paymentProofSubmitted",
+                  "type": "bool"
                 }
               ],
               "internalType": "struct TrustlexPerAssetOrderBook.FulfillmentRequest",
@@ -517,6 +522,11 @@
           "internalType": "bool",
           "name": "allowAnyoneToAddCollateralForFee",
           "type": "bool"
+        },
+        {
+          "internalType": "bool",
+          "name": "paymentProofSubmitted",
+          "type": "bool"
         }
       ],
       "stateMutability": "view",
@@ -569,6 +579,11 @@
             {
               "internalType": "bool",
               "name": "allowAnyoneToAddCollateralForFee",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "paymentProofSubmitted",
               "type": "bool"
             }
           ],

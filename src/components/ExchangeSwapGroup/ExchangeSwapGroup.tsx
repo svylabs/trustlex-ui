@@ -35,7 +35,7 @@ const currencyObjects: {
     icon: <ImageIcon image={"/icons/bitcoin.svg"} />,
   },
 };
-console.log(currencyObjects);
+// console.log(currencyObjects);
 type Props = {};
 
 const ExchangeSwapGroup = (props: Props) => {

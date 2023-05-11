@@ -4,6 +4,7 @@ import {
   IOffersResult,
   IinitiatedFullfillmentResult,
   IOffersResultByNonEvent,
+  IListInitiatedFullfillmentDataByNonEvent,
 } from "~/interfaces/IOfferdata";
 import { ethers } from "ethers";
 
@@ -35,6 +36,11 @@ export const AppContext = createContext<null | {
   listenedOngoinMySwapData: IinitiatedFullfillmentResult;
   setlistenedOngoinMySwapData: React.Dispatch<
     React.SetStateAction<IinitiatedFullfillmentResult>
+  >;
+
+  listenedOngoinMySwapOnGoingDataByNonEvent: IListInitiatedFullfillmentDataByNonEvent[];
+  setlistenedOngoinMySwapOnGoingDataByNonEvent: React.Dispatch<
+    React.SetStateAction<IListInitiatedFullfillmentDataByNonEvent[]>
   >;
 
   isMoreTableDataLoading: boolean;

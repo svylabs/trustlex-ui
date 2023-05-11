@@ -10,6 +10,10 @@ export interface IOfferdata {
   satoshisReceived: string;
   satoshisReserved: string;
   collateralPer3Hours: string;
+  progress: string;
+  offerType: string;
+  fullfillmentRequestId: undefined;
+  fulfillmentRequests?: IFullfillmentEvent;
 }
 
 export interface INewOfferEvent {
@@ -31,6 +35,7 @@ export interface IFullfillmentEvent {
   expiryTime: string;
   fulfilledTime: number | string | Date;
   collateralAddedBy: string;
+  paymentProofSubmitted: boolean;
 }
 
 export interface IFullfillmentResult {
@@ -56,6 +61,10 @@ export interface IListInitiatedFullfillmentData {
   offerEvent: IInitilizedFullfillmentEvent;
   offerDetailsInJson: IOfferdata;
   offersFullfillmentJson: IFullfillmentEvent;
+}
+
+export interface IListInitiatedFullfillmentDataByNonEvent {
+  offerDetailsInJson: IOfferdata;
 }
 export interface IinitiatedFullfillmentResult {
   fromBlock: number;

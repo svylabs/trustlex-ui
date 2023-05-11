@@ -17,6 +17,7 @@ import {
   getOffersList,
   getTotalOffers,
   getERC20TokenBalance,
+  listInitializeFullfillmentByNonEvent,
 } from "./service/AppService";
 import IUserInputData from "./interfaces/IUserInputData";
 import swapArrayElements from "./utils/swapArray";
@@ -27,6 +28,7 @@ import {
   IinitiatedFullfillmentResult,
   IOffersResultByNonEvent,
   OrderBy,
+  IListInitiatedFullfillmentDataByNonEvent,
 } from "./interfaces/IOfferdata";
 import { ethers } from "ethers";
 import { ContractMap } from "./Context/AppConfig";
@@ -71,6 +73,10 @@ export default function App() {
       toBlock: 0,
       offers: [],
     });
+  const [
+    listenedOngoinMySwapOnGoingDataByNonEvent,
+    setlistenedOngoinMySwapOnGoingDataByNonEvent,
+  ] = useState<IListInitiatedFullfillmentDataByNonEvent[]>([]);
 
   const userData = get("userInputData", true);
   const [userInputData, setUserInputData] = useState<IUserInputData>(
@@ -85,7 +91,7 @@ export default function App() {
 
   useEffect(() => {
     set("userInputData", userInputData);
-    console.log(userInputData);
+    // console.log(userInputData);
   }, [userInputData]);
 
   useEffect(() => {
@@ -110,14 +116,20 @@ export default function App() {
           provider,
           ContractMap[selectedToken].address
         );
-        if (trustlex) {
-          setContract(trustlex as ethers.Contract);
-        }
-
         setAccount(accounts[0]);
         let balance = await getBalance(accounts[0]);
         if (balance) {
           setBalance(balance);
+        }
+
+        if (trustlex) {
+          setContract(trustlex as ethers.Contract);
+          // fetch the recent orders
+          const InitializeFullfillmentDataByNonEvent =
+            await listInitializeFullfillmentByNonEvent(trustlex, account);
+          setlistenedOngoinMySwapOnGoingDataByNonEvent(
+            InitializeFullfillmentDataByNonEvent
+          );
         }
 
         let tokenBalance_ = await getERC20TokenBalance(accounts[0]);
@@ -172,6 +184,16 @@ export default function App() {
         setListenedOfferDataByNonEvent({ offers: [] });
         setExchangeLoadingText("Connecting to Network");
 
+        let account = await findMetaMaskAccount();
+        if (account !== null) {
+          setAccount(account);
+          getBalance(account).then((balance) => {
+            if (balance) {
+              setBalance(balance);
+            }
+          });
+        }
+
         let trustlex = await connect(
           provider,
           ContractMap[selectedToken].address
@@ -197,21 +219,18 @@ export default function App() {
           setMoreTableDataLoading(false);
           setExchangeLoadingText("");
 
+          // fetch the recent orders
+          const InitializeFullfillmentDataByNonEvent =
+            await listInitializeFullfillmentByNonEvent(trustlex, account);
+          setlistenedOngoinMySwapOnGoingDataByNonEvent(
+            InitializeFullfillmentDataByNonEvent
+          );
+
           const InitializeFullfillmentData = await listInitializeFullfillment(
             trustlex
           );
           // console.log(InitializeFullfillmentData);
           setlistenedOngoinMySwapData(InitializeFullfillmentData);
-        }
-
-        let account = await findMetaMaskAccount();
-        if (account !== null) {
-          setAccount(account);
-          getBalance(account).then((balance) => {
-            if (balance) {
-              setBalance(balance);
-            }
-          });
         }
 
         let tokenBalance_ = await getERC20TokenBalance(account);
@@ -264,6 +283,8 @@ export default function App() {
             setRefreshOffersListKey,
             erc20balance,
             setERC20balance,
+            listenedOngoinMySwapOnGoingDataByNonEvent,
+            setlistenedOngoinMySwapOnGoingDataByNonEvent,
           }}
         >
           <Layout>

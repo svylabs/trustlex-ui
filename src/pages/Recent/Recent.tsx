@@ -58,6 +58,10 @@ function MySwaps() {
   }
 
   const { listenedOngoinMySwapData, setlistenedOngoinMySwapData } = context;
+  const {
+    listenedOngoinMySwapOnGoingDataByNonEvent,
+    setlistenedOngoinMySwapOnGoingDataByNonEvent,
+  } = context;
   const [tableData, setTableData] = useState([]);
   const [isMoreOngoingLoading, setMoreOngoingDataLoading] = useState(false);
   const [isMoreHistoryLoading, setMoreHistoryLoading] = useState(false);
@@ -76,11 +80,12 @@ function MySwaps() {
     }, 2000);
   };
 
-  const OngoingTableData2 = listenedOngoinMySwapData?.offers.map(
+  // const OngoingTableData2 = listenedOngoinMySwapData?.offers.map(
+  const OngoingTableData2 = listenedOngoinMySwapOnGoingDataByNonEvent.map(
     (value, key) => {
-      let fulfillmentBy: string = value?.offersFullfillmentJson.fulfillmentBy;
+      // let fulfillmentBy: string = value?.offerDetailsInJson.fulfillmentBy;
       let row = {
-        orderNumber: value.offerEvent.fulfillmentId.toString().slice(-6),
+        orderNumber: value.offerDetailsInJson.offerId.toString(),
         planningToSell: {
           amount: Number(
             ethers.utils.formatEther(value.offerDetailsInJson.offerQuantity)
@@ -105,7 +110,7 @@ function MySwaps() {
               )
           ).toFixed(4)
         ),
-        progress: TimestampTofromNow(value?.offersFullfillmentJson.expiryTime),
+        progress: "", //TimestampTofromNow(value?.offersFullfillmentJson.expiryTime),
       };
       // console.log(row);
       return row;

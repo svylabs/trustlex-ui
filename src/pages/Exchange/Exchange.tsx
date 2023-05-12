@@ -25,6 +25,7 @@ import { EthtoWei, WeitoEth } from "~/utils/Ether.utills";
 import styles from "./Exchange.module.scss";
 import SeeMoreButton from "~/components/SeeMoreButton/SeeMoreButton";
 import ExchangeOfferDrawer from "~/components/ExchangeOfferDrawer/ExchangeOfferDrawer";
+import getTableData from "~/components/ExchangePrepareTableData/GetTableData";
 import { AppContext } from "~/Context/AppContext";
 import {
   AddOfferWithEth,
@@ -82,8 +83,9 @@ const mobileTableDummyData: string[][] = new Array(5).fill([
 
 const Exchange = (props: Props) => {
   const [rowData, setRowData] = useState<(string | ReactNode)[] | null>(null);
-  const [rowFullFillmentData, setRowFullFillmentData] = useState<
-    IFullfillmentResult | undefined
+  const [rowOfferId, setRowOfferId] = useState<number | null>(null);
+  const [rowFullFillmentId, setRowFullFillmentId] = useState<
+    string | undefined
   >();
 
   const [generateAddress, setGenerateAddress] = useState("");
@@ -146,80 +148,6 @@ const Exchange = (props: Props) => {
 
   const [mobileTableData, setMobileTableData] =
     useState<(string | JSX.Element)[][]>(mobileData);
-
-  const getTableData = (offers: IListenedOfferData[]) => {
-    return offers
-      .filter(function (offer: IListenedOfferData) {
-        let satoshisToReceive = +offer.offerDetailsInJson.satoshisToReceive;
-        let satoshisReserved = +offer.offerDetailsInJson.satoshisReserved;
-        let satoshisReceived = +offer.offerDetailsInJson.satoshisReceived;
-        let left_to_buy =
-          satoshisToReceive - (satoshisReserved + satoshisReceived);
-        if (left_to_buy === 0) {
-          return false; // skip
-        }
-        return true;
-      })
-      .map((offer: IListenedOfferData) => {
-        // console.log(offer);
-        const planningToSell = Number(
-          SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)
-        ).toFixed(4);
-        const offerQuantity = ethers.utils.formatEther(
-          offer.offerDetailsInJson.offerQuantity
-        );
-        const price_per_ETH_in_BTC =
-          Number(
-            SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)
-          ) /
-          Number(
-            ethers.utils.formatEther(offer.offerDetailsInJson.offerQuantity)
-          );
-        const satoshisToReceive = Number(
-          offer.offerDetailsInJson.satoshisToReceive
-        );
-        const satoshisReserved = Number(
-          offer.offerDetailsInJson.satoshisReserved
-        );
-        const satoshisReceived = Number(
-          offer.offerDetailsInJson.satoshisReceived
-        );
-        const left_to_buy =
-          Number(
-            SatoshiToBtcConverter(
-              satoshisToReceive - (satoshisReserved + satoshisReceived)
-            )
-          ) / price_per_ETH_in_BTC;
-
-        return [
-          // offer.offerDetailsInJson.offeredBlockNumber,
-          // offer.offerEvent.to.toString(),
-          offer.offerDetailsInJson.offerId,
-          <>
-            {offerQuantity}{" "}
-            <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />
-            {CurrencyEnum.ETH}
-          </>,
-          <>
-            {planningToSell}{" "}
-            <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
-            {CurrencyEnum.BTC}
-          </>,
-          <>
-            {price_per_ETH_in_BTC.toFixed(4)}{" "}
-            <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
-            {CurrencyEnum.BTC}
-          </>,
-          <>
-            {left_to_buy}{" "}
-            <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />
-            {CurrencyEnum.ETH}
-          </>,
-          NumberToTime(offer.offerDetailsInJson.offerValidTill),
-          TimeToDateFormat(offer.offerDetailsInJson.orderedTime),
-        ];
-      });
-  };
 
   // let data = getTableData(listenedOfferData.offers);
   // console.log("data", data);
@@ -528,8 +456,8 @@ const Exchange = (props: Props) => {
           account.toLowerCase()
         );
       });
-    setRowData(data);
-    setRowFullFillmentData(fullfillmentResult);
+    setRowOfferId(offerId);
+    setRowFullFillmentId(fullfillmentResult?.fulfillmentRequestId);
   };
 
   return (
@@ -719,11 +647,13 @@ const Exchange = (props: Props) => {
         </GradientBackgroundContainer>
       </div>
       <ExchangeOfferDrawer
-        onClose={() => setRowData(null)}
-        isOpened={rowData !== null ? true : false}
-        data={rowData}
+        onClose={() => {
+          setRowOfferId(null);
+        }}
+        isOpened={rowOfferId !== null ? true : false}
+        rowOfferId={rowOfferId}
         account={account}
-        rowFullFillmentData={rowFullFillmentData}
+        rowFullFillmentId={rowFullFillmentId}
         contract={contract}
         refreshOffersListKey={refreshOffersListKey}
         setRefreshOffersListKey={setRefreshOffersListKey}

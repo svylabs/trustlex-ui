@@ -1,3 +1,4 @@
+import React, { ReactNode, useEffect, useState } from "react";
 import { Box, Center } from "@mantine/core";
 import ActionButton from "~/components/ActionButton/ActionButton";
 import Button from "~/components/Button/Button";
@@ -7,20 +8,22 @@ import RecentOngoingTable from "~/components/RecentOngoingTable/RecentOngoingTab
 import Tabs from "~/components/Tabs/Tabs";
 import { HistoryTableData, OngoingTableData } from "~/data/recentPage";
 import styles from "./Recent.module.scss";
-import React, { useState } from "react";
 import AllSwapTable from "~/components/AllSwapTable/AllSwapTable";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 import MainLayout from "~/components/MainLayout/MainLayout";
-
-import { IFullfillmentEvent } from "~/interfaces/IOfferdata";
+import {
+  IFullfillmentEvent,
+  IFullfillmentResult,
+} from "~/interfaces/IOfferdata";
 import { MAX_BLOCKS_TO_QUERY, MAX_ITERATIONS } from "~/Context/Constants";
 import { AppContext } from "~/Context/AppContext";
 import { CurrencyEnum } from "~/enums/CurrencyEnum";
 import { StatusEnum } from "~/enums/StatusEnum";
 import { ethers } from "ethers";
 import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
-import { TimestampTofromNow } from "~/utils/TimeConverter";
-
+import { TimestampfromNow } from "~/utils/TimeConverter";
+import ExchangeOfferDrawer from "~/components/ExchangeOfferDrawer/ExchangeOfferDrawer";
+import getTableData from "~/components/ExchangePrepareTableData/GetTableData";
 type Props = {};
 
 const Recent = (props: Props) => {
@@ -61,10 +64,19 @@ function MySwaps() {
   const {
     listenedOngoinMySwapOnGoingDataByNonEvent,
     setlistenedOngoinMySwapOnGoingDataByNonEvent,
+    refreshOffersListKey,
+    setRefreshOffersListKey,
+    account,
+    contract,
   } = context;
-  const [tableData, setTableData] = useState([]);
+
   const [isMoreOngoingLoading, setMoreOngoingDataLoading] = useState(false);
   const [isMoreHistoryLoading, setMoreHistoryLoading] = useState(false);
+
+  const [rowOfferId, setRowOfferId] = useState<number | null>(null);
+  const [rowFullFillmentId, setRowFullFillmentId] = useState<
+    string | undefined
+  >();
 
   const loadMoreOngoing = () => {
     setMoreOngoingDataLoading(true);
@@ -78,6 +90,15 @@ function MySwaps() {
     setTimeout(() => {
       setMoreHistoryLoading(false);
     }, 2000);
+  };
+
+  const handleSubmitPaymentProof = (
+    fullfillmentRequestId: string | undefined,
+    offerId: number
+  ) => {
+    setRowFullFillmentId(fullfillmentRequestId);
+    setRowOfferId(offerId);
+    //getTableData()
   };
 
   // const OngoingTableData2 = listenedOngoinMySwapData?.offers.map(
@@ -110,7 +131,10 @@ function MySwaps() {
               )
           ).toFixed(4)
         ),
-        progress: "", //TimestampTofromNow(value?.offersFullfillmentJson.expiryTime),
+        progress: value.offerDetailsInJson.progress, //TimestampTofromNow(value?.offersFullfillmentJson.expiryTime),
+        offerType: value.offerDetailsInJson.offerType,
+        fullfillmentRequestId: value.offerDetailsInJson.fullfillmentRequestId,
+        offerId: value.offerDetailsInJson.offerId,
       };
       // console.log(row);
       return row;
@@ -133,7 +157,7 @@ function MySwaps() {
                 "Actions",
               ]}
               data={OngoingTableData2}
-              // data={tableData}
+              handleSubmitPaymentProof={handleSubmitPaymentProof}
             />
           </div>
           <div className={styles.recentMobileTable}>
@@ -142,6 +166,7 @@ function MySwaps() {
               cols={["Sell", "Buy", "Progress", ""]}
               data={OngoingTableData}
               mobile={true}
+              handleSubmitPaymentProof={handleSubmitPaymentProof}
             />
           </div>
           <br />
@@ -155,6 +180,18 @@ function MySwaps() {
             </ActionButton>
           </Center>
         </Box>
+        <ExchangeOfferDrawer
+          onClose={() => {
+            setRowOfferId(null);
+          }}
+          isOpened={rowOfferId !== null ? true : false}
+          rowOfferId={rowOfferId}
+          account={account}
+          rowFullFillmentId={rowFullFillmentId}
+          contract={contract}
+          refreshOffersListKey={refreshOffersListKey}
+          setRefreshOffersListKey={setRefreshOffersListKey}
+        />
       </GradientBackgroundContainer>
       <GradientBackgroundContainer colorLeft="#FFD57243">
         <Box p={"lg"} className={styles.box}>

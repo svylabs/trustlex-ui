@@ -23,6 +23,7 @@ import { MAX_BLOCKS_TO_QUERY, MAX_ITERATIONS } from "~/Context/Constants";
 import { EthtoWei, WeitoEth } from "~/utils/Ether.utills";
 import { AppContext } from "~/Context/AppContext";
 import { ToastContainer, toast } from "react-toastify";
+import { TimestampTotoNow, TimestampfromNow } from "~/utils/TimeConverter";
 
 const getEthereumObject = () => window.ethereum;
 
@@ -580,7 +581,7 @@ export const listInitializeFullfillmentByNonEvent = async (
       let satoshisToReceive = offer.satoshisToReceive;
       filled = (satoshisReserved / satoshisToReceive) * 100;
       offerDetailsInJson.progress = filled + "% filled";
-      offerDetailsInJson.offerType = "My Offer";
+      offerDetailsInJson.offerType = "my_offer";
       MyOffersPromises.push({ offerDetailsInJson });
     }
 
@@ -604,8 +605,11 @@ export const listInitializeFullfillmentByNonEvent = async (
         }
       });
     if (fullfillmentResult) {
-      offerDetailsInJson.offerType = "My Order";
-      offerDetailsInJson.progress = "initiated";
+      offerDetailsInJson.offerType = "my_order";
+      offerDetailsInJson.progress =
+        TimestampTotoNow(fullfillmentResult.fulfillmentRequest.expiryTime) +
+        " and " +
+        TimestampfromNow(fullfillmentResult.fulfillmentRequest.expiryTime);
       offerDetailsInJson.fullfillmentRequestId = fullfillmentRequestId;
     }
     fullfillmentResult &&

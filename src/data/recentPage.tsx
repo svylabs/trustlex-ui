@@ -13,6 +13,9 @@ export const OngoingTableData = [
     },
     rateInBTC: 0.078,
     progress: "Initiated 35m ago",
+    offerType: "my_offer",
+    fullfillmentRequestId: undefined,
+    offerId: 0,
   },
   {
     orderNumber: 123444,
@@ -26,6 +29,9 @@ export const OngoingTableData = [
     },
     rateInBTC: 0.078,
     progress: "Submit Proof of payment",
+    offerType: "my_offer",
+    fullfillmentRequestId: undefined,
+    offerId: 0,
   },
   {
     orderNumber: 123444,
@@ -39,6 +45,9 @@ export const OngoingTableData = [
     },
     rateInBTC: 0.078,
     progress: "95% filled",
+    offerType: "my_offer",
+    fullfillmentRequestId: undefined,
+    offerId: 0,
   },
   {
     orderNumber: 123444,
@@ -52,6 +61,9 @@ export const OngoingTableData = [
     },
     rateInBTC: 0.078,
     progress: "92% filled",
+    offerType: "my_offer",
+    fullfillmentRequestId: undefined,
+    offerId: 0,
   },
   {
     orderNumber: 123444,
@@ -65,6 +77,9 @@ export const OngoingTableData = [
     },
     rateInBTC: 0.078,
     progress: "Submit Proof of payment",
+    offerType: "my_offer",
+    fullfillmentRequestId: undefined,
+    offerId: 0,
   },
 ];
 export const HistoryTableData = [

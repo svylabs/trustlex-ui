@@ -16,6 +16,9 @@ export interface ITableRow {
   planningToBuy: IPlanning;
   rateInBTC: number;
   progress: string;
+  offerType: string;
+  fullfillmentRequestId: string | undefined;
+  offerId: number;
 }
 
 interface Props extends TableProps {
@@ -23,9 +26,19 @@ interface Props extends TableProps {
   cols: string[];
   data: ITableRow[];
   mobile?: boolean;
+  handleSubmitPaymentProof: (
+    fullfillmentRequestId: string | undefined,
+    offerId: number
+  ) => void;
 }
 
-const RecentOngoingTable = ({ tableCaption, cols, data, mobile }: Props) => {
+const RecentOngoingTable = ({
+  tableCaption,
+  cols,
+  data,
+  mobile,
+  handleSubmitPaymentProof,
+}: Props) => {
   const [isViewOrderDrawerOpen, setViewOrderDrawerOpen] = useState(false);
 
   const tableData = !mobile
@@ -48,16 +61,39 @@ const RecentOngoingTable = ({ tableCaption, cols, data, mobile }: Props) => {
         </div>,
         row.progress,
         <div className={styles.actionsCell}>
-          <ActionButton size="compact" variant={"default"} onClick={() => {}}>
-            Cancel
-          </ActionButton>
-          <ActionButton
-            size="compact"
-            variant={"primary"}
-            onClick={() => setViewOrderDrawerOpen(true)}
-          >
-            View
-          </ActionButton>
+          {row.offerType == "my_order" ? (
+            <>
+              <ActionButton
+                size="compact"
+                variant={"default"}
+                onClick={() => {
+                  handleSubmitPaymentProof(
+                    row.fullfillmentRequestId,
+                    row.offerId
+                  );
+                }}
+              >
+                Submit Payment Proof
+              </ActionButton>
+            </>
+          ) : (
+            <>
+              <ActionButton
+                size="compact"
+                variant={"default"}
+                onClick={() => {}}
+              >
+                Cancel
+              </ActionButton>
+              <ActionButton
+                size="compact"
+                variant={"primary"}
+                onClick={() => setViewOrderDrawerOpen(true)}
+              >
+                View
+              </ActionButton>
+            </>
+          )}
         </div>,
       ])
     : data.map((row) => [
@@ -94,6 +130,7 @@ const RecentOngoingTable = ({ tableCaption, cols, data, mobile }: Props) => {
       />
 
       <Table
+        showAddOfferButton={false}
         horizontalSpacing={mobile ? "xs" : "md"}
         verticalSpacing={"md"}
         tableCaption={tableCaption}

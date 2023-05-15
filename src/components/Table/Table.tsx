@@ -12,7 +12,7 @@ interface Props extends TableProps {
   setOffer?: any;
   addOffer?: boolean;
   OfferModal?: any;
-  showAddOfferButton: boolean;
+  showAddOfferButton?: boolean;
   loadingText?: string;
 }
 
@@ -109,7 +109,7 @@ const Table = ({
                   colSpan={7}
                   style={{ textAlign: "center", fontWeight: 700 }}
                 >
-                  {loadingText == "" ? "No record found" : ""}
+                  {/* {loadingText == "" ? "No record found" : ""} */}
                 </td>
               </tr>
             )}

@@ -59,17 +59,19 @@ export default function App() {
     toBlock: 0,
     offers: [],
   });
-  const [isMoreTableDataLoading, setMoreTableDataLoading] = useState(false);
-  const [exchangeLoadingText, setExchangeLoadingText] = useState<string>("");
+  const [isMoreTableDataLoading, setMoreTableDataLoading] = useState(true);
+  const [exchangeLoadingText, setExchangeLoadingText] = useState<string>(
+    "Connecting to Network"
+  );
   const [refreshOffersListKey, setRefreshOffersListKey] = useState<number>(1);
 
   //Start My Swap ongoing variable
   const [
     isMoreMySwapOngoinTableDataLoading,
     setIsMoreMySwapOngoinTableDataLoading,
-  ] = useState(false);
+  ] = useState(true);
   const [mySwapOngoingLoadingText, setMySwapOngoingLoadingText] =
-    useState<string>("");
+    useState<string>("Connecting to Network");
   const [mySwapOngoingfromOfferId, setMySwapOngoingfromOfferId] = useState(0);
 
   const [listenedOfferDataByNonEvent, setListenedOfferDataByNonEvent] =
@@ -90,9 +92,9 @@ export default function App() {
   const [
     isMoreMySwapCompletedTableDataLoading,
     setIsMoreMySwapCompletedTableDataLoading,
-  ] = useState(false);
+  ] = useState(true);
   const [mySwapCompletedLoadingText, setMySwapCompletedLoadingText] =
-    useState<string>("");
+    useState<string>("Connecting to Network");
   const [mySwapCompletedfromOfferId, setMySwapCompletedfromOfferId] =
     useState(0);
 
@@ -160,6 +162,8 @@ export default function App() {
         if (balance) {
           setBalance(balance);
         }
+        setMySwapOngoingLoadingText("Updating List");
+        setMySwapCompletedLoadingText("Updating List");
 
         let tokenBalance_ = await getERC20TokenBalance(accounts[0]);
         let tokenBalance = formatERC20Tokens(tokenBalance_);
@@ -212,8 +216,10 @@ export default function App() {
         setMoreTableDataLoading(true);
         setIsMoreMySwapOngoinTableDataLoading(true);
         setListenedOfferDataByNonEvent({ offers: [] });
-        setExchangeLoadingText("Connecting to Network");
-        setMySwapOngoingLoadingText("Connecting to Network");
+
+        // setExchangeLoadingText("Connecting to Network");
+        // setMySwapOngoingLoadingText("Connecting to Network");
+        // setMySwapCompletedLoadingText("Connecting to Network");
 
         let account = await findMetaMaskAccount();
         if (account !== null) {
@@ -275,7 +281,7 @@ export default function App() {
     if (contract) {
       prepareMySwapOngoingData(contract);
     }
-  }, [totalOffers, refreshMySwapOngoingListKey, account]);
+  }, [totalOffers, refreshMySwapOngoingListKey, account, refreshOffersListKey]);
 
   async function prepareMySwapOngoingData(trustlex: ethers.Contract) {
     setIsMoreMySwapOngoinTableDataLoading(true);
@@ -302,6 +308,17 @@ export default function App() {
     setIsMoreMySwapOngoinTableDataLoading(false);
   }
 
+  useEffect(() => {
+    if (contract) {
+      prepareMySwapCompletedData(contract);
+    }
+  }, [
+    totalOffers,
+    refreshMySwapCompletedListKey,
+    account,
+    refreshOffersListKey,
+  ]);
+
   async function prepareMySwapCompletedData(trustlex: ethers.Contract) {
     setIsMoreMySwapCompletedTableDataLoading(true);
     setMySwapCompletedLoadingText("Loading List");
@@ -326,12 +343,6 @@ export default function App() {
     setMySwapCompletedLoadingText("");
     setIsMoreMySwapCompletedTableDataLoading(false);
   }
-
-  useEffect(() => {
-    if (contract) {
-      prepareMySwapCompletedData(contract);
-    }
-  }, [totalOffers, refreshMySwapCompletedListKey]);
 
   return (
     <MantineProvider

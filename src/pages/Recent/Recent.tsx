@@ -23,8 +23,12 @@ import { ethers } from "ethers";
 import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
 import { TimestampfromNow } from "~/utils/TimeConverter";
 import ExchangeOfferDrawer from "~/components/ExchangeOfferDrawer/ExchangeOfferDrawer";
-import { listInitializeFullfillmentOnGoingByNonEvent } from "~/service/AppService";
+import {
+  listInitializeFullfillmentOnGoingByNonEvent,
+  listInitializeFullfillmentCompletedByNonEvent,
+} from "~/service/AppService";
 import { PAGE_SIZE } from "~/Context/Constants";
+import { TimeToDateFormat } from "~/utils/TimeConverter";
 type Props = {};
 
 const Recent = (props: Props) => {
@@ -134,13 +138,48 @@ function MySwaps() {
         setMySwapOngoingLoadingText("");
       });
   };
-  const loadMoreHistory = () => {
+  const loadMorHeistory2 = () => {
     setMoreHistoryLoading(true);
     setTimeout(() => {
       setMoreHistoryLoading(false);
     }, 2000);
   };
 
+  const callMySwapsCompleted = async () => {
+    const mySwapsCompletedList =
+      await listInitializeFullfillmentCompletedByNonEvent(
+        contract,
+        account,
+        mySwapCompletedfromOfferId
+      );
+    return mySwapsCompletedList;
+  };
+  const loadMorHeistory = async () => {
+    setMoreHistoryLoading(true);
+    setMySwapCompletedLoadingText("Loading List");
+    callMySwapsCompleted()
+      .then((mySwapsOngoingList) => {
+        const newOngoingData =
+          listenedMySwapCompletedDataByNonEvent.concat(mySwapsOngoingList);
+        setListenedMySwapCompletedDataByNonEvent(newOngoingData);
+
+        // setTableData(getTableData(listenedOffersByNonEvent.offers));
+        setMoreHistoryLoading(false);
+        setMySwapCompletedLoadingText("");
+
+        let mySwapCompletedfromOfferId_ =
+          mySwapCompletedfromOfferId - PAGE_SIZE > 0
+            ? mySwapCompletedfromOfferId - PAGE_SIZE
+            : 0;
+        setMySwapCompletedfromOfferId(mySwapCompletedfromOfferId_);
+        console.log(mySwapsOngoingList);
+      })
+      .catch((err) => {
+        console.log(err);
+        setMoreHistoryLoading(false);
+        setMySwapCompletedLoadingText("");
+      });
+  };
   const handleSubmitPaymentProof = (
     fullfillmentRequestId: string | undefined,
     offerId: number
@@ -195,6 +234,13 @@ function MySwaps() {
     }
   );
 
+  const showLoadMoreMySwapCompletedButton = () => {
+    if (mySwapCompletedfromOfferId > 0 && mySwapCompletedLoadingText == "") {
+      return true;
+    } else {
+      return false;
+    }
+  };
   const HistoryTableData2 = listenedMySwapCompletedDataByNonEvent.map(
     (value, index, data) => {
       let row = {
@@ -223,13 +269,13 @@ function MySwaps() {
               )
           ).toFixed(4)
         ),
-        date: "09 Jan, 13:45pm",
+        date: TimeToDateFormat(value.offerDetailsInJson.orderedTime), //"09 Jan, 13:45pm",
         status: StatusEnum.Completed,
       };
+      return row;
     }
   );
 
-  console.log("Competed List", listenedMySwapCompletedDataByNonEvent);
   return (
     <div className={styles.panelCont}>
       <GradientBackgroundContainer colorLeft="#FFD57243">
@@ -312,7 +358,7 @@ function MySwaps() {
                 "Date",
                 "Status",
               ]}
-              data={HistoryTableData}
+              data={HistoryTableData2}
             />
           </div>
           <div className={styles.mobileHistoryTable}>
@@ -325,13 +371,28 @@ function MySwaps() {
           </div>
           <br />
           <Center>
-            <ActionButton
-              variant={"transparent"}
-              loading={isMoreHistoryLoading}
-              onClick={loadMoreHistory}
-            >
-              Load more
-            </ActionButton>{" "}
+            {mySwapCompletedLoadingText != "" ? (
+              <ActionButton
+                variant={"transparent"}
+                loading={isMoreMySwapCompletedTableDataLoading}
+              >
+                {mySwapCompletedLoadingText}
+              </ActionButton>
+            ) : (
+              ""
+            )}
+
+            {showLoadMoreMySwapCompletedButton() == true ? (
+              <ActionButton
+                variant={"transparent"}
+                loading={isMoreHistoryLoading}
+                onClick={loadMorHeistory}
+              >
+                Load more
+              </ActionButton>
+            ) : (
+              ""
+            )}
           </Center>
         </Box>
       </GradientBackgroundContainer>

@@ -40,6 +40,7 @@ export const TimestampTotoNow = (time: string) => {
 
 export const TimeToDateFormat = (time: string) => {
   const timeNumber = parseInt(time) * 1000;
-  const timeString = moment(new Date(timeNumber)).format("D MMM ,h:mm:ss A");
+  // const timeString = moment(new Date(timeNumber)).format("D MMM , h:mm:ss A");
+  const timeString = moment(new Date(timeNumber)).format("D MMM , h:mm A");
   return timeString;
 };

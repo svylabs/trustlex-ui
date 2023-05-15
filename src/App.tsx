@@ -17,7 +17,8 @@ import {
   getOffersList,
   getTotalOffers,
   getERC20TokenBalance,
-  listInitializeFullfillmentByNonEvent,
+  listInitializeFullfillmentOnGoingByNonEvent,
+  listInitializeFullfillmentCompletedByNonEvent,
 } from "./service/AppService";
 import IUserInputData from "./interfaces/IUserInputData";
 import swapArrayElements from "./utils/swapArray";
@@ -62,10 +63,47 @@ export default function App() {
   const [exchangeLoadingText, setExchangeLoadingText] = useState<string>("");
   const [refreshOffersListKey, setRefreshOffersListKey] = useState<number>(1);
 
+  //Start My Swap ongoing variable
+  const [
+    isMoreMySwapOngoinTableDataLoading,
+    setIsMoreMySwapOngoinTableDataLoading,
+  ] = useState(false);
+  const [mySwapOngoingLoadingText, setMySwapOngoingLoadingText] =
+    useState<string>("");
+  const [mySwapOngoingfromOfferId, setMySwapOngoingfromOfferId] = useState(0);
+
   const [listenedOfferDataByNonEvent, setListenedOfferDataByNonEvent] =
     useState<IOffersResultByNonEvent>({
       offers: [],
     });
+
+  const [refreshMySwapOngoingListKey, setRefreshMySwapOngoingListKey] =
+    useState<number>(1);
+  const [
+    listenedOngoinMySwapOnGoingDataByNonEvent,
+    setlistenedOngoinMySwapOnGoingDataByNonEvent,
+  ] = useState<IListInitiatedFullfillmentDataByNonEvent[]>([]);
+
+  //End My Swap ongoing variable
+
+  //Start My Swap completed variable
+  const [
+    isMoreMySwapCompletedTableDataLoading,
+    setIsMoreMySwapCompletedTableDataLoading,
+  ] = useState(false);
+  const [mySwapCompletedLoadingText, setMySwapCompletedLoadingText] =
+    useState<string>("");
+  const [mySwapCompletedfromOfferId, setMySwapCompletedfromOfferId] =
+    useState(0);
+
+  const [
+    listenedMySwapCompletedDataByNonEvent,
+    setListenedMySwapCompletedDataByNonEvent,
+  ] = useState<IListInitiatedFullfillmentDataByNonEvent[]>([]);
+
+  const [refreshMySwapCompletedListKey, setRefreshMySwapCompletedListKey] =
+    useState<number>(1);
+  //End My Swap completed variable
 
   const [listenedOngoinMySwapData, setlistenedOngoinMySwapData] =
     useState<IinitiatedFullfillmentResult>({
@@ -73,10 +111,6 @@ export default function App() {
       toBlock: 0,
       offers: [],
     });
-  const [
-    listenedOngoinMySwapOnGoingDataByNonEvent,
-    setlistenedOngoinMySwapOnGoingDataByNonEvent,
-  ] = useState<IListInitiatedFullfillmentDataByNonEvent[]>([]);
 
   const userData = get("userInputData", true);
   const [userInputData, setUserInputData] = useState<IUserInputData>(
@@ -116,20 +150,15 @@ export default function App() {
           provider,
           ContractMap[selectedToken].address
         );
+        if (trustlex) {
+          let totalOffers = await getTotalOffers(trustlex);
+          setTotalOffers(totalOffers);
+        }
+
         setAccount(accounts[0]);
         let balance = await getBalance(accounts[0]);
         if (balance) {
           setBalance(balance);
-        }
-
-        if (trustlex) {
-          setContract(trustlex as ethers.Contract);
-          // fetch the recent orders
-          const InitializeFullfillmentDataByNonEvent =
-            await listInitializeFullfillmentByNonEvent(trustlex, account);
-          setlistenedOngoinMySwapOnGoingDataByNonEvent(
-            InitializeFullfillmentDataByNonEvent
-          );
         }
 
         let tokenBalance_ = await getERC20TokenBalance(accounts[0]);
@@ -181,8 +210,10 @@ export default function App() {
         const provider = new ethers.providers.Web3Provider(ethereum);
 
         setMoreTableDataLoading(true);
+        setIsMoreMySwapOngoinTableDataLoading(true);
         setListenedOfferDataByNonEvent({ offers: [] });
         setExchangeLoadingText("Connecting to Network");
+        setMySwapOngoingLoadingText("Connecting to Network");
 
         let account = await findMetaMaskAccount();
         if (account !== null) {
@@ -200,11 +231,13 @@ export default function App() {
         );
         if (trustlex) {
           setContract(trustlex as ethers.Contract);
+
           const offers = await listOffers(trustlex);
           setListenedOfferData(offers);
 
           setMoreTableDataLoading(true);
           setExchangeLoadingText("Loading List");
+
           let totalOffers = await getTotalOffers(trustlex);
           setTotalOffers(totalOffers);
 
@@ -219,13 +252,7 @@ export default function App() {
           setMoreTableDataLoading(false);
           setExchangeLoadingText("");
 
-          // fetch the recent orders
-          const InitializeFullfillmentDataByNonEvent =
-            await listInitializeFullfillmentByNonEvent(trustlex, account);
-          setlistenedOngoinMySwapOnGoingDataByNonEvent(
-            InitializeFullfillmentDataByNonEvent
-          );
-
+          // fetch the recent orders my swaps ongoing by event
           const InitializeFullfillmentData = await listInitializeFullfillment(
             trustlex
           );
@@ -243,6 +270,68 @@ export default function App() {
       };
     })();
   }, [refreshOffersListKey]);
+
+  useEffect(() => {
+    if (contract) {
+      prepareMySwapOngoingData(contract);
+    }
+  }, [totalOffers, refreshMySwapOngoingListKey, account]);
+
+  async function prepareMySwapOngoingData(trustlex: ethers.Contract) {
+    setIsMoreMySwapOngoinTableDataLoading(true);
+    setMySwapOngoingLoadingText("Loading List");
+    setlistenedOngoinMySwapOnGoingDataByNonEvent([]);
+    // fetch the recent orders my swaps ongoing by non event
+    let fromOfferMySwapOngoingId = totalOffers;
+    const InitializeFullfillmentDataByNonEvent =
+      await listInitializeFullfillmentOnGoingByNonEvent(
+        trustlex,
+        account,
+        fromOfferMySwapOngoingId
+      );
+    setlistenedOngoinMySwapOnGoingDataByNonEvent(
+      InitializeFullfillmentDataByNonEvent
+    );
+    fromOfferMySwapOngoingId =
+      fromOfferMySwapOngoingId - PAGE_SIZE > 0
+        ? fromOfferMySwapOngoingId - PAGE_SIZE
+        : 0;
+    setMySwapOngoingfromOfferId(fromOfferMySwapOngoingId);
+
+    setMySwapOngoingLoadingText("");
+    setIsMoreMySwapOngoinTableDataLoading(false);
+  }
+
+  async function prepareMySwapCompletedData(trustlex: ethers.Contract) {
+    setIsMoreMySwapCompletedTableDataLoading(true);
+    setMySwapCompletedLoadingText("Loading List");
+    setListenedMySwapCompletedDataByNonEvent([]);
+    // fetch the recent orders my swaps ongoing by non event
+    let fromOfferMySwapCompetedId = totalOffers;
+    const InitializeFullfillmentDataByNonEvent =
+      await listInitializeFullfillmentCompletedByNonEvent(
+        trustlex,
+        account,
+        fromOfferMySwapCompetedId
+      );
+    setListenedMySwapCompletedDataByNonEvent(
+      InitializeFullfillmentDataByNonEvent
+    );
+    let mySwapCompletedfromOfferId_ =
+      mySwapCompletedfromOfferId - PAGE_SIZE > 0
+        ? mySwapCompletedfromOfferId - PAGE_SIZE
+        : 0;
+    setMySwapCompletedfromOfferId(mySwapCompletedfromOfferId_);
+
+    setMySwapCompletedLoadingText("");
+    setIsMoreMySwapCompletedTableDataLoading(false);
+  }
+
+  useEffect(() => {
+    if (contract) {
+      prepareMySwapCompletedData(contract);
+    }
+  }, [totalOffers, refreshMySwapCompletedListKey]);
 
   return (
     <MantineProvider
@@ -283,8 +372,29 @@ export default function App() {
             setRefreshOffersListKey,
             erc20balance,
             setERC20balance,
+            // start my swap ongoing variables
             listenedOngoinMySwapOnGoingDataByNonEvent,
             setlistenedOngoinMySwapOnGoingDataByNonEvent,
+            mySwapOngoingLoadingText,
+            setMySwapOngoingLoadingText,
+            isMoreMySwapOngoinTableDataLoading,
+            mySwapOngoingfromOfferId,
+            setMySwapOngoingfromOfferId,
+            refreshMySwapOngoingListKey,
+            setRefreshMySwapOngoingListKey,
+            // end my swap ongoing variables
+
+            // start my swap completed variables
+            listenedMySwapCompletedDataByNonEvent,
+            setListenedMySwapCompletedDataByNonEvent,
+            mySwapCompletedLoadingText,
+            setMySwapCompletedLoadingText,
+            isMoreMySwapCompletedTableDataLoading,
+            mySwapCompletedfromOfferId,
+            setMySwapCompletedfromOfferId,
+            refreshMySwapCompletedListKey,
+            setRefreshMySwapCompletedListKey,
+            // end my swap completed variables
           }}
         >
           <Layout>

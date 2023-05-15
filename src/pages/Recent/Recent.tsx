@@ -23,7 +23,8 @@ import { ethers } from "ethers";
 import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
 import { TimestampfromNow } from "~/utils/TimeConverter";
 import ExchangeOfferDrawer from "~/components/ExchangeOfferDrawer/ExchangeOfferDrawer";
-import getTableData from "~/components/ExchangePrepareTableData/GetTableData";
+import { listInitializeFullfillmentOnGoingByNonEvent } from "~/service/AppService";
+import { PAGE_SIZE } from "~/Context/Constants";
 type Props = {};
 
 const Recent = (props: Props) => {
@@ -60,12 +61,31 @@ function MySwaps() {
     return <>Loading...</>;
   }
 
-  const { listenedOngoinMySwapData, setlistenedOngoinMySwapData } = context;
   const {
+    //start ongoing variables
     listenedOngoinMySwapOnGoingDataByNonEvent,
     setlistenedOngoinMySwapOnGoingDataByNonEvent,
-    refreshOffersListKey,
-    setRefreshOffersListKey,
+    refreshMySwapOngoingListKey,
+    setRefreshMySwapOngoingListKey,
+    mySwapOngoingLoadingText,
+    setMySwapOngoingLoadingText,
+    isMoreMySwapOngoinTableDataLoading,
+    mySwapOngoingfromOfferId,
+    setMySwapOngoingfromOfferId,
+    //end ongoing variables
+
+    //start ongoing variables
+    listenedMySwapCompletedDataByNonEvent,
+    setListenedMySwapCompletedDataByNonEvent,
+    refreshMySwapCompletedListKey,
+    setRefreshMySwapCompletedListKey,
+    setMySwapCompletedLoadingText,
+    mySwapCompletedLoadingText,
+    isMoreMySwapCompletedTableDataLoading,
+    mySwapCompletedfromOfferId,
+    setMySwapCompletedfromOfferId,
+    //end ongoing variables
+
     account,
     contract,
   } = context;
@@ -78,12 +98,41 @@ function MySwaps() {
     string | undefined
   >();
 
-  const loadMoreOngoing = () => {
-    setMoreOngoingDataLoading(true);
+  const callMySwapsOngoing = async () => {
+    const mySwapsOngoingList =
+      await listInitializeFullfillmentOnGoingByNonEvent(
+        contract,
+        account,
+        mySwapOngoingfromOfferId
+      );
+    return mySwapsOngoingList;
+  };
 
-    setTimeout(() => {
-      setMoreOngoingDataLoading(false);
-    }, 2000);
+  const loadMoreOngoing = async () => {
+    setMoreOngoingDataLoading(true);
+    setMySwapOngoingLoadingText("Loading List");
+    callMySwapsOngoing()
+      .then((mySwapsOngoingList) => {
+        const newOngoingData =
+          listenedOngoinMySwapOnGoingDataByNonEvent.concat(mySwapsOngoingList);
+        setlistenedOngoinMySwapOnGoingDataByNonEvent(newOngoingData);
+
+        // setTableData(getTableData(listenedOffersByNonEvent.offers));
+        setMoreOngoingDataLoading(false);
+        setMySwapOngoingLoadingText("");
+
+        let mySwapOngoingfromOfferId_ =
+          mySwapOngoingfromOfferId - PAGE_SIZE > 0
+            ? mySwapOngoingfromOfferId - PAGE_SIZE
+            : 0;
+        setMySwapOngoingfromOfferId(mySwapOngoingfromOfferId_);
+        console.log(mySwapsOngoingList);
+      })
+      .catch((err) => {
+        console.log(err);
+        setMoreOngoingDataLoading(false);
+        setMySwapOngoingLoadingText("");
+      });
   };
   const loadMoreHistory = () => {
     setMoreHistoryLoading(true);
@@ -98,10 +147,15 @@ function MySwaps() {
   ) => {
     setRowFullFillmentId(fullfillmentRequestId);
     setRowOfferId(offerId);
-    //getTableData()
   };
 
-  // const OngoingTableData2 = listenedOngoinMySwapData?.offers.map(
+  const showLoadMoreMySwapOngoingButton = () => {
+    if (mySwapOngoingfromOfferId > 0 && mySwapOngoingLoadingText == "") {
+      return true;
+    } else {
+      return false;
+    }
+  };
   const OngoingTableData2 = listenedOngoinMySwapOnGoingDataByNonEvent.map(
     (value, key) => {
       // let fulfillmentBy: string = value?.offerDetailsInJson.fulfillmentBy;
@@ -141,6 +195,41 @@ function MySwaps() {
     }
   );
 
+  const HistoryTableData2 = listenedMySwapCompletedDataByNonEvent.map(
+    (value, index, data) => {
+      let row = {
+        orderNumber: value.offerDetailsInJson.offerId.toString(),
+        planningToSell: {
+          amount: Number(
+            ethers.utils.formatEther(value.offerDetailsInJson.offerQuantity)
+          ),
+          type: CurrencyEnum.ETH,
+        },
+        planningToBuy: {
+          amount: Number(
+            Number(
+              SatoshiToBtcConverter(value.offerDetailsInJson.satoshisToReceive)
+            ).toFixed(4)
+          ),
+          type: CurrencyEnum.BTC,
+        },
+        rateInBTC: Number(
+          Number(
+            Number(
+              SatoshiToBtcConverter(value.offerDetailsInJson.satoshisToReceive)
+            ) /
+              Number(
+                ethers.utils.formatEther(value.offerDetailsInJson.offerQuantity)
+              )
+          ).toFixed(4)
+        ),
+        date: "09 Jan, 13:45pm",
+        status: StatusEnum.Completed,
+      };
+    }
+  );
+
+  console.log("Competed List", listenedMySwapCompletedDataByNonEvent);
   return (
     <div className={styles.panelCont}>
       <GradientBackgroundContainer colorLeft="#FFD57243">
@@ -158,6 +247,7 @@ function MySwaps() {
               ]}
               data={OngoingTableData2}
               handleSubmitPaymentProof={handleSubmitPaymentProof}
+              mySwapOngoingLoadingText={mySwapOngoingLoadingText}
             />
           </div>
           <div className={styles.recentMobileTable}>
@@ -167,17 +257,32 @@ function MySwaps() {
               data={OngoingTableData}
               mobile={true}
               handleSubmitPaymentProof={handleSubmitPaymentProof}
+              mySwapOngoingLoadingText={mySwapOngoingLoadingText}
             />
           </div>
           <br />
           <Center>
-            <ActionButton
-              variant={"transparent"}
-              loading={isMoreOngoingLoading}
-              onClick={loadMoreOngoing}
-            >
-              Load more
-            </ActionButton>
+            {mySwapOngoingLoadingText != "" ? (
+              <ActionButton
+                variant={"transparent"}
+                loading={isMoreMySwapOngoinTableDataLoading}
+              >
+                {mySwapOngoingLoadingText}
+              </ActionButton>
+            ) : (
+              ""
+            )}
+            {showLoadMoreMySwapOngoingButton() == true ? (
+              <ActionButton
+                variant={"transparent"}
+                loading={isMoreOngoingLoading}
+                onClick={loadMoreOngoing}
+              >
+                Load more
+              </ActionButton>
+            ) : (
+              ""
+            )}
           </Center>
         </Box>
         <ExchangeOfferDrawer
@@ -189,10 +294,11 @@ function MySwaps() {
           account={account}
           rowFullFillmentId={rowFullFillmentId}
           contract={contract}
-          refreshOffersListKey={refreshOffersListKey}
-          setRefreshOffersListKey={setRefreshOffersListKey}
+          refreshOffersListKey={refreshMySwapOngoingListKey}
+          setRefreshOffersListKey={setRefreshMySwapOngoingListKey}
         />
       </GradientBackgroundContainer>
+      {/* Star My Swap History */}
       <GradientBackgroundContainer colorLeft="#FFD57243">
         <Box p={"lg"} className={styles.box}>
           <div className={styles.historyTable}>
@@ -229,6 +335,7 @@ function MySwaps() {
           </Center>
         </Box>
       </GradientBackgroundContainer>
+      {/* End My Swap History */}
     </div>
   );
 }

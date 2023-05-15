@@ -603,6 +603,7 @@ const Exchange = (props: Props) => {
                 verticalSpacing={"md"}
                 onRowClick={handleRowClick}
                 showAddOfferButton={showAddOfferButton}
+                loadingText={exchangeLoadingText}
               />
             </div>
             <div className={styles.mobileTableInner}>
@@ -617,6 +618,7 @@ const Exchange = (props: Props) => {
                 horizontalSpacing={"xs"}
                 onRowClick={handleRowClick}
                 showAddOfferButton={showAddOfferButton}
+                loadingText={exchangeLoadingText}
               />
             </div>
             <br />

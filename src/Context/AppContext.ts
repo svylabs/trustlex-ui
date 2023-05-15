@@ -58,4 +58,26 @@ export const AppContext = createContext<null | {
   setRefreshOffersListKey: React.Dispatch<React.SetStateAction<number>>;
   erc20balance: string;
   setERC20balance: React.Dispatch<React.SetStateAction<string>>;
+
+  mySwapOngoingLoadingText: string;
+  setMySwapOngoingLoadingText: React.Dispatch<React.SetStateAction<string>>;
+  isMoreMySwapOngoinTableDataLoading: boolean;
+  mySwapOngoingfromOfferId: number;
+  setMySwapOngoingfromOfferId: React.Dispatch<React.SetStateAction<number>>;
+  refreshMySwapOngoingListKey: number;
+  setRefreshMySwapOngoingListKey: React.Dispatch<React.SetStateAction<number>>;
+
+  listenedMySwapCompletedDataByNonEvent: IListInitiatedFullfillmentDataByNonEvent[];
+  setListenedMySwapCompletedDataByNonEvent: React.Dispatch<
+    React.SetStateAction<IListInitiatedFullfillmentDataByNonEvent[]>
+  >;
+  mySwapCompletedLoadingText: string;
+  setMySwapCompletedLoadingText: React.Dispatch<React.SetStateAction<string>>;
+  isMoreMySwapCompletedTableDataLoading: boolean;
+  mySwapCompletedfromOfferId: number;
+  setMySwapCompletedfromOfferId: React.Dispatch<React.SetStateAction<number>>;
+  refreshMySwapCompletedListKey: number;
+  setRefreshMySwapCompletedListKey: React.Dispatch<
+    React.SetStateAction<number>
+  >;
 }>(null);

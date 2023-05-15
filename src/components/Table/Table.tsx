@@ -13,6 +13,7 @@ interface Props extends TableProps {
   addOffer?: boolean;
   OfferModal?: any;
   showAddOfferButton: boolean;
+  loadingText?: string;
 }
 
 const Table = ({
@@ -25,6 +26,7 @@ const Table = ({
   addOffer,
   OfferModal,
   showAddOfferButton = false,
+  loadingText,
   ...props
 }: Props) => {
   const tableContainerRef = React.useRef(null);
@@ -107,7 +109,7 @@ const Table = ({
                   colSpan={7}
                   style={{ textAlign: "center", fontWeight: 700 }}
                 >
-                  {context?.exchangeLoadingText == "" ? "No record found" : ""}
+                  {loadingText == "" ? "No record found" : ""}
                 </td>
               </tr>
             )}

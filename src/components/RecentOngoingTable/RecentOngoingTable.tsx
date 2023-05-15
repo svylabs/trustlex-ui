@@ -18,7 +18,7 @@ export interface ITableRow {
   progress: string;
   offerType: string;
   fullfillmentRequestId: string | undefined;
-  offerId: number;
+  offerId: number | string;
 }
 
 interface Props extends TableProps {
@@ -30,6 +30,7 @@ interface Props extends TableProps {
     fullfillmentRequestId: string | undefined,
     offerId: number
   ) => void;
+  mySwapOngoingLoadingText: string;
 }
 
 const RecentOngoingTable = ({
@@ -38,6 +39,7 @@ const RecentOngoingTable = ({
   data,
   mobile,
   handleSubmitPaymentProof,
+  mySwapOngoingLoadingText,
 }: Props) => {
   const [isViewOrderDrawerOpen, setViewOrderDrawerOpen] = useState(false);
 
@@ -136,6 +138,7 @@ const RecentOngoingTable = ({
         tableCaption={tableCaption}
         cols={cols}
         data={tableData}
+        loadingText={mySwapOngoingLoadingText}
       />
     </>
   );

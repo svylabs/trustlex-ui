@@ -123,7 +123,7 @@ export const getBalance = async (address: string) => {
     return false;
   }
 };
-s;
+
 export const getERC20TokenBalance = async (
   address: string
 ): Promise<number> => {

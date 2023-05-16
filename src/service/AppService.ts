@@ -23,7 +23,6 @@ import { MAX_BLOCKS_TO_QUERY, MAX_ITERATIONS } from "~/Context/Constants";
 import { EthtoWei, WeitoEth } from "~/utils/Ether.utills";
 import { AppContext } from "~/Context/AppContext";
 import { ToastContainer, toast } from "react-toastify";
-import { TimestampTotoNow, TimestampfromNow } from "~/utils/TimeConverter";
 
 const getEthereumObject = () => window.ethereum;
 
@@ -124,7 +123,7 @@ export const getBalance = async (address: string) => {
     return false;
   }
 };
-
+s;
 export const getERC20TokenBalance = async (
   address: string
 ): Promise<number> => {

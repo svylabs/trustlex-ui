@@ -18,3 +18,11 @@ export const ERC20: any = {
 
 //Address for sample ERC20 contract
 export const BlockchainExplorerLink: any = "https://mumbai.polygonscan.com/tx/";
+
+export const NetworkInfo = {
+  NetworkName: "Mumbai Polygon Testnet",
+  RPC_URL: "https://matic-mumbai.chainstacklabs.com",
+  ChainID: 80001,
+  CurrencySymbol: "MATIC",
+  ExplorerUrl: "https://mumbai.polygonscan.com/",
+};

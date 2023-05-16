@@ -19,8 +19,10 @@ import {
   getERC20TokenBalance,
   listInitializeFullfillmentOnGoingByNonEvent,
   listInitializeFullfillmentCompletedByNonEvent,
+  showErrorMessage,
 } from "./service/AppService";
 import IUserInputData from "./interfaces/IUserInputData";
+import { INetworkInfo } from "./interfaces/INetworkInfo";
 import swapArrayElements from "./utils/swapArray";
 import { formatERC20Tokens } from "./utils/Ether.utills";
 import {
@@ -32,7 +34,7 @@ import {
   IListInitiatedFullfillmentDataByNonEvent,
 } from "./interfaces/IOfferdata";
 import { ethers } from "ethers";
-import { ContractMap } from "./Context/AppConfig";
+import { ContractMap, NetworkInfo } from "./Context/AppConfig";
 import useLocalstorage from "./hooks/useLocalstorage";
 import { PAGE_SIZE, activeExchange } from "~/Context/Constants";
 import { ToastContainer, toast } from "react-toastify";
@@ -40,6 +42,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { number } from "bitcoinjs-lib/src/script";
 
 export default function App() {
+  console.log(NetworkInfo.ChainID);
   const { get, set, remove } = useLocalstorage();
   const [account, setAccount] = useState("");
   const [balance, setBalance] = useState("");
@@ -114,6 +117,10 @@ export default function App() {
       offers: [],
     });
 
+  const [netWorkInfo, setNetWorkInfo] = useState<INetworkInfo>({
+    name: "",
+    chainId: 0,
+  });
   const userData = get("userInputData", true);
   const [userInputData, setUserInputData] = useState<IUserInputData>(
     userData
@@ -143,33 +150,47 @@ export default function App() {
   }, [userInputData.activeExchange]);
 
   useEffect(() => {
-    const { ethereum } = window;
-    if (ethereum) {
-      const provider = new ethers.providers.Web3Provider(ethereum);
-
-      (ethereum as any).on("accountsChanged", async function (accounts: any) {
-        let trustlex = await connect(
-          provider,
-          ContractMap[selectedToken].address
-        );
-        if (trustlex) {
-          let totalOffers = await getTotalOffers(trustlex);
-          setTotalOffers(totalOffers);
+    (async () => {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        let network = await provider.getNetwork();
+        console.log(network);
+        if (network.chainId !== NetworkInfo.ChainID) {
+          showErrorMessage(
+            `You have selected the wrong network. Kindly select the ${NetworkInfo.NetworkName}`
+          );
+          return;
         }
+        setNetWorkInfo(network as INetworkInfo);
+        (ethereum as any).on("accountsChanged", async function (accounts: any) {
+          let trustlex = await connect(
+            provider,
+            ContractMap[selectedToken].address
+          );
+          if (trustlex) {
+            let totalOffers = await getTotalOffers(trustlex);
+            setTotalOffers(totalOffers);
+          }
 
-        setAccount(accounts[0]);
-        let balance = await getBalance(accounts[0]);
-        if (balance) {
-          setBalance(balance);
-        }
-        setMySwapOngoingLoadingText("Updating List");
-        setMySwapCompletedLoadingText("Updating List");
+          setAccount(accounts[0]);
+          let balance = await getBalance(accounts[0]);
+          if (balance) {
+            setBalance(balance);
+          }
+          setMySwapOngoingLoadingText("Updating List");
+          setMySwapCompletedLoadingText("Updating List");
 
-        let tokenBalance_ = await getERC20TokenBalance(accounts[0]);
-        let tokenBalance = formatERC20Tokens(tokenBalance_);
-        setERC20balance(tokenBalance);
-      });
-    }
+          let tokenBalance_ = await getERC20TokenBalance(accounts[0]);
+          let tokenBalance = formatERC20Tokens(tokenBalance_);
+          setERC20balance(tokenBalance);
+        });
+      } else {
+        setExchangeLoadingText("");
+        setMySwapOngoingLoadingText("");
+        setMySwapCompletedLoadingText("");
+      }
+    })();
   }, []);
 
   const swapChange = () => {
@@ -212,6 +233,15 @@ export default function App() {
       const { ethereum } = window;
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
+        let network = await provider.getNetwork();
+        console.log(network);
+        if (network.chainId !== NetworkInfo.ChainID) {
+          showErrorMessage(
+            `You have selected the wrong network. Kindly select the ${NetworkInfo.NetworkName}`
+          );
+          return;
+        }
+        setNetWorkInfo(network as INetworkInfo);
 
         setMoreTableDataLoading(true);
         setIsMoreMySwapOngoinTableDataLoading(true);
@@ -269,6 +299,11 @@ export default function App() {
         let tokenBalance_ = await getERC20TokenBalance(account);
         let tokenBalance = formatERC20Tokens(tokenBalance_);
         setERC20balance(tokenBalance);
+      } else {
+        showErrorMessage("Metamask is not found ! kindly install the Metamask");
+        setExchangeLoadingText("");
+        setMySwapOngoingLoadingText("");
+        setMySwapCompletedLoadingText("");
       }
       return () => {
         setAccount("");

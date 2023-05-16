@@ -40,9 +40,9 @@ import { PAGE_SIZE, activeExchange } from "~/Context/Constants";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { number } from "bitcoinjs-lib/src/script";
+import Alert from "./components/Alerts/Alert";
 
 export default function App() {
-  console.log(NetworkInfo.ChainID);
   const { get, set, remove } = useLocalstorage();
   const [account, setAccount] = useState("");
   const [balance, setBalance] = useState("");
@@ -132,6 +132,9 @@ export default function App() {
         }
   );
 
+  const [alertMessage, setAlertMessage] = useState<string | JSX.Element>("");
+  const [alertOpen, setAlertOpen] = useState(false);
+
   useEffect(() => {
     set("userInputData", userInputData);
     // console.log(userInputData);
@@ -154,15 +157,15 @@ export default function App() {
       const { ethereum } = window;
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
-        let network = await provider.getNetwork();
-        console.log(network);
-        if (network.chainId !== NetworkInfo.ChainID) {
-          showErrorMessage(
-            `You have selected the wrong network. Kindly select the ${NetworkInfo.NetworkName}`
-          );
-          return;
-        }
-        setNetWorkInfo(network as INetworkInfo);
+        // let network = await provider.getNetwork();
+
+        // if (network.chainId !== NetworkInfo.ChainID) {
+        //   showErrorMessage(
+        //     `You have selected the wrong network. Kindly select the ${NetworkInfo.NetworkName}`
+        //   );
+        //   return;
+        // }
+        // setNetWorkInfo(network as INetworkInfo);
         (ethereum as any).on("accountsChanged", async function (accounts: any) {
           let trustlex = await connect(
             provider,
@@ -234,11 +237,10 @@ export default function App() {
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
         let network = await provider.getNetwork();
-        console.log(network);
         if (network.chainId !== NetworkInfo.ChainID) {
-          showErrorMessage(
-            `You have selected the wrong network. Kindly select the ${NetworkInfo.NetworkName}`
-          );
+          let messge = `You have selected the wrong network. Kindly select the ${NetworkInfo.NetworkName} .`;
+          setAlertMessage(messge);
+          setAlertOpen(true);
           return;
         }
         setNetWorkInfo(network as INetworkInfo);
@@ -445,7 +447,12 @@ export default function App() {
         >
           <Layout>
             <ToastContainer />
-
+            <Alert
+              message={alertMessage}
+              setAlertMessage={setAlertMessage}
+              isOpened={alertOpen}
+              setAlertOpen={setAlertOpen}
+            />
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/exchange" element={<Exchange />} />

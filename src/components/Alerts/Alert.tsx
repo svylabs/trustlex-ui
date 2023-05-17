@@ -6,32 +6,44 @@ import { useEffect } from "react";
 
 interface props {
   message: string | ReactNode;
-  isOpened: boolean;
+  isOpened: number;
   setAlertMessage: (message: string) => void;
-  setAlertOpen: (isOpened: boolean) => void;
+  setAlertOpen: (isOpened: number) => void;
+  addNetwork: () => void;
 }
 
-function Alert({ message, isOpened, setAlertMessage, setAlertOpen }: props) {
+function Alert({
+  message,
+  isOpened,
+  setAlertMessage,
+  setAlertOpen,
+  addNetwork,
+}: props) {
   const [opened, { open, close }] = useDisclosure(false);
   const theme = useMantineTheme();
 
   useEffect(() => {
-    if (isOpened) {
+    if (isOpened != 0) {
       open();
+    } else {
+      close();
     }
   }, [isOpened]);
+
   const handleOpen = () => {
     open();
   };
   const handleClose = () => {
     close();
-    setAlertOpen(false);
+    setAlertOpen(0);
     setAlertMessage("");
+    addNetwork();
   };
 
   return (
     <>
       <Modal
+        withCloseButton={false}
         opened={opened}
         onClose={close}
         title={"Alert"}
@@ -50,13 +62,13 @@ function Alert({ message, isOpened, setAlertMessage, setAlertOpen }: props) {
             <Button
               variant="outline"
               radius={5}
-              onClick={close}
+              onClick={handleClose}
               color="red.5"
               style={{
                 backgroundColor: "transparent",
               }}
             >
-              OK
+              Switch Network
             </Button>
           </div>
         </Paper>

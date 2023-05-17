@@ -23,6 +23,7 @@ export const NetworkInfo = {
   NetworkName: "Mumbai Polygon Testnet",
   RPC_URL: "https://matic-mumbai.chainstacklabs.com",
   ChainID: 80001,
+  ChainIDHexaDecimal: "0x13881",
   CurrencySymbol: "MATIC",
   ExplorerUrl: "https://mumbai.polygonscan.com/",
 };

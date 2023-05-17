@@ -23,7 +23,7 @@ import { MAX_BLOCKS_TO_QUERY, MAX_ITERATIONS } from "~/Context/Constants";
 import { EthtoWei, WeitoEth } from "~/utils/Ether.utills";
 import { AppContext } from "~/Context/AppContext";
 import { ToastContainer, toast } from "react-toastify";
-import Alert from "~/components/Alerts/Alert";
+import { TimestampTotoNow, TimestampfromNow } from "~/utils/TimeConverter";
 
 const getEthereumObject = () => window.ethereum;
 

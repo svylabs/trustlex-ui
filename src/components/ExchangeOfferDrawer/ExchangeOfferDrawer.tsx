@@ -496,14 +496,13 @@ const ExchangeOfferDrawer = ({
                 <div className={styles.stepContent}>
                   <div className={styles.spacing} />
                   <div className={styles.sendToContainer}>
-                    {
-                      <div className={styles.qrImage}>
-                        {/* values can be set anything but should a string */}
-                        {/* Can use JSON.stringify(value) to make string of any values like arrays */}
-                        {/* Can use JSON.parse(value) to parse the value in arrays */}
-                        {to == "" ? (
-                          <>
-                            <QRCodeCanvas
+                    {/* values can be set anything but should a string */}
+                    {/* Can use JSON.stringify(value) to make string of any values like arrays */}
+                    {/* Can use JSON.parse(value) to parse the value in arrays */}
+                    {to == "" ? (
+                      <>
+                        <div className={styles.qrImage}>
+                          {/* <QRCodeCanvas
                               value={
                                 initatedata ? initatedata.to : "Random value"
                               }
@@ -511,36 +510,38 @@ const ExchangeOfferDrawer = ({
                                 width: "100%",
                                 height: "100%",
                               }}
-                              // bgColor="#7C7C7C00"
-                              // fgColor="#7C7C7C"
-                            />
-                          </>
-                        ) : (
-                          <>
-                            <img
-                              src={`https://chart.googleapis.com/chart?chs=250x250&chld=L|2&cht=qr&chl=bitcoin:${to}?amount=${BTCAmount}%26label=Trustlex%26message=Buying_Ether`}
-                              className={styles.qrImage}
-                            />
-                          </>
-                        )}
-                      </div>
-                    }
-
-                    <div className={styles.sendTo}>
-                      <span>
-                        Send &nbsp;
-                        <CurrencyDisplay
-                          amount={BTCAmount}
-                          type={CurrencyEnum.BTC}
-                        />{" "}
-                        Bitcoins To:
-                      </span>
-                      {mobileView ? (
-                        <span className={styles.toAddress}>{to}</span>
-                      ) : (
-                        <span className={styles.toAddress}>{to}</span>
-                      )}
-                    </div>
+                              bgColor="#7C7C7C00"
+                              fgColor="#7C7C7C"
+                            /> */}
+                        </div>
+                        QR Code and BTC Address will shown after Step 1
+                        initiation.
+                      </>
+                    ) : (
+                      <>
+                        <div className={styles.qrImage}>
+                          <img
+                            src={`https://chart.googleapis.com/chart?chs=250x250&chld=L|2&cht=qr&chl=bitcoin:${to}?amount=${BTCAmount}%26label=Trustlex%26message=Buying_Ether`}
+                            className={styles.qrImage}
+                          />
+                        </div>
+                        <div className={styles.sendTo}>
+                          <span>
+                            Send &nbsp;
+                            <CurrencyDisplay
+                              amount={BTCAmount}
+                              type={CurrencyEnum.BTC}
+                            />{" "}
+                            Bitcoins To:
+                          </span>
+                          {mobileView ? (
+                            <span className={styles.toAddress}>{to}</span>
+                          ) : (
+                            <span className={styles.toAddress}>{to}</span>
+                          )}
+                        </div>
+                      </>
+                    )}
                   </div>
                   <div className={styles.colletaralTextContainer}>
                     <span

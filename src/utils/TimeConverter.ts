@@ -38,9 +38,18 @@ export const TimestampTotoNow = (time: string) => {
   return "Initiated " + timeString;
 };
 
-export const TimeToDateFormat = (time: string) => {
-  const timeNumber = parseInt(time) * 1000;
-  // const timeString = moment(new Date(timeNumber)).format("D MMM , h:mm:ss A");
-  const timeString = moment(new Date(timeNumber)).format("D MMM , h:mm A");
-  return timeString;
+export const TimeToDateFormat = (time: string | undefined) => {
+  if (time) {
+    const timeNumber = parseInt(time) * 1000;
+    // const timeString = moment(new Date(timeNumber)).format("D MMM , h:mm:ss A");
+    const timeString = moment(new Date(timeNumber)).format("D MMM , h:mm A");
+    return timeString;
+  } else {
+    return "N/A";
+  }
+};
+
+export const getTimeInSeconds = () => {
+  let time = moment().valueOf();
+  return Math.floor(time / 1000);
 };

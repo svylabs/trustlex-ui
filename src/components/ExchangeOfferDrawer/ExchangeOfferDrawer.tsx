@@ -34,6 +34,7 @@ import { ethers } from "ethers";
 import { BlockchainExplorerLink } from "~/Context/AppConfig";
 import { getStringForTx } from "~/helpers/commonHelper";
 import { ActionIcon } from "@mantine/core";
+import { TimeToDateFormat, getTimeInSeconds } from "~/utils/TimeConverter";
 
 import {
   IconAdjustments,
@@ -52,6 +53,10 @@ type Props = {
   contract: ethers.Contract | undefined;
   refreshOffersListKey: number;
   setRefreshOffersListKey: (refreshOffersListKey: number) => void;
+  rowFullFillmentExpiryTime: string | undefined;
+  setrowFullFillmentExpiryTime: (
+    rowFullFillmentExpiryTime: string | undefined
+  ) => void;
 };
 
 const ExchangeOfferDrawer = ({
@@ -63,6 +68,8 @@ const ExchangeOfferDrawer = ({
   refreshOffersListKey,
   setRefreshOffersListKey,
   rowOfferId,
+  rowFullFillmentExpiryTime,
+  setrowFullFillmentExpiryTime,
 }: Props) => {
   // console.log(data);
   const { mobileView } = useWindowDimensions();
@@ -84,7 +91,6 @@ const ExchangeOfferDrawer = ({
   const [offerFulfillmentId, setOfferFulfillmentId] = useState<
     string | undefined
   >(undefined);
-
   const { scrollDirection } = useDetectScrollUpDown();
 
   useEffect(() => {
@@ -195,7 +201,8 @@ const ExchangeOfferDrawer = ({
       allowAnyoneToSubmitPaymentProofForFee: true,
       allowAnyoneToAddCollateralForFee: true,
       totalCollateralAdded: foundOffer.offerDetailsInJson.collateralPer3Hours,
-      expiryTime: foundOffer.offerDetailsInJson.offerValidTill,
+      // expiryTime: foundOffer.offerDetailsInJson.offerValidTill,
+      expiryTime: getTimeInSeconds().toString(),
       fulfilledTime: 0,
       // collateralAddedBy: foundOffer.offerEvent.from,
       collateralAddedBy: account,
@@ -215,6 +222,12 @@ const ExchangeOfferDrawer = ({
       let claimedBy = event?.args["claimedBy"];
       let offerId = event?.args["offerId"]?.toString();
       let fulfillmentId = event?.args["fulfillmentId"]?.toString();
+      let expiryTime = (
+        parseInt(_fulfillment.expiryTime) *
+        3 *
+        60 *
+        60
+      ).toString();
       // console.log(event, claimedBy, offerId, fulfillmentId);
       setOfferFulfillmentId(fulfillmentId);
       let toAddress = Buffer.from(
@@ -230,13 +243,14 @@ const ExchangeOfferDrawer = ({
       setTo(`${hashAdress}`);
       setInitatedata(data);
       setActiveStep(activeStep + 1);
+      setrowFullFillmentExpiryTime(expiryTime);
     } else {
       return false;
     }
   };
 
   const handleConfirmClick = async () => {
-    let offerId = foundOffer.offerDetailsInJson.offerId;
+    let offerId = foundOffer?.offerDetailsInJson.offerId;
     if (offerFulfillmentId == undefined) {
       return false;
     }
@@ -587,10 +601,13 @@ const ExchangeOfferDrawer = ({
                   <div className={styles.submitProof}>
                     <h3>Submit Proof</h3>
                     <p>
-                      Submit Proof of payment before 01 January, 2023 23:45 or
-                      add more collateral to increase payment confirmation time
-                      in order to have the ability to withdraw ETH from smart
-                      contract
+                      Submit Proof of payment before{" "}
+                      <strong>
+                        {TimeToDateFormat(rowFullFillmentExpiryTime)}
+                      </strong>{" "}
+                      or add more collateral to increase payment confirmation
+                      time in order to have the ability to withdraw ETH from
+                      smart contract
                     </p>
                   </div>
                   <div className={styles.spacing} />

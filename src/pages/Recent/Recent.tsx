@@ -21,7 +21,7 @@ import { CurrencyEnum } from "~/enums/CurrencyEnum";
 import { StatusEnum } from "~/enums/StatusEnum";
 import { ethers } from "ethers";
 import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
-import { TimestampfromNow } from "~/utils/TimeConverter";
+
 import ExchangeOfferDrawer from "~/components/ExchangeOfferDrawer/ExchangeOfferDrawer";
 import {
   listInitializeFullfillmentOnGoingByNonEvent,
@@ -99,6 +99,9 @@ function MySwaps() {
 
   const [rowOfferId, setRowOfferId] = useState<number | null>(null);
   const [rowFullFillmentId, setRowFullFillmentId] = useState<
+    string | undefined
+  >();
+  const [rowFullFillmentExpiryTime, setrowFullFillmentExpiryTime] = useState<
     string | undefined
   >();
 
@@ -182,10 +185,13 @@ function MySwaps() {
   };
   const handleSubmitPaymentProof = (
     fullfillmentRequestId: string | undefined,
-    offerId: number
+    offerId: number,
+    fullfillmentExpiryTime: string
   ) => {
+    console.log(fullfillmentExpiryTime);
     setRowFullFillmentId(fullfillmentRequestId);
     setRowOfferId(offerId);
+    setrowFullFillmentExpiryTime(fullfillmentExpiryTime);
   };
 
   const showLoadMoreMySwapOngoingButton = () => {
@@ -228,8 +234,9 @@ function MySwaps() {
         offerType: value.offerDetailsInJson.offerType,
         fullfillmentRequestId: value.offerDetailsInJson.fullfillmentRequestId,
         offerId: value.offerDetailsInJson.offerId,
+        fullfillmentExpiryTime:
+          value.offerDetailsInJson?.fulfillmentRequestExpiryTime,
       };
-      // console.log(row);
       return row;
     }
   );
@@ -342,6 +349,7 @@ function MySwaps() {
           contract={contract}
           refreshOffersListKey={refreshMySwapOngoingListKey}
           setRefreshOffersListKey={setRefreshMySwapOngoingListKey}
+          rowFullFillmentExpiryTime={rowFullFillmentExpiryTime}
         />
       </GradientBackgroundContainer>
       {/* Star My Swap History */}

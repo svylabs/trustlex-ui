@@ -96,6 +96,9 @@ const Exchange = (props: Props) => {
 
   const [paperWalletDownloaded, setPaperWalletDownloaded] =
     useState<PaperWalletDownloadedEnum>(PaperWalletDownloadedEnum.NotGenerated);
+  const [rowFullFillmentExpiryTime, setrowFullFillmentExpiryTime] = useState<
+    string | undefined
+  >();
 
   const context = React.useContext(AppContext);
   if (context === null) {
@@ -437,12 +440,12 @@ const Exchange = (props: Props) => {
   //   setGenerateWalletDrawerOpen(false);
   // };
 
-  const handleRowClick = async (data: [7]) => {
+  const handleRowClick = async (data: string[7] | ReactNode[]) => {
     if (account == "") {
       showErrorMessage("Please wait ,your account is not connected !");
       return false;
     }
-    let offerId = data[0];
+    let offerId = data[0] as number;
     // get the Fulfillments By OfferId
     let FullfillmentResult: IFullfillmentResult[] =
       await getInitializedFulfillmentsByOfferId(contract, offerId);
@@ -457,6 +460,9 @@ const Exchange = (props: Props) => {
       });
     setRowOfferId(offerId);
     setRowFullFillmentId(fullfillmentResult?.fulfillmentRequestId);
+    setrowFullFillmentExpiryTime(
+      fullfillmentResult?.fulfillmentRequest.expiryTime
+    );
   };
 
   return (
@@ -658,6 +664,8 @@ const Exchange = (props: Props) => {
         contract={contract}
         refreshOffersListKey={refreshOffersListKey}
         setRefreshOffersListKey={setRefreshOffersListKey}
+        rowFullFillmentExpiryTime={rowFullFillmentExpiryTime}
+        setrowFullFillmentExpiryTime={setrowFullFillmentExpiryTime}
       />
 
       <div className={styles.overlay}>

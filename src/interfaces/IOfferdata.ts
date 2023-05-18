@@ -14,6 +14,7 @@ export interface IOfferdata {
   offerType: string;
   fullfillmentRequestId: undefined;
   fulfillmentRequests?: IFullfillmentEvent;
+  fulfillmentRequestExpiryTime?: string;
 }
 
 export interface INewOfferEvent {

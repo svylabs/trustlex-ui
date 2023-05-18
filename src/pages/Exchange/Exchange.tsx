@@ -66,7 +66,6 @@ import {
   ERC20TokenKey,
 } from "~/Context/Constants";
 import { IFullfillmentResult } from "~/interfaces/IOfferdata";
-import Loading from "~/components/Loading/Loading";
 
 type Props = {};
 
@@ -428,15 +427,15 @@ const Exchange = (props: Props) => {
   // handleGenerateBitcoinWallet();
   const { mobileView } = useWindowDimensions();
 
-  const generateWalletDrawerhandleClose = () => {
-    if (paperWalletDownloaded == PaperWalletDownloadedEnum.Generated) {
-      showErrorMessage(
-        "Please download the wallet first. Otherwise you will lost the payment amount! "
-      );
-      return false;
-    }
-    setGenerateWalletDrawerOpen(false);
-  };
+  // const generateWalletDrawerhandleClose = () => {
+  //   if (paperWalletDownloaded == PaperWalletDownloadedEnum.Generated) {
+  //     showErrorMessage(
+  //       "Please download the wallet first. Otherwise you will lost the payment amount! "
+  //     );
+  //     return false;
+  //   }
+  //   setGenerateWalletDrawerOpen(false);
+  // };
 
   const handleRowClick = async (data: [7]) => {
     if (account == "") {
@@ -663,12 +662,13 @@ const Exchange = (props: Props) => {
 
       <div className={styles.overlay}>
         <GenerateWalletDrawer
-          onClose={generateWalletDrawerhandleClose}
+          // onClose={generateWalletDrawerhandleClose}
           open={generateWalletDrawerOpen}
           data={generatedBitcoinData}
           generateAddress={setGenerateAddress}
           setPaperWalletDownloaded={setPaperWalletDownloaded}
           paperWalletDownloaded={paperWalletDownloaded}
+          setGenerateWalletDrawerOpen={setGenerateWalletDrawerOpen}
         />
       </div>
     </MainLayout>

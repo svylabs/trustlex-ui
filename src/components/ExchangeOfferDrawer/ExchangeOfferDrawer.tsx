@@ -46,9 +46,9 @@ import { Tooltip } from "@mantine/core";
 type Props = {
   isOpened: boolean;
   onClose: () => void;
-  data: any;
+  rowOfferId: number | null;
   account: string;
-  rowFullFillmentData: IFullfillmentResult | undefined;
+  rowFullFillmentId: string | undefined;
   contract: ethers.Contract | undefined;
   refreshOffersListKey: number;
   setRefreshOffersListKey: (refreshOffersListKey: number) => void;
@@ -57,12 +57,12 @@ type Props = {
 const ExchangeOfferDrawer = ({
   isOpened,
   onClose,
-  data,
   account,
-  rowFullFillmentData,
+  rowFullFillmentId,
   contract,
   refreshOffersListKey,
   setRefreshOffersListKey,
+  rowOfferId,
 }: Props) => {
   // console.log(data);
   const { mobileView } = useWindowDimensions();
@@ -77,6 +77,7 @@ const ExchangeOfferDrawer = ({
   const [initatedata, setInitatedata]: any = useState([]);
   const [to, setTo] = useState("");
   const [planningToSell, setPlanningToSell] = useState(0);
+  const [planningToBuy, setPlanningToBuy] = useState(0);
   const [submitPaymentProofTxHash, setSubmitPaymentProofTxHash] = useState("");
   const [clipboardTxCopy, setClipboardTxCopy] = useState(false);
   const [isInitiatng, setIsInitating] = useState("");
@@ -87,23 +88,23 @@ const ExchangeOfferDrawer = ({
   const { scrollDirection } = useDetectScrollUpDown();
 
   useEffect(() => {
-    if (data === null) {
+    if (rowOfferId === null) {
       onClose();
     }
-  }, [data]);
+  }, [rowOfferId]);
 
   if (context === null) {
     return <>Loading...</>;
   }
 
   const { listenedOfferData, listenedOfferDataByNonEvent } = context;
+
   const foundOffer =
-    data &&
+    rowOfferId &&
     // listenedOfferData.offers.find((offer) => {
     listenedOfferDataByNonEvent.offers.find((offer) => {
-      // return offer.offerDetailsInJson.offeredBlockNumber === data[0]
-      return offer.offerDetailsInJson.offerId === data[0];
-      // return offer.offerEvent.to.toString() == data[0];
+      // return offer.offerDetailsInJson.offerId === data[0];
+      return Number(offer.offerDetailsInJson.offerId) === Number(rowOfferId);
     });
 
   // console.log(foundOffer, data, listenedOfferData, listenedOfferDataByNonEvent);
@@ -117,6 +118,14 @@ const ExchangeOfferDrawer = ({
 
     setPlanningToSell(planningToSell_);
 
+    setPlanningToBuy(
+      Number(
+        Number(
+          SatoshiToBtcConverter(foundOffer.offerDetailsInJson.satoshisToReceive)
+        ).toFixed(4)
+      )
+    );
+
     setEthValue(planningToSell_);
 
     //if order already initiated
@@ -126,13 +135,13 @@ const ExchangeOfferDrawer = ({
     setVerified(false);
     setConfirmed("");
 
-    if (rowFullFillmentData != undefined) {
+    if (rowFullFillmentId != undefined) {
       setIsInitating("initiated");
       let toAddress = Buffer.from(
         foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
         "hex"
       );
-      let fulfillmentId = rowFullFillmentData.fulfillmentRequestId;
+      let fulfillmentId = rowFullFillmentId;
       setOfferFulfillmentId(fulfillmentId);
       if (fulfillmentId.length % 2 != 0) {
         fulfillmentId = "0" + fulfillmentId;
@@ -190,6 +199,7 @@ const ExchangeOfferDrawer = ({
       fulfilledTime: 0,
       // collateralAddedBy: foundOffer.offerEvent.from,
       collateralAddedBy: account,
+      paymentProofSubmitted: false,
     };
 
     console.log(foundOffer, _fulfillment);
@@ -266,11 +276,9 @@ const ExchangeOfferDrawer = ({
   // }, [listenedOfferData]);
 
   if (!isOpened) return null;
+
   let BTCAmount = Number(
-    (
-      (ethValue / data[1].props.children[0]) *
-      data[2].props.children[0]
-    ).toFixed(3)
+    ((ethValue / planningToSell) * planningToBuy).toFixed(3)
   );
 
   return (
@@ -357,10 +365,7 @@ const ExchangeOfferDrawer = ({
                 <span className={styles.for}>with</span>
                 <CurrencyDisplay
                   amount={Number(
-                    (
-                      (ethValue / data[1].props.children[0]) *
-                      data[2].props.children[0]
-                    ).toFixed(3)
+                    ((ethValue / planningToSell) * planningToBuy).toFixed(3)
                   )}
                   type={CurrencyEnum.BTC}
                 />{" "}
@@ -491,14 +496,13 @@ const ExchangeOfferDrawer = ({
                 <div className={styles.stepContent}>
                   <div className={styles.spacing} />
                   <div className={styles.sendToContainer}>
-                    {
-                      <div className={styles.qrImage}>
-                        {/* values can be set anything but should a string */}
-                        {/* Can use JSON.stringify(value) to make string of any values like arrays */}
-                        {/* Can use JSON.parse(value) to parse the value in arrays */}
-                        {to == "" ? (
-                          <>
-                            <QRCodeCanvas
+                    {/* values can be set anything but should a string */}
+                    {/* Can use JSON.stringify(value) to make string of any values like arrays */}
+                    {/* Can use JSON.parse(value) to parse the value in arrays */}
+                    {to == "" ? (
+                      <>
+                        <div className={styles.qrImage}>
+                          {/* <QRCodeCanvas
                               value={
                                 initatedata ? initatedata.to : "Random value"
                               }
@@ -506,36 +510,38 @@ const ExchangeOfferDrawer = ({
                                 width: "100%",
                                 height: "100%",
                               }}
-                              // bgColor="#7C7C7C00"
-                              // fgColor="#7C7C7C"
-                            />
-                          </>
-                        ) : (
-                          <>
-                            <img
-                              src={`https://chart.googleapis.com/chart?chs=250x250&chld=L|2&cht=qr&chl=bitcoin:${to}?amount=${BTCAmount}%26label=Trustlex%26message=Buying_Ether`}
-                              className={styles.qrImage}
-                            />
-                          </>
-                        )}
-                      </div>
-                    }
-
-                    <div className={styles.sendTo}>
-                      <span>
-                        Send &nbsp;
-                        <CurrencyDisplay
-                          amount={BTCAmount}
-                          type={CurrencyEnum.BTC}
-                        />{" "}
-                        Bitcoins To:
-                      </span>
-                      {mobileView ? (
-                        <span className={styles.toAddress}>{to}</span>
-                      ) : (
-                        <span className={styles.toAddress}>{to}</span>
-                      )}
-                    </div>
+                              bgColor="#7C7C7C00"
+                              fgColor="#7C7C7C"
+                            /> */}
+                        </div>
+                        QR Code and BTC Address will shown after Step 1
+                        initiation.
+                      </>
+                    ) : (
+                      <>
+                        <div className={styles.qrImage}>
+                          <img
+                            src={`https://chart.googleapis.com/chart?chs=250x250&chld=L|2&cht=qr&chl=bitcoin:${to}?amount=${BTCAmount}%26label=Trustlex%26message=Buying_Ether`}
+                            className={styles.qrImage}
+                          />
+                        </div>
+                        <div className={styles.sendTo}>
+                          <span>
+                            Send &nbsp;
+                            <CurrencyDisplay
+                              amount={BTCAmount}
+                              type={CurrencyEnum.BTC}
+                            />{" "}
+                            Bitcoins To:
+                          </span>
+                          {mobileView ? (
+                            <span className={styles.toAddress}>{to}</span>
+                          ) : (
+                            <span className={styles.toAddress}>{to}</span>
+                          )}
+                        </div>
+                      </>
+                    )}
                   </div>
                   <div className={styles.colletaralTextContainer}>
                     <span

@@ -15,6 +15,7 @@ import {
   IListInitiatedFullfillmentData,
   IOffersResultByNonEvent,
   IFullfillmentResult,
+  IListInitiatedFullfillmentDataByNonEvent,
 } from "~/interfaces/IOfferdata";
 import axios from "axios";
 import { PAGE_SIZE } from "~/Context/Constants";
@@ -22,6 +23,7 @@ import { MAX_BLOCKS_TO_QUERY, MAX_ITERATIONS } from "~/Context/Constants";
 import { EthtoWei, WeitoEth } from "~/utils/Ether.utills";
 import { AppContext } from "~/Context/AppContext";
 import { ToastContainer, toast } from "react-toastify";
+import { TimestampTotoNow, TimestampfromNow } from "~/utils/TimeConverter";
 
 const getEthereumObject = () => window.ethereum;
 
@@ -533,6 +535,178 @@ export const listInitializeFullfillment = async (
     console.log(error);
     return { offers: [], fromBlock, toBlock };
   }
+};
+
+//Get the My Swap ongoing offers list .Offers are created by an account or ordered by same account.
+export const listInitializeFullfillmentOnGoingByNonEvent = async (
+  trustLex: ethers.Contract | undefined,
+  account: string,
+  fromOfferId: number
+) => {
+  let MyoffersList: IListInitiatedFullfillmentDataByNonEvent[] = [];
+  if (!trustLex) {
+    console.log("trustLex is not defined", trustLex);
+    return MyoffersList;
+  }
+  let offersData = await trustLex.getOffers(fromOfferId);
+  let totalFetchedRecords = offersData.total;
+  let offers = offersData.result;
+  let MyOngoingOrdersPromises = [];
+  const MyOffersPromises = [];
+  for (let i = 0; i < totalFetchedRecords; i++) {
+    let value = offers[i];
+    let offer = value.offer;
+    let offerId = value.offerId.toString();
+    let fulfillmentRequests = value.fulfillmentRequests;
+
+    const offerDetailsInJson: IOfferdata = {
+      offerId: offerId,
+      offerQuantity: offer.offerQuantity.toString(),
+      offeredBy: offer.offeredBy.toString(),
+      offerValidTill: offer.offerValidTill.toString(),
+      orderedTime: offer.orderedTime.toString(),
+      offeredBlockNumber: offer.offeredBlockNumber.toString(),
+      bitcoinAddress: offer.bitcoinAddress.toString(),
+      satoshisToReceive: offer.satoshisToReceive.toString(),
+      satoshisReceived: offer.satoshisReceived.toString(),
+      satoshisReserved: offer.satoshisReserved.toString(),
+      collateralPer3Hours: offer.collateralPer3Hours.toString(),
+      fulfillmentRequests: offer.fulfillmentRequests,
+      progress: "",
+      offerType: "",
+      fullfillmentRequestId: undefined,
+    };
+    if (offer.offeredBy.toLowerCase() === account.toLowerCase()) {
+      let filled = 0;
+      let satoshisReserved = offer.satoshisReserved;
+      let satoshisToReceive = offer.satoshisToReceive;
+      filled = (satoshisReserved / satoshisToReceive) * 100;
+      offerDetailsInJson.progress = filled + "% filled";
+      offerDetailsInJson.offerType = "my_offer";
+      MyOffersPromises.push({ offerDetailsInJson });
+    }
+
+    // get the fullfillment list
+    let FullfillmentResults: IFullfillmentResult[] =
+      await getInitializedFulfillmentsByOfferId(trustLex, value.offerId);
+
+    let fullfillmentRequestId = undefined;
+    let fullfillmentResult =
+      FullfillmentResults &&
+      FullfillmentResults.find((fullfillmentResult, index) => {
+        if (
+          fullfillmentResult.fulfillmentRequest.fulfillmentBy.toLowerCase() ===
+            account.toLowerCase() &&
+          fullfillmentResult.fulfillmentRequest.paymentProofSubmitted == false
+        ) {
+          fullfillmentRequestId = offer.fulfillmentRequests[index];
+          return true;
+        } else {
+          return false;
+        }
+      });
+    if (fullfillmentResult) {
+      offerDetailsInJson.offerType = "my_order";
+      offerDetailsInJson.progress =
+        TimestampTotoNow(fullfillmentResult.fulfillmentRequest.expiryTime) +
+        " and " +
+        TimestampfromNow(fullfillmentResult.fulfillmentRequest.expiryTime);
+      offerDetailsInJson.fullfillmentRequestId = fullfillmentRequestId;
+    }
+    fullfillmentResult &&
+      MyOffersPromises.push({ offerDetailsInJson: offerDetailsInJson });
+  }
+  MyoffersList = await Promise.all(MyOffersPromises);
+  return MyoffersList;
+};
+
+//Get the My Swap comleted offers list .Offers are created by an account or ordered by same account.
+export const listInitializeFullfillmentCompletedByNonEvent = async (
+  trustLex: ethers.Contract | undefined,
+  account: string,
+  fromOfferId: number
+) => {
+  let MyoffersList: IListInitiatedFullfillmentDataByNonEvent[] = [];
+  if (!trustLex) {
+    console.log("trustLex is not defined", trustLex);
+    return MyoffersList;
+  }
+  let offersData = await trustLex.getOffers(fromOfferId);
+  let totalFetchedRecords = offersData.total;
+  let offers = offersData.result;
+  let MyOngoingOrdersPromises = [];
+  const MyOffersPromises = [];
+  for (let i = 0; i < totalFetchedRecords; i++) {
+    let value = offers[i];
+    let offer = value.offer;
+    let offerId = value.offerId.toString();
+    let fulfillmentRequests = value.fulfillmentRequests;
+
+    const offerDetailsInJson: IOfferdata = {
+      offerId: offerId,
+      offerQuantity: offer.offerQuantity.toString(),
+      offeredBy: offer.offeredBy.toString(),
+      offerValidTill: offer.offerValidTill.toString(),
+      orderedTime: offer.orderedTime.toString(),
+      offeredBlockNumber: offer.offeredBlockNumber.toString(),
+      bitcoinAddress: offer.bitcoinAddress.toString(),
+      satoshisToReceive: offer.satoshisToReceive.toString(),
+      satoshisReceived: offer.satoshisReceived.toString(),
+      satoshisReserved: offer.satoshisReserved.toString(),
+      collateralPer3Hours: offer.collateralPer3Hours.toString(),
+      fulfillmentRequests: offer.fulfillmentRequests,
+      progress: "",
+      offerType: "",
+      fullfillmentRequestId: undefined,
+    };
+    let satoshisReserved = offer.satoshisReserved;
+    let satoshisToReceive = offer.satoshisToReceive;
+    let satoshisReceived = offer.satoshisReceived;
+    if (
+      offer.offeredBy.toLowerCase() === account.toLowerCase() &&
+      satoshisReceived == satoshisToReceive
+    ) {
+      let filled = 0;
+      let satoshisReserved = offer.satoshisReserved;
+      let satoshisToReceive = offer.satoshisToReceive;
+      filled = (satoshisReserved / satoshisToReceive) * 100;
+      offerDetailsInJson.progress = filled + "% filled";
+      offerDetailsInJson.offerType = "my_offer";
+      MyOffersPromises.push({ offerDetailsInJson });
+    }
+
+    // get the fullfillment list
+    let FullfillmentResults: IFullfillmentResult[] =
+      await getInitializedFulfillmentsByOfferId(trustLex, value.offerId);
+
+    let fullfillmentRequestId = undefined;
+    let fullfillmentResult =
+      FullfillmentResults &&
+      FullfillmentResults.find((fullfillmentResult, index) => {
+        if (
+          fullfillmentResult.fulfillmentRequest.fulfillmentBy.toLowerCase() ===
+            account.toLowerCase() &&
+          fullfillmentResult.fulfillmentRequest.paymentProofSubmitted == true
+        ) {
+          fullfillmentRequestId = offer.fulfillmentRequests[index];
+          return true;
+        } else {
+          return false;
+        }
+      });
+    if (fullfillmentResult) {
+      offerDetailsInJson.offerType = "my_order";
+      offerDetailsInJson.progress =
+        TimestampTotoNow(fullfillmentResult.fulfillmentRequest.expiryTime) +
+        " and " +
+        TimestampfromNow(fullfillmentResult.fulfillmentRequest.expiryTime);
+      offerDetailsInJson.fullfillmentRequestId = fullfillmentRequestId;
+    }
+    fullfillmentResult &&
+      MyOffersPromises.push({ offerDetailsInJson: offerDetailsInJson });
+  }
+  MyoffersList = await Promise.all(MyOffersPromises);
+  return MyoffersList;
 };
 
 // get the perticular fullfillment details by fullfillment id

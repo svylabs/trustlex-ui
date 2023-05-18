@@ -129,68 +129,70 @@ const InstantWallet = ({
   });
 
   return (
-    <div className={styles.instantWalletRoot}>
-      <div className={styles.generatedAddress}>
-        <h3>Your generated address</h3>
-        <p>
-          {generatedAddress !== ""
-            ? generatedAddress
-            : "b1cqada7dda834aadfa99000adafaghaxww"}
+    <>
+      <div className={styles.instantWalletRoot}>
+        <div className={styles.generatedAddress}>
+          <h3>Your generated address</h3>
+          <p>
+            {generatedAddress !== ""
+              ? generatedAddress
+              : "b1cqada7dda834aadfa99000adafaghaxww"}
+          </p>
+        </div>
+
+        <DrawerInput
+          type="password"
+          placeholder="Enter your password"
+          label="Password to encrypt wallet"
+          value={inputData.password}
+          onChange={handlePasswordChange}
+        />
+        <DrawerInput
+          type="password"
+          placeholder="Enter your password again"
+          label="Confirm password"
+          value={inputData.confirmPassword}
+          onChange={handleConfirmPasswordChange}
+        />
+
+        <Button
+          radius={10}
+          compact={false}
+          rightIcon={<Icon icon="radix-icons:download" fontSize={20} />}
+          style={{
+            height: "48px",
+            backgroundColor: "transparent",
+            marginTop: "16px",
+          }}
+          variant={
+            download === "loading" ? VariantsEnum.outline : VariantsEnum.primary
+          }
+          loading={download === "loading" ? true : false}
+          fullWidth
+          onClick={handleDownloadWalletClick}
+        >
+          {download === "loading" ? "Downloading Wallet" : "Download Wallet"}
+        </Button>
+        <p className={styles.subText}>
+          * Please make sure you backup the wallet file and password. The wallet
+          file and password are both needed to recover any funds received
         </p>
-      </div>
 
-      <DrawerInput
-        type="password"
-        placeholder="Enter your password"
-        label="Password to encrypt wallet"
-        value={inputData.password}
-        onChange={handlePasswordChange}
-      />
-      <DrawerInput
-        type="password"
-        placeholder="Enter your password again"
-        label="Confirm password"
-        value={inputData.confirmPassword}
-        onChange={handleConfirmPasswordChange}
-      />
-
-      <Button
-        radius={10}
-        compact={false}
-        rightIcon={<Icon icon="radix-icons:download" fontSize={20} />}
-        style={{
-          height: "48px",
-          backgroundColor: "transparent",
-          marginTop: "16px",
-        }}
-        variant={
-          download === "loading" ? VariantsEnum.outline : VariantsEnum.primary
-        }
-        loading={download === "loading" ? true : false}
-        fullWidth
-        onClick={handleDownloadWalletClick}
-      >
-        {download === "loading" ? "Downloading Wallet" : "Download Wallet"}
-      </Button>
-      <p className={styles.subText}>
-        * Please make sure you backup the wallet file and password. The wallet
-        file and password are both needed to recover any funds received
-      </p>
-
-      {/* <ReactToPrint
+        {/* <ReactToPrint
         trigger={() => <button>Print this out!</button>}
         content={() => componentRef.current}
       /> */}
-      <div style={{ display: "none" }}>
-        <PaperWallet
-          generatedAddress={generatedAddress}
-          data={data}
-          walletEncryptedData={walletEncryptedData}
-          ref={componentRef}
-          key={paperWalletKey}
-        />
+        <div style={{ display: "none" }}>
+          <PaperWallet
+            generatedAddress={generatedAddress}
+            data={data}
+            walletEncryptedData={walletEncryptedData}
+            ref={componentRef}
+            key={paperWalletKey}
+          />
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 export default InstantWallet;

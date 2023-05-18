@@ -17,8 +17,13 @@ import {
   getOffersList,
   getTotalOffers,
   getERC20TokenBalance,
+  listInitializeFullfillmentOnGoingByNonEvent,
+  listInitializeFullfillmentCompletedByNonEvent,
+  showErrorMessage,
+  showSuccessMessage,
 } from "./service/AppService";
 import IUserInputData from "./interfaces/IUserInputData";
+import { INetworkInfo } from "./interfaces/INetworkInfo";
 import swapArrayElements from "./utils/swapArray";
 import { formatERC20Tokens } from "./utils/Ether.utills";
 import {
@@ -27,14 +32,16 @@ import {
   IinitiatedFullfillmentResult,
   IOffersResultByNonEvent,
   OrderBy,
+  IListInitiatedFullfillmentDataByNonEvent,
 } from "./interfaces/IOfferdata";
 import { ethers } from "ethers";
-import { ContractMap } from "./Context/AppConfig";
+import { ContractMap, NetworkInfo } from "./Context/AppConfig";
 import useLocalstorage from "./hooks/useLocalstorage";
 import { PAGE_SIZE, activeExchange } from "~/Context/Constants";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { number } from "bitcoinjs-lib/src/script";
+import Alert from "./components/Alerts/Alert";
 
 export default function App() {
   const { get, set, remove } = useLocalstorage();
@@ -56,14 +63,53 @@ export default function App() {
     toBlock: 0,
     offers: [],
   });
-  const [isMoreTableDataLoading, setMoreTableDataLoading] = useState(false);
-  const [exchangeLoadingText, setExchangeLoadingText] = useState<string>("");
+  const [isMoreTableDataLoading, setMoreTableDataLoading] = useState(true);
+  const [exchangeLoadingText, setExchangeLoadingText] = useState<string>(
+    "Connecting to Network"
+  );
   const [refreshOffersListKey, setRefreshOffersListKey] = useState<number>(1);
+
+  //Start My Swap ongoing variable
+  const [
+    isMoreMySwapOngoinTableDataLoading,
+    setIsMoreMySwapOngoinTableDataLoading,
+  ] = useState(true);
+  const [mySwapOngoingLoadingText, setMySwapOngoingLoadingText] =
+    useState<string>("Connecting to Network");
+  const [mySwapOngoingfromOfferId, setMySwapOngoingfromOfferId] = useState(0);
 
   const [listenedOfferDataByNonEvent, setListenedOfferDataByNonEvent] =
     useState<IOffersResultByNonEvent>({
       offers: [],
     });
+
+  const [refreshMySwapOngoingListKey, setRefreshMySwapOngoingListKey] =
+    useState<number>(1);
+  const [
+    listenedOngoinMySwapOnGoingDataByNonEvent,
+    setlistenedOngoinMySwapOnGoingDataByNonEvent,
+  ] = useState<IListInitiatedFullfillmentDataByNonEvent[]>([]);
+
+  //End My Swap ongoing variable
+
+  //Start My Swap completed variable
+  const [
+    isMoreMySwapCompletedTableDataLoading,
+    setIsMoreMySwapCompletedTableDataLoading,
+  ] = useState(true);
+  const [mySwapCompletedLoadingText, setMySwapCompletedLoadingText] =
+    useState<string>("Connecting to Network");
+  const [mySwapCompletedfromOfferId, setMySwapCompletedfromOfferId] =
+    useState(0);
+
+  const [
+    listenedMySwapCompletedDataByNonEvent,
+    setListenedMySwapCompletedDataByNonEvent,
+  ] = useState<IListInitiatedFullfillmentDataByNonEvent[]>([]);
+
+  const [refreshMySwapCompletedListKey, setRefreshMySwapCompletedListKey] =
+    useState<number>(1);
+  //End My Swap completed variable
 
   const [listenedOngoinMySwapData, setlistenedOngoinMySwapData] =
     useState<IinitiatedFullfillmentResult>({
@@ -72,6 +118,10 @@ export default function App() {
       offers: [],
     });
 
+  const [netWorkInfoData, setNetWorkInfoData] = useState<INetworkInfo>({
+    name: "",
+    chainId: 0,
+  });
   const userData = get("userInputData", true);
   const [userInputData, setUserInputData] = useState<IUserInputData>(
     userData
@@ -83,9 +133,12 @@ export default function App() {
         }
   );
 
+  const [alertMessage, setAlertMessage] = useState<string | JSX.Element>("");
+  const [alertOpen, setAlertOpen] = useState<number>(0);
+
   useEffect(() => {
     set("userInputData", userInputData);
-    console.log(userInputData);
+    // console.log(userInputData);
   }, [userInputData]);
 
   useEffect(() => {
@@ -101,31 +154,61 @@ export default function App() {
   }, [userInputData.activeExchange]);
 
   useEffect(() => {
-    const { ethereum } = window;
-    if (ethereum) {
-      const provider = new ethers.providers.Web3Provider(ethereum);
+    (async () => {
+      const { ethereum } = window;
+      if (ethereum) {
+        let provider = new ethers.providers.Web3Provider(ethereum);
+        let network = await provider.getNetwork();
+        setNetWorkInfoData(network as INetworkInfo);
+        checkNetwork(network.chainId);
 
-      (ethereum as any).on("accountsChanged", async function (accounts: any) {
-        let trustlex = await connect(
-          provider,
-          ContractMap[selectedToken].address
+        (ethereum as any).on("accountsChanged", async function (accounts: any) {
+          setAccount(accounts[0]);
+        });
+        (ethereum as any).on(
+          "networkChanged",
+          async function (networkId: number) {
+            console.log(networkId);
+            setNetWorkInfoData(network as INetworkInfo);
+            checkNetwork(networkId);
+          }
         );
-        if (trustlex) {
-          setContract(trustlex as ethers.Contract);
-        }
-
-        setAccount(accounts[0]);
-        let balance = await getBalance(accounts[0]);
-        if (balance) {
-          setBalance(balance);
-        }
-
-        let tokenBalance_ = await getERC20TokenBalance(accounts[0]);
-        let tokenBalance = formatERC20Tokens(tokenBalance_);
-        setERC20balance(tokenBalance);
-      });
-    }
+      } else {
+        setExchangeLoadingText("");
+        setMySwapOngoingLoadingText("");
+        setMySwapCompletedLoadingText("");
+      }
+    })();
   }, []);
+
+  async function checkNetwork(networkId: number) {
+    networkId = typeof networkId === "string" ? parseInt(networkId) : networkId;
+    let NetworkInfoChainID =
+      typeof NetworkInfo.ChainID === "string"
+        ? parseInt(NetworkInfo.ChainID)
+        : NetworkInfo.ChainID;
+
+    if (networkId !== NetworkInfo.ChainID) {
+      let messge = `You have selected the wrong network. Kindly select the ${NetworkInfo.NetworkName} .`;
+      const { ethereum } = window;
+      let provider = new ethers.providers.Web3Provider(ethereum);
+      let network = await provider.getNetwork();
+
+      setAlertMessage(messge);
+      setAlertOpen(alertOpen + 1);
+      // update offers list parameters
+      setTimeout(() => {
+        setRefreshOffersListKey(refreshOffersListKey + 1);
+      }, 500);
+    } else {
+      setAlertMessage("");
+      setAlertOpen(0);
+      // update offers list parameters
+      setTimeout(() => {
+        setRefreshOffersListKey(refreshOffersListKey + 1);
+      }, 500);
+    }
+  }
 
   const swapChange = () => {
     setUserInputData((prev) => {
@@ -161,16 +244,35 @@ export default function App() {
       return { ...prev, activeExchange: activeExchangeData };
     });
   };
-
+  // use effect for offers list
   useEffect(() => {
     (async () => {
       const { ethereum } = window;
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
-
-        setMoreTableDataLoading(true);
+        setMoreTableDataLoading(false);
+        setExchangeLoadingText("");
         setListenedOfferDataByNonEvent({ offers: [] });
-        setExchangeLoadingText("Connecting to Network");
+        // checking the network
+        let network = await provider.getNetwork();
+        let networkId = network.chainId;
+        networkId =
+          typeof networkId === "string" ? parseInt(networkId) : networkId;
+        let NetworkInfoChainID =
+          typeof NetworkInfo.ChainID === "string"
+            ? parseInt(NetworkInfo.ChainID)
+            : NetworkInfo.ChainID;
+
+        if (networkId !== NetworkInfo.ChainID) {
+          return;
+        }
+        console.log("ok");
+        setMoreTableDataLoading(true);
+        setExchangeLoadingText("Connecting to the Network!");
+
+        // update the eth balance
+        let account = await findMetaMaskAccount();
+        updateAccountBalance(account);
 
         let trustlex = await connect(
           provider,
@@ -178,11 +280,13 @@ export default function App() {
         );
         if (trustlex) {
           setContract(trustlex as ethers.Contract);
+
           const offers = await listOffers(trustlex);
           setListenedOfferData(offers);
 
           setMoreTableDataLoading(true);
           setExchangeLoadingText("Loading List");
+
           let totalOffers = await getTotalOffers(trustlex);
           setTotalOffers(totalOffers);
 
@@ -192,38 +296,216 @@ export default function App() {
           fromOfferId =
             fromOfferId - PAGE_SIZE > 0 ? fromOfferId - PAGE_SIZE : 0;
           setFromOfferId(fromOfferId);
-          // console.log(totalOffers, totalOffers, fromOfferId, offersList);
+
           setListenedOfferDataByNonEvent(offersList);
           setMoreTableDataLoading(false);
           setExchangeLoadingText("");
 
-          const InitializeFullfillmentData = await listInitializeFullfillment(
-            trustlex
-          );
-          // console.log(InitializeFullfillmentData);
-          setlistenedOngoinMySwapData(InitializeFullfillmentData);
+          // fetch the recent orders my swaps ongoing by event
+          // const InitializeFullfillmentData = await listInitializeFullfillment(
+          //   trustlex
+          // );
+          // // console.log(InitializeFullfillmentData);
+          // setlistenedOngoinMySwapData(InitializeFullfillmentData);
         }
-
-        let account = await findMetaMaskAccount();
-        if (account !== null) {
-          setAccount(account);
-          getBalance(account).then((balance) => {
-            if (balance) {
-              setBalance(balance);
-            }
-          });
-        }
-
-        let tokenBalance_ = await getERC20TokenBalance(account);
-        let tokenBalance = formatERC20Tokens(tokenBalance_);
-        setERC20balance(tokenBalance);
+        // update the token balance
+        updateTokenBalance(account);
+      } else {
+        showErrorMessage("Metamask is not found ! kindly install the Metamask");
+        setExchangeLoadingText("");
+        setMySwapOngoingLoadingText("");
+        setMySwapCompletedLoadingText("");
       }
-      return () => {
-        setAccount("");
-        setBalance("");
-      };
+      // return () => {
+      //   setAccount("");
+      //   setBalance("");
+      // };
     })();
-  }, [refreshOffersListKey]);
+  }, [refreshOffersListKey, account]);
+
+  // Do the activity on account changed
+  useEffect(() => {
+    (async () => {
+      try {
+        const { ethereum } = window;
+        if (ethereum) {
+          const provider = new ethers.providers.Web3Provider(ethereum);
+          let chainId = netWorkInfoData.chainId;
+          // update the eth balance
+          let account = await findMetaMaskAccount();
+          updateAccountBalance(account);
+
+          if (chainId == NetworkInfo.ChainID) {
+            // update the token balance
+            updateTokenBalance(account);
+
+            // update the total offers for echange page and recent my swap page
+            let trustlex = await connect(
+              provider,
+              ContractMap[selectedToken].address
+            );
+            if (trustlex) {
+              let totalOffers = await getTotalOffers(
+                trustlex as ethers.Contract
+              );
+              setTotalOffers(totalOffers);
+              setMySwapOngoingLoadingText("Updating List");
+              setMySwapCompletedLoadingText("Updating List");
+            }
+          }
+        }
+      } catch (err: any) {
+        console.log(err);
+      }
+    })();
+  }, [account]);
+
+  // update the eth balance
+  async function updateAccountBalance(account: string) {
+    if (account !== null) {
+      setAccount(account);
+      getBalance(account).then((balance) => {
+        if (balance) {
+          setBalance(balance);
+        }
+      });
+    }
+  }
+  // update the token balance
+  async function updateTokenBalance(account: string) {
+    let tokenBalance_ = await getERC20TokenBalance(account);
+    let tokenBalance = formatERC20Tokens(tokenBalance_);
+    setERC20balance(tokenBalance);
+  }
+  // use effect for my swap ongoing data
+  useEffect(() => {
+    if (contract) {
+      prepareMySwapOngoingData(contract);
+    }
+  }, [totalOffers, refreshMySwapOngoingListKey, account, refreshOffersListKey]);
+
+  async function prepareMySwapOngoingData(trustlex: ethers.Contract) {
+    setIsMoreMySwapOngoinTableDataLoading(false);
+    setMySwapOngoingLoadingText("");
+    setlistenedOngoinMySwapOnGoingDataByNonEvent([]);
+    const { ethereum } = window;
+    const provider = new ethers.providers.Web3Provider(ethereum);
+    let network = await provider.getNetwork();
+    let networkId = network.chainId;
+    networkId = typeof networkId === "string" ? parseInt(networkId) : networkId;
+    let NetworkInfoChainID =
+      typeof NetworkInfo.ChainID === "string"
+        ? parseInt(NetworkInfo.ChainID)
+        : NetworkInfo.ChainID;
+
+    if (networkId !== NetworkInfo.ChainID) {
+      return;
+    }
+    setIsMoreMySwapOngoinTableDataLoading(true);
+    setMySwapOngoingLoadingText("Loading List");
+    // fetch the recent orders my swaps ongoing by non event
+    let fromOfferMySwapOngoingId = totalOffers;
+    const InitializeFullfillmentDataByNonEvent =
+      await listInitializeFullfillmentOnGoingByNonEvent(
+        trustlex,
+        account,
+        fromOfferMySwapOngoingId
+      );
+    setlistenedOngoinMySwapOnGoingDataByNonEvent(
+      InitializeFullfillmentDataByNonEvent
+    );
+    fromOfferMySwapOngoingId =
+      fromOfferMySwapOngoingId - PAGE_SIZE > 0
+        ? fromOfferMySwapOngoingId - PAGE_SIZE
+        : 0;
+    setMySwapOngoingfromOfferId(fromOfferMySwapOngoingId);
+
+    setMySwapOngoingLoadingText("");
+    setIsMoreMySwapOngoinTableDataLoading(false);
+  }
+
+  useEffect(() => {
+    if (contract) {
+      prepareMySwapCompletedData(contract);
+    }
+  }, [
+    totalOffers,
+    refreshMySwapCompletedListKey,
+    account,
+    refreshOffersListKey,
+  ]);
+
+  async function prepareMySwapCompletedData(trustlex: ethers.Contract) {
+    setIsMoreMySwapCompletedTableDataLoading(true);
+    setMySwapCompletedLoadingText("Loading List");
+    setListenedMySwapCompletedDataByNonEvent([]);
+    // fetch the recent orders my swaps ongoing by non event
+    let fromOfferMySwapCompetedId = totalOffers;
+    const InitializeFullfillmentDataByNonEvent =
+      await listInitializeFullfillmentCompletedByNonEvent(
+        trustlex,
+        account,
+        fromOfferMySwapCompetedId
+      );
+    setListenedMySwapCompletedDataByNonEvent(
+      InitializeFullfillmentDataByNonEvent
+    );
+    let mySwapCompletedfromOfferId_ =
+      mySwapCompletedfromOfferId - PAGE_SIZE > 0
+        ? mySwapCompletedfromOfferId - PAGE_SIZE
+        : 0;
+    setMySwapCompletedfromOfferId(mySwapCompletedfromOfferId_);
+
+    setMySwapCompletedLoadingText("");
+    setIsMoreMySwapCompletedTableDataLoading(false);
+  }
+
+  async function addNetwork() {
+    const { ethereum } = window;
+    if (ethereum) {
+      const { ethereum } = window;
+      let provider = new ethers.providers.Web3Provider(ethereum);
+      let network = await provider.getNetwork();
+      let chainId = network.chainId;
+      if (chainId == NetworkInfo.ChainID) {
+        let message = `${NetworkInfo.NetworkName} is already current network`;
+        showErrorMessage(message);
+        return false;
+      } else {
+        let params = [
+          {
+            chainId: NetworkInfo.ChainIDHexaDecimal,
+            chainName: NetworkInfo.NetworkName,
+            nativeCurrency: {
+              name: NetworkInfo.CurrencySymbol,
+              symbol: NetworkInfo.CurrencySymbol,
+              decimals: 18,
+            },
+            rpcUrls: [NetworkInfo.RPC_URL],
+            blockExplorerUrls: [NetworkInfo.ExplorerUrl],
+          },
+        ];
+        const { ethereum } = window;
+
+        (ethereum as any)
+          .request({
+            method: "wallet_addEthereumChain",
+            params,
+          })
+          .then(() => {
+            console.log("Success");
+            showSuccessMessage("Network successfully changed");
+            setRefreshOffersListKey(refreshOffersListKey + 1);
+          })
+          .catch((error: any) => {
+            console.log("Error", error.message);
+            showErrorMessage(error.message);
+          });
+      }
+    } else {
+      showErrorMessage("Unable to locate a compatible web3 browser!");
+    }
+  }
 
   return (
     <MantineProvider
@@ -264,11 +546,41 @@ export default function App() {
             setRefreshOffersListKey,
             erc20balance,
             setERC20balance,
+            // start my swap ongoing variables
+            listenedOngoinMySwapOnGoingDataByNonEvent,
+            setlistenedOngoinMySwapOnGoingDataByNonEvent,
+            mySwapOngoingLoadingText,
+            setMySwapOngoingLoadingText,
+            isMoreMySwapOngoinTableDataLoading,
+            mySwapOngoingfromOfferId,
+            setMySwapOngoingfromOfferId,
+            refreshMySwapOngoingListKey,
+            setRefreshMySwapOngoingListKey,
+            // end my swap ongoing variables
+
+            // start my swap completed variables
+            listenedMySwapCompletedDataByNonEvent,
+            setListenedMySwapCompletedDataByNonEvent,
+            mySwapCompletedLoadingText,
+            setMySwapCompletedLoadingText,
+            isMoreMySwapCompletedTableDataLoading,
+            mySwapCompletedfromOfferId,
+            setMySwapCompletedfromOfferId,
+            refreshMySwapCompletedListKey,
+            setRefreshMySwapCompletedListKey,
+            // end my swap completed variables
           }}
         >
           <Layout>
             <ToastContainer />
 
+            <Alert
+              message={alertMessage}
+              setAlertMessage={setAlertMessage}
+              isOpened={alertOpen}
+              setAlertOpen={setAlertOpen}
+              addNetwork={addNetwork}
+            />
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/exchange" element={<Exchange />} />

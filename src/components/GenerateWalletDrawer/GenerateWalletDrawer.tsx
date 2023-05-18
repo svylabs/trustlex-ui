@@ -13,81 +13,126 @@ import { useEffect, useRef, useState } from "react";
 import useDetectOutsideClick from "~/hooks/useDetectOutsideClick";
 import { Wallet, generateTrustlexAddress } from "~/utils/BitcoinUtils";
 import { PaperWalletDownloadedEnum } from "~/interfaces/IExchannge";
+import { DownloadInstantWalletConfirm } from "~/components/Alerts/Confirm";
+
 interface IProps {
   open: boolean;
-  onClose: () => void;
+  // onClose: () => void;
   data: Wallet | null;
   generateAddress: any;
   setPaperWalletDownloaded: (
     paperWalletDownloaded: PaperWalletDownloadedEnum
   ) => void;
   paperWalletDownloaded: PaperWalletDownloadedEnum;
+  setGenerateWalletDrawerOpen: (generateWalletDrawerOpen: boolean) => void;
 }
 
 const GenerateWalletDrawer = ({
   open,
-  onClose,
+  // onClose,
   data,
   generateAddress,
   setPaperWalletDownloaded,
   paperWalletDownloaded,
+  setGenerateWalletDrawerOpen,
 }: IProps) => {
   const { mobileView, tabletView } = useWindowDimensions();
 
+  const [confirmBoxMessage, setConfirmBoxMessage] = useState<
+    string | JSX.Element
+  >("");
+  const [confirmBoxOpen, setConfirmBoxOpen] = useState<number>(0);
+
   const mobileContentRef = useRef(null);
+
+  const handleDrawerClose = () => {
+    if (paperWalletDownloaded == PaperWalletDownloadedEnum.Generated) {
+      setConfirmBoxOpen(confirmBoxOpen + 1);
+      setConfirmBoxMessage(
+        "Kindly Download the wallet file. Otherwise you will not able to receive the offer payment!"
+      );
+      // onClose();
+    } else {
+      setGenerateWalletDrawerOpen(false);
+      setConfirmBoxMessage("");
+      setConfirmBoxOpen(0);
+    }
+  };
+
+  const handleInstantWalletDownloadContinueAnyway = () => {
+    setPaperWalletDownloaded(PaperWalletDownloadedEnum.Downloaded);
+    setGenerateWalletDrawerOpen(false);
+    setConfirmBoxMessage("");
+    setConfirmBoxOpen(0);
+  };
+
   useDetectOutsideClick({
     ref: mobileContentRef,
-    callback: onClose,
+    callback: handleDrawerClose,
   });
 
   if (!open) return null;
   // if (!data) return onClose();
-  return mobileView ? (
-    open ? (
-      <div className={styles.mobileDialogRoot}>
-        <div className={styles.mobileDialogContent} ref={mobileContentRef}>
+  return (
+    <>
+      {mobileView ? (
+        open ? (
+          <div className={styles.mobileDialogRoot}>
+            <div className={styles.mobileDialogContent} ref={mobileContentRef}>
+              <GradientBackgroundContainer
+                radius={10}
+                colorLeft={"#FEBD3893"}
+                bgImage="/images/Rectangle.svg"
+              >
+                <GenerateWalletContent
+                  onClose={handleDrawerClose}
+                  data={data}
+                  generateAddress={generateAddress}
+                  setPaperWalletDownloaded={setPaperWalletDownloaded}
+                  paperWalletDownloaded={paperWalletDownloaded}
+                  confirmBoxMessage={confirmBoxMessage}
+                  confirmBoxOpen={confirmBoxOpen}
+                  handleInstantWalletDownloadContinueAnyway={
+                    handleInstantWalletDownloadContinueAnyway
+                  }
+                />
+              </GradientBackgroundContainer>
+            </div>
+          </div>
+        ) : null
+      ) : (
+        <Drawer
+          opened={open}
+          onClose={handleDrawerClose}
+          position="right"
+          overlayBlur={2.5}
+          overlayOpacity={0.5}
+          withCloseButton={false}
+          size={tabletView ? 500 : 600}
+          closeOnClickOutside={true}
+          closeOnEscape={true}
+        >
           <GradientBackgroundContainer
-            radius={10}
+            radius={0}
             colorLeft={"#FEBD3893"}
             bgImage="/images/Rectangle.svg"
           >
             <GenerateWalletContent
-              onClose={onClose}
+              onClose={handleDrawerClose}
               data={data}
               generateAddress={generateAddress}
               setPaperWalletDownloaded={setPaperWalletDownloaded}
               paperWalletDownloaded={paperWalletDownloaded}
+              confirmBoxMessage={confirmBoxMessage}
+              confirmBoxOpen={confirmBoxOpen}
+              handleInstantWalletDownloadContinueAnyway={
+                handleInstantWalletDownloadContinueAnyway
+              }
             />
           </GradientBackgroundContainer>
-        </div>
-      </div>
-    ) : null
-  ) : (
-    <Drawer
-      opened={open}
-      onClose={onClose}
-      position="right"
-      overlayBlur={2.5}
-      overlayOpacity={0.5}
-      withCloseButton={false}
-      size={tabletView ? 500 : 600}
-      closeOnClickOutside={true}
-      closeOnEscape={true}
-    >
-      <GradientBackgroundContainer
-        radius={0}
-        colorLeft={"#FEBD3893"}
-        bgImage="/images/Rectangle.svg"
-      >
-        <GenerateWalletContent
-          onClose={onClose}
-          data={data}
-          generateAddress={generateAddress}
-          setPaperWalletDownloaded={setPaperWalletDownloaded}
-          paperWalletDownloaded={paperWalletDownloaded}
-        />
-      </GradientBackgroundContainer>
-    </Drawer>
+        </Drawer>
+      )}
+    </>
   );
 };
 
@@ -97,6 +142,9 @@ const GenerateWalletContent = ({
   generateAddress,
   setPaperWalletDownloaded,
   paperWalletDownloaded,
+  confirmBoxMessage,
+  confirmBoxOpen,
+  handleInstantWalletDownloadContinueAnyway,
 }: {
   onClose: () => void;
   data: Wallet | null;
@@ -105,6 +153,9 @@ const GenerateWalletContent = ({
     paperWalletDownloaded: PaperWalletDownloadedEnum
   ) => void;
   paperWalletDownloaded: PaperWalletDownloadedEnum;
+  confirmBoxMessage: string | JSX.Element;
+  confirmBoxOpen: number;
+  handleInstantWalletDownloadContinueAnyway: () => void;
 }) => {
   const { mobileView } = useWindowDimensions();
   const generateWalletRef = useRef(null);
@@ -121,6 +172,13 @@ const GenerateWalletContent = ({
 
   return (
     <div className={styles.generateWalletRoot} ref={generateWalletRef}>
+      <DownloadInstantWalletConfirm
+        confirmBoxMessage={confirmBoxMessage}
+        confirmBoxOpen={confirmBoxOpen}
+        handleInstantWalletDownloadContinueAnyway={
+          handleInstantWalletDownloadContinueAnyway
+        }
+      />
       {mobileView ? (
         <Grid className={styles.heading}>
           <Grid.Col className={styles.crossIconBox} py={0}>

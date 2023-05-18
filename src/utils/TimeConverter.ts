@@ -19,8 +19,18 @@ export const NumberToTime = (time: string) => {
     : "5 hrs";
 };
 
-export const TimestampTofromNow = (time: string) => {
+export const TimestampfromNow = (time: string) => {
+  let timestamp = moment().valueOf();
   const timeNumber = parseInt(time) * 1000;
+  const timeString = moment(
+    new Date(timeNumber),
+    "ddd MMM DD YYYY HH:mm:ss GMT Z"
+  ).fromNow();
+  return "Expired " + timeString;
+};
+export const TimestampTotoNow = (time: string) => {
+  let _3hours = 3 * 60 * 60;
+  const timeNumber = (parseInt(time) - _3hours) * 1000;
   const timeString = moment(
     new Date(timeNumber),
     "ddd MMM DD YYYY HH:mm:ss GMT Z"
@@ -30,6 +40,7 @@ export const TimestampTofromNow = (time: string) => {
 
 export const TimeToDateFormat = (time: string) => {
   const timeNumber = parseInt(time) * 1000;
-  const timeString = moment(new Date(timeNumber)).format("D MMM ,h:mm:ss A");
+  // const timeString = moment(new Date(timeNumber)).format("D MMM , h:mm:ss A");
+  const timeString = moment(new Date(timeNumber)).format("D MMM , h:mm A");
   return timeString;
 };

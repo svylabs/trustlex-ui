@@ -64,14 +64,14 @@ export function InputWithSelect({
       </Menu.Target>
       <Menu.Dropdown>
         {options
-          .filter((item) => item.value !== selectedOptionValue.value)
+          .filter((item) => item?.value !== selectedOptionValue?.value)
           .map((item) => (
             <Menu.Item
-              key={item.value}
+              key={item?.value}
               onClick={() => {
                 setSelectedOptionValue(item);
-                if (item.value === "limit" || item.value === "no-limit") {
-                  if (item.value === "limit") {
+                if (item?.value === "limit" || item?.value === "no-limit") {
+                  if (item?.value === "limit") {
                     setUserInputData((prev) => {
                       return { ...prev, setLimit: true };
                     });
@@ -83,12 +83,12 @@ export function InputWithSelect({
                 } else {
                   dropDownChange(
                     selectedOptionValue.label.toLowerCase(),
-                    item.label.toLowerCase()
+                    item?.label.toLowerCase()
                   );
                 }
               }}
             >
-              {item.icon} {item.label}
+              {item?.icon} {item?.label}
             </Menu.Item>
           ))}
       </Menu.Dropdown>

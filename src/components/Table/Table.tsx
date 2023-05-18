@@ -2,6 +2,7 @@ import React, { ReactNode } from "react";
 import styles from "./Table.module.scss";
 import { Table as MantineTable, TableProps } from "@mantine/core";
 import useAutoHideScrollbar from "../../hooks/useAutoHideScrollBar";
+import { AppContext } from "~/Context/AppContext";
 
 interface Props extends TableProps {
   tableCaption?: string;
@@ -11,7 +12,8 @@ interface Props extends TableProps {
   setOffer?: any;
   addOffer?: boolean;
   OfferModal?: any;
-  showAddOfferButton: boolean;
+  showAddOfferButton?: boolean;
+  loadingText?: string;
 }
 
 const Table = ({
@@ -24,12 +26,18 @@ const Table = ({
   addOffer,
   OfferModal,
   showAddOfferButton = false,
+  loadingText,
   ...props
 }: Props) => {
   const tableContainerRef = React.useRef(null);
 
   useAutoHideScrollbar(tableContainerRef);
 
+  const context = React.useContext(AppContext);
+
+  if (context === null) {
+    return <>Loading...</>;
+  }
   return (
     <div className={styles.root}>
       {tableCaption !== "" && (
@@ -101,7 +109,7 @@ const Table = ({
                   colSpan={7}
                   style={{ textAlign: "center", fontWeight: 700 }}
                 >
-                  No record found
+                  {/* {loadingText == "" ? "No record found" : ""} */}
                 </td>
               </tr>
             )}

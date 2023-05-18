@@ -1,99 +1,6 @@
 {
   "abi": [
     {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_tokenContract",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "claimedBy",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "offerId",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "fulfillmentId",
-          "type": "uint256"
-        }
-      ],
-      "name": "INITIALIZED_FULFILLMENT",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "offeredBy",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "offerId",
-          "type": "uint256"
-        }
-      ],
-      "name": "NEW_OFFER",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "submittedBy",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "offerId",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "fulfillmentId",
-          "type": "uint256"
-        }
-      ],
-      "name": "PAYMENT_SUCCESSFUL",
-      "type": "event"
-    },
-    {
-      "inputs": [],
-      "name": "MyTokenERC20",
-      "outputs": [
-        {
-          "internalType": "contract IERC20",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [],
       "name": "addEthCollateral",
       "outputs": [],
@@ -165,6 +72,183 @@
     },
     {
       "inputs": [],
+      "name": "extendOffer",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_tokenContract",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "claimedBy",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "offerId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "fulfillmentId",
+          "type": "uint256"
+        }
+      ],
+      "name": "INITIALIZED_FULFILLMENT",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "offerId",
+          "type": "uint256"
+        },
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "fulfillmentBy",
+              "type": "address"
+            },
+            {
+              "internalType": "uint64",
+              "name": "quantityRequested",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint32",
+              "name": "expiryTime",
+              "type": "uint32"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalCollateralAdded",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "collateralAddedBy",
+              "type": "address"
+            },
+            {
+              "internalType": "uint32",
+              "name": "fulfilledTime",
+              "type": "uint32"
+            },
+            {
+              "internalType": "bool",
+              "name": "allowAnyoneToSubmitPaymentProofForFee",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "allowAnyoneToAddCollateralForFee",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "paymentProofSubmitted",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct TrustlexPerAssetOrderBook.FulfillmentRequest",
+          "name": "_fulfillment",
+          "type": "tuple"
+        }
+      ],
+      "name": "initiateFulfillment",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "liquidateCollateral",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "offeredBy",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "offerId",
+          "type": "uint256"
+        }
+      ],
+      "name": "NEW_OFFER",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "submittedBy",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "offerId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "fulfillmentId",
+          "type": "uint256"
+        }
+      ],
+      "name": "PAYMENT_SUCCESSFUL",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "offerId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "fulfillmentId",
+          "type": "uint256"
+        }
+      ],
+      "name": "submitPaymentProof",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "deconstructMetadata",
       "outputs": [
         {
@@ -186,13 +270,6 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "extendOffer",
-      "outputs": [],
-      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -260,6 +337,11 @@
                 {
                   "internalType": "bool",
                   "name": "allowAnyoneToAddCollateralForFee",
+                  "type": "bool"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "paymentProofSubmitted",
                   "type": "bool"
                 }
               ],
@@ -517,76 +599,27 @@
           "internalType": "bool",
           "name": "allowAnyoneToAddCollateralForFee",
           "type": "bool"
+        },
+        {
+          "internalType": "bool",
+          "name": "paymentProofSubmitted",
+          "type": "bool"
         }
       ],
       "stateMutability": "view",
       "type": "function"
     },
     {
-      "inputs": [
+      "inputs": [],
+      "name": "MyTokenERC20",
+      "outputs": [
         {
-          "internalType": "uint256",
-          "name": "offerId",
-          "type": "uint256"
-        },
-        {
-          "components": [
-            {
-              "internalType": "address",
-              "name": "fulfillmentBy",
-              "type": "address"
-            },
-            {
-              "internalType": "uint64",
-              "name": "quantityRequested",
-              "type": "uint64"
-            },
-            {
-              "internalType": "uint32",
-              "name": "expiryTime",
-              "type": "uint32"
-            },
-            {
-              "internalType": "uint256",
-              "name": "totalCollateralAdded",
-              "type": "uint256"
-            },
-            {
-              "internalType": "address",
-              "name": "collateralAddedBy",
-              "type": "address"
-            },
-            {
-              "internalType": "uint32",
-              "name": "fulfilledTime",
-              "type": "uint32"
-            },
-            {
-              "internalType": "bool",
-              "name": "allowAnyoneToSubmitPaymentProofForFee",
-              "type": "bool"
-            },
-            {
-              "internalType": "bool",
-              "name": "allowAnyoneToAddCollateralForFee",
-              "type": "bool"
-            }
-          ],
-          "internalType": "struct TrustlexPerAssetOrderBook.FulfillmentRequest",
-          "name": "_fulfillment",
-          "type": "tuple"
+          "internalType": "contract IERC20",
+          "name": "",
+          "type": "address"
         }
       ],
-      "name": "initiateFulfillment",
-      "outputs": [],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "liquidateCollateral",
-      "outputs": [],
-      "stateMutability": "payable",
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -664,24 +697,6 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "offerId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "fulfillmentId",
-          "type": "uint256"
-        }
-      ],
-      "name": "submitPaymentProof",
-      "outputs": [],
-      "stateMutability": "nonpayable",
       "type": "function"
     }
   ]

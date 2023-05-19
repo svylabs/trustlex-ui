@@ -8,7 +8,7 @@ interface Props extends TableProps {
   tableCaption?: string;
   cols: string[];
   data: (string | ReactNode)[][];
-  onRowClick?: (data: (string | ReactNode)[]) => void;
+  onRowClick?: (data: string[7] | ReactNode[]) => void;
   setOffer?: any;
   addOffer?: boolean;
   OfferModal?: any;

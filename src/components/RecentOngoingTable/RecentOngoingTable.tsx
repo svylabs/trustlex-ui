@@ -19,6 +19,7 @@ export interface ITableRow {
   offerType: string;
   fullfillmentRequestId: string | undefined;
   offerId: number | string;
+  fullfillmentExpiryTime: string;
 }
 
 interface Props extends TableProps {
@@ -28,7 +29,8 @@ interface Props extends TableProps {
   mobile?: boolean;
   handleSubmitPaymentProof: (
     fullfillmentRequestId: string | undefined,
-    offerId: number
+    offerId: number,
+    fullfillmentExpiryTime: string
   ) => void;
   mySwapOngoingLoadingText: string;
 }
@@ -71,7 +73,8 @@ const RecentOngoingTable = ({
                 onClick={() => {
                   handleSubmitPaymentProof(
                     row.fullfillmentRequestId,
-                    row.offerId
+                    row.offerId as number,
+                    row.fullfillmentExpiryTime
                   );
                 }}
               >

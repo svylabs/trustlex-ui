@@ -612,6 +612,8 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
         " and " +
         TimestampfromNow(fullfillmentResult.fulfillmentRequest.expiryTime);
       offerDetailsInJson.fullfillmentRequestId = fullfillmentRequestId;
+      offerDetailsInJson.fulfillmentRequestExpiryTime =
+        fullfillmentResult.fulfillmentRequest.expiryTime;
     }
     fullfillmentResult &&
       MyOffersPromises.push({ offerDetailsInJson: offerDetailsInJson });

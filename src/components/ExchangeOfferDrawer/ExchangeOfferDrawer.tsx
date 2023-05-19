@@ -34,7 +34,11 @@ import { ethers } from "ethers";
 import { BlockchainExplorerLink } from "~/Context/AppConfig";
 import { getStringForTx } from "~/helpers/commonHelper";
 import { ActionIcon } from "@mantine/core";
-import { TimeToDateFormat, getTimeInSeconds } from "~/utils/TimeConverter";
+import {
+  TimeToDateFormat,
+  getTimeInSeconds,
+  findOrderExpireColor,
+} from "~/utils/TimeConverter";
 
 import {
   IconAdjustments,
@@ -43,6 +47,8 @@ import {
   IconCopy,
 } from "@tabler/icons-react";
 import { Tooltip } from "@mantine/core";
+import { default as Countdowntimer } from "react-countdown";
+import BtcToSatoshiConverter from "~/utils/BtcToSatoshiConverter";
 
 type Props = {
   isOpened: boolean;
@@ -91,6 +97,9 @@ const ExchangeOfferDrawer = ({
   const [offerFulfillmentId, setOfferFulfillmentId] = useState<
     string | undefined
   >(undefined);
+  const [countdowntimerTime, setCountdowntimerTime] = useState<number>(0);
+  const [countDownTimeColor, setCountDownTimeColor] =
+    useState<string>("inherit");
   const { scrollDirection } = useDetectScrollUpDown();
 
   useEffect(() => {
@@ -118,6 +127,12 @@ const ExchangeOfferDrawer = ({
 
   useEffect(() => {
     if (!foundOffer || foundOffer === undefined) return;
+
+    setCountdowntimerTime(
+      rowFullFillmentExpiryTime ? parseInt(rowFullFillmentExpiryTime) * 1000 : 0
+    );
+    setCountDownTimeColor(findOrderExpireColor(countdowntimerTime));
+
     let planningToSell_ = Number(
       ethers.utils.formatEther(foundOffer.offerDetailsInJson.offerQuantity)
     ); //offerQuantity
@@ -197,7 +212,8 @@ const ExchangeOfferDrawer = ({
     const _fulfillment: IFullfillmentEvent = {
       // fulfillmentBy: foundOffer.offerEvent.from,
       fulfillmentBy: account,
-      quantityRequested: foundOffer.offerDetailsInJson.satoshisToReceive,
+      // quantityRequested: foundOffer.offerDetailsInJson.satoshisToReceive,
+      quantityRequested: BtcToSatoshiConverter(getBTCAmount()),
       allowAnyoneToSubmitPaymentProofForFee: true,
       allowAnyoneToAddCollateralForFee: true,
       totalCollateralAdded: foundOffer.offerDetailsInJson.collateralPer3Hours,
@@ -244,6 +260,7 @@ const ExchangeOfferDrawer = ({
       setInitatedata(data);
       setActiveStep(activeStep + 1);
       setrowFullFillmentExpiryTime(expiryTime);
+      setCountdowntimerTime(expiryTime ? parseInt(expiryTime) * 1000 : 0);
     } else {
       return false;
     }
@@ -291,9 +308,9 @@ const ExchangeOfferDrawer = ({
 
   if (!isOpened) return null;
 
-  let BTCAmount = Number(
-    ((ethValue / planningToSell) * planningToBuy).toFixed(3)
-  );
+  const getBTCAmount = () => {
+    return Number(((ethValue / planningToSell) * planningToBuy).toFixed(3));
+  };
 
   return (
     <Drawer
@@ -344,46 +361,88 @@ const ExchangeOfferDrawer = ({
               </Grid.Col>
             )}
           </Grid>
+
           <Grid className={styles.heading}>
             <Grid.Col span={12}>
-              <Text component="h1" className={styles.title}>
-                <span className={styles.buy}>Buy:</span>
-                {activeStep === 1 ? (
-                  <>
-                    <input
-                      type="number"
-                      step="any"
-                      min={0}
-                      value={ethValue}
-                      max={planningToSell}
-                      onChange={(e) => {
-                        const value = parseFloat(e.target.value);
-                        if (isNaN(value)) {
-                          setEthValue("");
-                        } else {
-                          setEthValue(Number(value));
-                        }
-
-                        // if (isNaN(ethValue)) {
-                        //   setEthValue(Number(e.target.value));
-                        // }
-                        // setEthValue(Number(e.target.value));
-                      }}
-                      className={styles.input}
-                    />
-                  </>
-                ) : (
-                  <span style={{ marginRight: "10px" }}>{ethValue}</span>
-                )}
-                <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />
-                <span className={styles.for}>with</span>
-                <CurrencyDisplay
-                  amount={Number(
-                    ((ethValue / planningToSell) * planningToBuy).toFixed(3)
+              <div style={{ width: "100%" }}>
+                <Text
+                  component="h1"
+                  className={styles.title}
+                  style={{
+                    display: "inline-block",
+                    verticalAlign: "text-top",
+                    margin: "0 auto",
+                  }}
+                >
+                  <span className={styles.buy}>Buy:</span>
+                  {activeStep === 1 ? (
+                    <>
+                      <input
+                        type="number"
+                        step="any"
+                        min={0}
+                        value={ethValue}
+                        max={planningToSell}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value);
+                          if (isNaN(value)) {
+                            setEthValue("");
+                          } else {
+                            setEthValue(Number(value));
+                          }
+                          // if (isNaN(ethValue)) {
+                          //   setEthValue(Number(e.target.value));
+                          // }
+                          // setEthValue(Number(e.target.value));
+                        }}
+                        className={styles.input}
+                      />
+                    </>
+                  ) : (
+                    <span style={{ marginRight: "10px" }}>{ethValue}</span>
                   )}
-                  type={CurrencyEnum.BTC}
-                />{" "}
-              </Text>
+                  <ImageIcon
+                    image={getIconFromCurrencyType(CurrencyEnum.ETH)}
+                  />
+                  <span className={styles.for}>with</span>
+                  <CurrencyDisplay
+                    amount={getBTCAmount()}
+                    type={CurrencyEnum.BTC}
+                  />{" "}
+                </Text>
+
+                <div
+                  style={{
+                    display: "inline-block",
+                    verticalAlign: "text-top",
+                    margin: "0 auto",
+                    float: "right",
+                  }}
+                >
+                  {rowFullFillmentExpiryTime ? (
+                    <>
+                      <span>Time Left</span>: &nbsp;
+                      <span style={{ color: countDownTimeColor }}>
+                        <Countdowntimer
+                          date={
+                            countdowntimerTime
+                            // Date.now() + 10000
+                          }
+                          onTick={() => {
+                            setCountDownTimeColor(
+                              findOrderExpireColor(countdowntimerTime)
+                            );
+                          }}
+                        />
+                      </span>
+                      <br />
+                      <small>(For submiiting the payment proof)</small>
+                    </>
+                  ) : (
+                    ""
+                  )}
+                </div>
+              </div>
             </Grid.Col>
           </Grid>
 
@@ -401,6 +460,7 @@ const ExchangeOfferDrawer = ({
                 </div>
                 <h2 className={styles.stepCount}>Step 1</h2>
               </div>
+
               <div className={styles.stepsContentsContainer}>
                 <div className={styles.stepContent}>
                   <div className={styles.spacing} />
@@ -440,51 +500,62 @@ const ExchangeOfferDrawer = ({
                     <span>I'll do it myself(0% transaction fees)</span>
                   </div>
                   <div className={styles.spacing} />
-                  <div className={styles.actionButton}>
-                    {isInitiatng === "initiated" ? (
-                      <Button
-                        variant={VariantsEnum.outline}
-                        radius={10}
-                        style={{
-                          borderColor: "#53C07F",
-                          background: "unset",
-                          color: "#53C07F",
-                        }}
-                        leftIcon={
-                          <Icon icon={"charm:circle-tick"} color="#53C07F" />
-                        }
-                      >
-                        Initiated
-                      </Button>
-                    ) : (
-                      <Button
-                        variant={
-                          isInitiatng === "loading"
-                            ? VariantsEnum.outline
-                            : VariantsEnum.outlinePrimary
-                        }
-                        radius={10}
-                        style={{
-                          backgroundColor:
-                            isInitiatng === "loading" ? "unset" : "transparent",
-                        }}
-                        loading={isInitiatng === "loading" ? true : false}
-                        onClick={handleInitate}
-                      >
-                        {isInitiatng === "loading" ? "Initiating" : "Initiate"}
-                      </Button>
-                    )}
-                    {isInitiatng === "loading" ? (
-                      <span className={styles.timer}>
-                        <Countdown />
-                      </span>
-                    ) : (
-                      isInitiatng !== "initiated" && (
-                        <span className={styles.rightText}>
-                          It will take approximately 1-3 mins
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "left",
+                    }}
+                  >
+                    <div className={styles.actionButton}>
+                      {isInitiatng === "initiated" ? (
+                        <Button
+                          variant={VariantsEnum.outline}
+                          radius={10}
+                          style={{
+                            borderColor: "#53C07F",
+                            background: "unset",
+                            color: "#53C07F",
+                          }}
+                          leftIcon={
+                            <Icon icon={"charm:circle-tick"} color="#53C07F" />
+                          }
+                        >
+                          Initiated
+                        </Button>
+                      ) : (
+                        <Button
+                          variant={
+                            isInitiatng === "loading"
+                              ? VariantsEnum.outline
+                              : VariantsEnum.outlinePrimary
+                          }
+                          radius={10}
+                          style={{
+                            backgroundColor:
+                              isInitiatng === "loading"
+                                ? "unset"
+                                : "transparent",
+                          }}
+                          loading={isInitiatng === "loading" ? true : false}
+                          onClick={handleInitate}
+                        >
+                          {isInitiatng === "loading"
+                            ? "Initiating"
+                            : "Initiate"}
+                        </Button>
+                      )}
+                      {isInitiatng === "loading" ? (
+                        <span className={styles.timer}>
+                          <Countdown />
                         </span>
-                      )
-                    )}
+                      ) : (
+                        isInitiatng !== "initiated" && (
+                          <span className={styles.rightText}>
+                            It will take approximately 1-3 mins
+                          </span>
+                        )
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -535,7 +606,7 @@ const ExchangeOfferDrawer = ({
                       <>
                         <div className={styles.qrImage}>
                           <img
-                            src={`https://chart.googleapis.com/chart?chs=250x250&chld=L|2&cht=qr&chl=bitcoin:${to}?amount=${BTCAmount}%26label=Trustlex%26message=Buying_Ether`}
+                            src={`https://chart.googleapis.com/chart?chs=250x250&chld=L|2&cht=qr&chl=bitcoin:${to}?amount=${getBTCAmount()}%26label=Trustlex%26message=Buying_Ether`}
                             className={styles.qrImage}
                           />
                         </div>
@@ -543,7 +614,7 @@ const ExchangeOfferDrawer = ({
                           <span>
                             Send &nbsp;
                             <CurrencyDisplay
-                              amount={BTCAmount}
+                              amount={getBTCAmount()}
                               type={CurrencyEnum.BTC}
                             />{" "}
                             Bitcoins To:

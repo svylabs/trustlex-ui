@@ -35,17 +35,25 @@ export const minCollateral = [
 ];
 
 export const offerValidity = [
-  {
-    label: "5 hours",
-    value: "5hrs",
-  },
-  {
-    label: "10 hours",
-    value: "10hrs",
-  },
+  // {
+  //   label: "5 hours",
+  //   value: "5hrs",
+  // },
+  // {
+  //   label: "10 hours",
+  //   value: "10hrs",
+  // },
   {
     label: "1 day",
     value: "1d",
+  },
+  {
+    label: "2 days",
+    value: "2d",
+  },
+  {
+    label: "1 Week",
+    value: "1w",
   },
 ];
 

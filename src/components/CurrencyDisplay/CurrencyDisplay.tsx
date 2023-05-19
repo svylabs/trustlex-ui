@@ -12,8 +12,15 @@ const CurrencyDisplay = ({ amount, type }: Props) => {
   return (
     <span className={styles.root}>
       {amount}
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-        <ImageIcon image={getIconFromCurrencyType(type)} />&nbsp;
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <ImageIcon image={getIconFromCurrencyType(type)} />
+        &nbsp;
         {type}
       </div>
     </span>

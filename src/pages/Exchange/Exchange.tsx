@@ -552,6 +552,7 @@ const Exchange = (props: Props) => {
                               Collateral{" "}
                             </span>
                           }
+                          disabled={true}
                           onChange={handleCollateralChange}
                           value={exchangeData.collateral}
                           data={minCollateral}

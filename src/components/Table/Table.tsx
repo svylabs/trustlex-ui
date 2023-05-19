@@ -48,7 +48,7 @@ const Table = ({
                 <>
                   <h2 className={styles.caption}>{tableCaption}</h2>
                   <button onClick={() => setOffer(true)}>
-                    Add your offers
+                    Add your offer
                   </button>
                 </>
               ) : (

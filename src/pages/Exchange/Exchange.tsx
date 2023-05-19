@@ -461,8 +461,8 @@ const Exchange = (props: Props) => {
 
   return (
     <MainLayout
-      title="Exchange"
-      description="  Lorem ipsum dolor sit amet consectetur adipisicing elit."
+      title="Place your offer"
+      description="   "
     >
       <div className={styles.offersTable}>
         <GradientBackgroundContainer

@@ -2,7 +2,7 @@ import styles from "~/components/GenerateWalletDrawer/HardwareWallet/HardwareWal
 const HardwareWallet = () => {
   return (
     <div className={styles.hardwareWalletRoot}>
-      <p>Hardware wallet support coming soon...</p>
+      <p>Hardware wallet support coming soon.</p>
     </div>
   );
 };

@@ -2,12 +2,12 @@ import ImageIcon from "~/components/ImageIcon/ImageIcon";
 
 export const exchangeTableCols = [
   "# of order",
-  "Planning to sell",
-  "Planning to buy",
-  "Price per ETH in BTC",
+  "Selling",
+  "Asking",
+  "Price in BTC",
   "Left to buy",
   "Offer valid for",
-  "Date",
+  "Order date",
 ];
 export const exchangeMobileTableCols = ["# of order", "Date", "More options"];
 

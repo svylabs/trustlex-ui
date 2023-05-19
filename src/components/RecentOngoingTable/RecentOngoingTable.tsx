@@ -1,4 +1,4 @@
-import { TableProps } from "@mantine/core";
+import { Divider, TableProps } from "@mantine/core";
 import { useState } from "react";
 import { CurrencyEnum } from "~/enums/CurrencyEnum";
 import { IPlanning } from "~/interfaces/IPlanning";

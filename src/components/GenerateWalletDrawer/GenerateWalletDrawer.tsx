@@ -196,7 +196,7 @@ const GenerateWalletContent = ({
         <Grid className={styles.heading}>
           <Grid.Col span={11}>
             <Text component="h1" className={styles.headTitle}>
-              Generating link in browser
+              Generate BTC wallet address in browser
             </Text>
           </Grid.Col>
 

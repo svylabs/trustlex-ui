@@ -142,10 +142,10 @@ const ExchangeOfferDrawer = ({
 
     //check order is expired or not
     let isOrderExpired = false;
-    if (rowFullFillmentExpiryTime && countdowntimerTime_ < Date.now()) {
-      isOrderExpired = true;
-      setIsOrderExpired(true);
-    }
+    // if (rowFullFillmentExpiryTime && countdowntimerTime_ < Date.now()) {
+    //   isOrderExpired = true;
+    //   setIsOrderExpired(true);
+    // }
 
     let planningToSell_ = Number(
       ethers.utils.formatEther(foundOffer.offerDetailsInJson.offerQuantity)

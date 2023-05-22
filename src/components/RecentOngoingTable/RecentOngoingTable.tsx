@@ -20,6 +20,7 @@ export interface ITableRow {
   fullfillmentRequestId: string | undefined;
   offerId: number | string;
   fullfillmentExpiryTime: string;
+  quantityRequested: string;
 }
 
 interface Props extends TableProps {
@@ -30,7 +31,8 @@ interface Props extends TableProps {
   handleSubmitPaymentProof: (
     fullfillmentRequestId: string | undefined,
     offerId: number,
-    fullfillmentExpiryTime: string
+    fullfillmentExpiryTime: string,
+    quantityRequested: string
   ) => void;
   mySwapOngoingLoadingText: string;
 }
@@ -74,7 +76,8 @@ const RecentOngoingTable = ({
                   handleSubmitPaymentProof(
                     row.fullfillmentRequestId,
                     row.offerId as number,
-                    row.fullfillmentExpiryTime
+                    row.fullfillmentExpiryTime,
+                    row.quantityRequested
                   );
                 }}
               >

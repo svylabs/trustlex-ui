@@ -14,7 +14,10 @@ import MainLayout from "~/components/MainLayout/MainLayout";
 import {
   IFullfillmentEvent,
   IFullfillmentResult,
+  IOfferdata,
+  IListInitiatedFullfillmentDataByNonEvent,
 } from "~/interfaces/IOfferdata";
+
 import { MAX_BLOCKS_TO_QUERY, MAX_ITERATIONS } from "~/Context/Constants";
 import { AppContext } from "~/Context/AppContext";
 import { CurrencyEnum } from "~/enums/CurrencyEnum";
@@ -104,6 +107,12 @@ function MySwaps() {
   const [rowFullFillmentExpiryTime, setrowFullFillmentExpiryTime] = useState<
     string | undefined
   >();
+  const [
+    rowFullFillmentQuantityRequested,
+    setRowFullFillmentQuantityRequested,
+  ] = useState<string | undefined>();
+  const [exchangeOfferDrawerKey, setExchangeOfferDrawerKey] =
+    useState<number>(0);
 
   const callMySwapsOngoing = async () => {
     const mySwapsOngoingList =
@@ -186,12 +195,14 @@ function MySwaps() {
   const handleSubmitPaymentProof = (
     fullfillmentRequestId: string | undefined,
     offerId: number,
-    fullfillmentExpiryTime: string
+    fullfillmentExpiryTime: string,
+    quantityRequested: string
   ) => {
-    console.log(fullfillmentExpiryTime);
     setRowFullFillmentId(fullfillmentRequestId);
     setRowOfferId(offerId);
     setrowFullFillmentExpiryTime(fullfillmentExpiryTime);
+    setRowFullFillmentQuantityRequested(quantityRequested);
+    setExchangeOfferDrawerKey(exchangeOfferDrawerKey + 1);
   };
 
   const showLoadMoreMySwapOngoingButton = () => {
@@ -201,8 +212,29 @@ function MySwaps() {
       return false;
     }
   };
-  const OngoingTableData2 = listenedOngoinMySwapOnGoingDataByNonEvent.map(
-    (value, key) => {
+  const OngoingTableData2 = listenedOngoinMySwapOnGoingDataByNonEvent
+    ?.filter(function (
+      value: IListInitiatedFullfillmentDataByNonEvent,
+      key: number
+    ) {
+      // return true;
+      let fullfillmentRequestId =
+        value.offerDetailsInJson.fullfillmentRequestId;
+      let fullfillmentExpiryTime = value.offerDetailsInJson
+        ?.fulfillmentRequestExpiryTime
+        ? parseInt(value.offerDetailsInJson?.fulfillmentRequestExpiryTime)
+        : 0;
+      if (fullfillmentRequestId) {
+        let currentTimestamp = Date.now();
+
+        if (fullfillmentExpiryTime * 1000 >= currentTimestamp) {
+          return true;
+        }
+        return false;
+      }
+      return true;
+    })
+    .map((value, key) => {
       // let fulfillmentBy: string = value?.offerDetailsInJson.fulfillmentBy;
       let row = {
         orderNumber: value.offerDetailsInJson.offerId.toString(),
@@ -236,10 +268,11 @@ function MySwaps() {
         offerId: value.offerDetailsInJson.offerId,
         fullfillmentExpiryTime:
           value.offerDetailsInJson?.fulfillmentRequestExpiryTime,
+        quantityRequested:
+          value.offerDetailsInJson?.fulfillmentRequestQuantityRequested,
       };
       return row;
-    }
-  );
+    });
 
   const showLoadMoreMySwapCompletedButton = () => {
     if (mySwapCompletedfromOfferId > 0 && mySwapCompletedLoadingText == "") {
@@ -350,6 +383,8 @@ function MySwaps() {
           refreshOffersListKey={refreshMySwapOngoingListKey}
           setRefreshOffersListKey={setRefreshMySwapOngoingListKey}
           rowFullFillmentExpiryTime={rowFullFillmentExpiryTime}
+          rowFullFillmentQuantityRequested={rowFullFillmentQuantityRequested}
+          key={exchangeOfferDrawerKey}
         />
       </GradientBackgroundContainer>
       {/* Star My Swap History */}

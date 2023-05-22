@@ -9,6 +9,8 @@ import {
   TimeToNumber,
   TimeToDateFormat,
 } from "~/utils/TimeConverter";
+import { IFullfillmentResult } from "~/interfaces/IOfferdata";
+import { getInitializedFulfillmentsByOfferId } from "~/service/AppService";
 
 const getTableData = (offers: IListenedOfferData[]) => {
   console.log(offers);
@@ -47,21 +49,14 @@ const getTableData = (offers: IListenedOfferData[]) => {
       const satoshisReceived = Number(
         offer.offerDetailsInJson.satoshisReceived
       );
+      // update satoshisReserved amount
+
       const left_to_buy =
         Number(
           SatoshiToBtcConverter(
             satoshisToReceive - (satoshisReserved + satoshisReceived)
           )
         ) / price_per_ETH_in_BTC;
-      if (offer.offerDetailsInJson.offerId == "16") {
-        console.log(
-          offer.offerDetailsInJson.offerId,
-          left_to_buy,
-          satoshisToReceive,
-          satoshisReserved,
-          satoshisReceived
-        );
-      }
 
       return [
         // offer.offerDetailsInJson.offeredBlockNumber,

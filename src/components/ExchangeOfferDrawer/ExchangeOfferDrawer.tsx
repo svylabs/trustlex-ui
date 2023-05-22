@@ -38,6 +38,7 @@ import {
   TimeToDateFormat,
   getTimeInSeconds,
   findOrderExpireColor,
+  getOfferOrderExpiryDurationInSeconds,
 } from "~/utils/TimeConverter";
 
 import {
@@ -63,6 +64,7 @@ type Props = {
   setrowFullFillmentExpiryTime: (
     rowFullFillmentExpiryTime: string | undefined
   ) => void;
+  rowFullFillmentQuantityRequested: string | undefined;
 };
 
 const ExchangeOfferDrawer = ({
@@ -76,6 +78,7 @@ const ExchangeOfferDrawer = ({
   rowOfferId,
   rowFullFillmentExpiryTime,
   setrowFullFillmentExpiryTime,
+  rowFullFillmentQuantityRequested,
 }: Props) => {
   // console.log(data);
   const { mobileView } = useWindowDimensions();
@@ -98,6 +101,8 @@ const ExchangeOfferDrawer = ({
     string | undefined
   >(undefined);
   const [countdowntimerTime, setCountdowntimerTime] = useState<number>(0);
+  const [countdowntimerKey, setCountdowntimerTimeKey] = useState<number>(0);
+  const [isOrderExpired, setIsOrderExpired] = useState<boolean>(false);
   const [countDownTimeColor, setCountDownTimeColor] =
     useState<string>("inherit");
   const { scrollDirection } = useDetectScrollUpDown();
@@ -128,16 +133,41 @@ const ExchangeOfferDrawer = ({
   useEffect(() => {
     if (!foundOffer || foundOffer === undefined) return;
 
-    setCountdowntimerTime(
-      rowFullFillmentExpiryTime ? parseInt(rowFullFillmentExpiryTime) * 1000 : 0
-    );
-    setCountDownTimeColor(findOrderExpireColor(countdowntimerTime));
+    let countdowntimerTime_ = rowFullFillmentExpiryTime
+      ? parseInt(rowFullFillmentExpiryTime) * 1000
+      : 0;
+    setCountdowntimerTime(countdowntimerTime_);
+    setCountDownTimeColor(findOrderExpireColor(countdowntimerTime_));
+    setCountdowntimerTimeKey(countdowntimerKey + 1);
+
+    //check order is expired or not
+    let isOrderExpired = false;
+    if (rowFullFillmentExpiryTime && countdowntimerTime_ < Date.now()) {
+      isOrderExpired = true;
+      setIsOrderExpired(true);
+    }
 
     let planningToSell_ = Number(
       ethers.utils.formatEther(foundOffer.offerDetailsInJson.offerQuantity)
     ); //offerQuantity
+    let offer = foundOffer;
 
-    setPlanningToSell(planningToSell_);
+    const price_per_ETH_in_BTC =
+      Number(
+        SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)
+      ) /
+      Number(ethers.utils.formatEther(offer.offerDetailsInJson.offerQuantity));
+    const satoshisToReceive = Number(
+      offer.offerDetailsInJson.satoshisToReceive
+    );
+    const satoshisReserved = Number(offer.offerDetailsInJson.satoshisReserved);
+    const satoshisReceived = Number(offer.offerDetailsInJson.satoshisReceived);
+    let left_to_buy =
+      Number(
+        SatoshiToBtcConverter(
+          satoshisToReceive - (satoshisReserved + satoshisReceived)
+        )
+      ) / price_per_ETH_in_BTC;
 
     setPlanningToBuy(
       Number(
@@ -147,16 +177,17 @@ const ExchangeOfferDrawer = ({
       )
     );
 
-    setEthValue(planningToSell_);
-
-    //if order already initiated
     setIsInitating("");
     setTo("");
     setActiveStep(1);
     setVerified(false);
     setConfirmed("");
 
-    if (rowFullFillmentId != undefined) {
+    // setPlanningToSell(planningToSell_);
+    // setEthValue(planningToSell_);
+
+    //if order already initiated
+    if (rowFullFillmentId != undefined && isOrderExpired == false) {
       setIsInitating("initiated");
       let toAddress = Buffer.from(
         foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
@@ -170,7 +201,20 @@ const ExchangeOfferDrawer = ({
       let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
       setTo(`${hashAdress}`);
       setActiveStep(2);
+
+      left_to_buy =
+        Number(
+          SatoshiToBtcConverter(rowFullFillmentQuantityRequested as string)
+        ) *
+        (Number(
+          ethers.utils.formatEther(offer.offerDetailsInJson.offerQuantity)
+        ) /
+          Number(
+            SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)
+          ));
     }
+    setPlanningToSell(left_to_buy);
+    setEthValue(left_to_buy);
   }, [foundOffer?.offerDetailsInJson?.offerId]);
 
   const handleInitate = async () => {
@@ -225,7 +269,7 @@ const ExchangeOfferDrawer = ({
       paymentProofSubmitted: false,
     };
 
-    console.log(foundOffer, _fulfillment);
+    // console.log(foundOffer, _fulfillment);
 
     const data = await InitializeFullfillment(
       context.contract,
@@ -239,10 +283,8 @@ const ExchangeOfferDrawer = ({
       let offerId = event?.args["offerId"]?.toString();
       let fulfillmentId = event?.args["fulfillmentId"]?.toString();
       let expiryTime = (
-        parseInt(_fulfillment.expiryTime) *
-        3 *
-        60 *
-        60
+        parseInt(_fulfillment.expiryTime) +
+        getOfferOrderExpiryDurationInSeconds()
       ).toString();
       // console.log(event, claimedBy, offerId, fulfillmentId);
       setOfferFulfillmentId(fulfillmentId);
@@ -261,6 +303,7 @@ const ExchangeOfferDrawer = ({
       setActiveStep(activeStep + 1);
       setrowFullFillmentExpiryTime(expiryTime);
       setCountdowntimerTime(expiryTime ? parseInt(expiryTime) * 1000 : 0);
+      setCountdowntimerTimeKey(countdowntimerKey + 1);
     } else {
       return false;
     }
@@ -350,6 +393,7 @@ const ExchangeOfferDrawer = ({
                 Initiate your order
               </Text>
             </Grid.Col>
+
             {!mobileView && (
               <Grid.Col span={1}>
                 <Button variant={VariantsEnum.default} onClick={onClose} p={0}>
@@ -419,7 +463,7 @@ const ExchangeOfferDrawer = ({
                     float: "right",
                   }}
                 >
-                  {rowFullFillmentExpiryTime ? (
+                  {rowFullFillmentExpiryTime && isOrderExpired == false ? (
                     <>
                       <span>Time Left</span>: &nbsp;
                       <span style={{ color: countDownTimeColor }}>
@@ -433,6 +477,7 @@ const ExchangeOfferDrawer = ({
                               findOrderExpireColor(countdowntimerTime)
                             );
                           }}
+                          key={countdowntimerKey}
                         />
                       </span>
                       <br />

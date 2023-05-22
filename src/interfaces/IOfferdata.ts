@@ -15,6 +15,7 @@ export interface IOfferdata {
   fullfillmentRequestId: undefined;
   fulfillmentRequests?: IFullfillmentEvent;
   fulfillmentRequestExpiryTime?: string;
+  fulfillmentRequestQuantityRequested?: string;
 }
 
 export interface INewOfferEvent {

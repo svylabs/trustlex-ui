@@ -195,8 +195,8 @@ function MySwaps() {
   const handleSubmitPaymentProof = (
     fullfillmentRequestId: string | undefined,
     offerId: number,
-    fullfillmentExpiryTime: string,
-    quantityRequested: string
+    fullfillmentExpiryTime: string | undefined,
+    quantityRequested: string | undefined
   ) => {
     setRowFullFillmentId(fullfillmentRequestId);
     setRowOfferId(offerId);
@@ -270,6 +270,7 @@ function MySwaps() {
           value.offerDetailsInJson?.fulfillmentRequestExpiryTime,
         quantityRequested:
           value.offerDetailsInJson?.fulfillmentRequestQuantityRequested,
+        offerData: value,
       };
       return row;
     });
@@ -334,6 +335,7 @@ function MySwaps() {
               data={OngoingTableData2}
               handleSubmitPaymentProof={handleSubmitPaymentProof}
               mySwapOngoingLoadingText={mySwapOngoingLoadingText}
+              contract={contract}
             />
           </div>
           <div className={styles.recentMobileTable}>
@@ -344,6 +346,7 @@ function MySwaps() {
               mobile={true}
               handleSubmitPaymentProof={handleSubmitPaymentProof}
               mySwapOngoingLoadingText={mySwapOngoingLoadingText}
+              contract={contract}
             />
           </div>
           <br />

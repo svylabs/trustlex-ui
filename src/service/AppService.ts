@@ -306,7 +306,7 @@ export const getOffersList = async (
   try {
     if (!trustLex) {
       console.log("trustLex is not defined", trustLex);
-      return <IOffersResultByNonEvent | any>{ offers: [] };
+      return <IOffersResultByNonEvent>{ offers: [] };
     }
 
     let offersData = await trustLex.getOffers(fromOfferId);
@@ -332,12 +332,26 @@ export const getOffersList = async (
         satoshisReserved: offer.satoshisReserved.toString(),
         collateralPer3Hours: offer.collateralPer3Hours.toString(),
         fulfillmentRequests: offer.fulfillmentRequests,
+        fullfillmentResults: undefined,
       };
+
+      if (
+        Number(offerDetailsInJson.satoshisToReceive) ==
+        Number(offerDetailsInJson.satoshisReserved) +
+          Number(offerDetailsInJson.satoshisReceived)
+      ) {
+        // fetch the intial fullfillment
+        let allFullfillments = await getInitializedFulfillmentsByOfferId(
+          trustLex,
+          offerDetailsInJson.offerId
+        );
+        offerDetailsInJson.fullfillmentResults = allFullfillments;
+      }
       // console.log(offerDetailsInJson);
       promises.push({ offerDetailsInJson });
     }
     const offersList = await Promise.all(promises);
-    return <IOffersResultByNonEvent | any>{
+    return <IOffersResultByNonEvent>{
       offers: offersList,
     };
 

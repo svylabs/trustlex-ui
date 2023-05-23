@@ -266,7 +266,7 @@ export default function App() {
         if (networkId !== NetworkInfo.ChainID) {
           return;
         }
-        console.log("ok");
+        // console.log("ok");
         setMoreTableDataLoading(true);
         setExchangeLoadingText("Connecting to the Network!");
 

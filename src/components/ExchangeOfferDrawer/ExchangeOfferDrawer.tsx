@@ -142,10 +142,10 @@ const ExchangeOfferDrawer = ({
 
     //check order is expired or not
     let isOrderExpired = false;
-    // if (rowFullFillmentExpiryTime && countdowntimerTime_ < Date.now()) {
-    //   isOrderExpired = true;
-    //   setIsOrderExpired(true);
-    // }
+    if (rowFullFillmentExpiryTime && countdowntimerTime_ < Date.now()) {
+      isOrderExpired = true;
+      setIsOrderExpired(true);
+    }
 
     let planningToSell_ = Number(
       ethers.utils.formatEther(foundOffer.offerDetailsInJson.offerQuantity)
@@ -160,8 +160,28 @@ const ExchangeOfferDrawer = ({
     const satoshisToReceive = Number(
       offer.offerDetailsInJson.satoshisToReceive
     );
-    const satoshisReserved = Number(offer.offerDetailsInJson.satoshisReserved);
+    let satoshisReserved = Number(offer.offerDetailsInJson.satoshisReserved);
     const satoshisReceived = Number(offer.offerDetailsInJson.satoshisReceived);
+
+    // update satoshisReserved amount
+    if (satoshisToReceive == satoshisReserved + satoshisReceived) {
+      let fullfillmentResults = offer.offerDetailsInJson.fullfillmentResults;
+
+      fullfillmentResults &&
+        fullfillmentResults?.map(
+          (value: IFullfillmentResult, index: number) => {
+            // if (offer.offerDetailsInJson.offerId == "21") {
+            //   console.log(offer, value);
+            // }
+            let expiryTime = Number(value.fulfillmentRequest.expiryTime) * 1000;
+            if (expiryTime < Date.now()) {
+              satoshisReserved -= Number(
+                value.fulfillmentRequest.quantityRequested
+              );
+            }
+          }
+        );
+    }
     let left_to_buy =
       Number(
         SatoshiToBtcConverter(
@@ -304,6 +324,7 @@ const ExchangeOfferDrawer = ({
       setrowFullFillmentExpiryTime(expiryTime);
       setCountdowntimerTime(expiryTime ? parseInt(expiryTime) * 1000 : 0);
       setCountdowntimerTimeKey(countdowntimerKey + 1);
+      setIsOrderExpired(false);
     } else {
       return false;
     }

@@ -9,11 +9,11 @@ import {
   TimeToNumber,
   TimeToDateFormat,
 } from "~/utils/TimeConverter";
+import { tofixedEther } from "~/utils/Ether.utills";
 import { IFullfillmentResult } from "~/interfaces/IOfferdata";
 import { getInitializedFulfillmentsByOfferId } from "~/service/AppService";
 
 const getTableData = (offers: IListenedOfferData[]) => {
-  console.log(offers);
   return offers
     .filter(function (offer: IListenedOfferData) {
       let satoshisToReceive = +offer.offerDetailsInJson.satoshisToReceive;
@@ -43,21 +43,39 @@ const getTableData = (offers: IListenedOfferData[]) => {
       const satoshisToReceive = Number(
         offer.offerDetailsInJson.satoshisToReceive
       );
-      const satoshisReserved = Number(
-        offer.offerDetailsInJson.satoshisReserved
-      );
+      let satoshisReserved = Number(offer.offerDetailsInJson.satoshisReserved);
       const satoshisReceived = Number(
         offer.offerDetailsInJson.satoshisReceived
       );
-      // update satoshisReserved amount
 
-      const left_to_buy =
+      // update satoshisReserved amount
+      if (satoshisToReceive == satoshisReserved + satoshisReceived) {
+        let fullfillmentResults = offer.offerDetailsInJson.fullfillmentResults;
+
+        fullfillmentResults &&
+          fullfillmentResults?.map(
+            (value: IFullfillmentResult, index: number) => {
+              // if (offer.offerDetailsInJson.offerId == "21") {
+              //   console.log(offer, value);
+              // }
+              let expiryTime =
+                Number(value.fulfillmentRequest.expiryTime) * 1000;
+              if (expiryTime < Date.now()) {
+                satoshisReserved -= Number(
+                  value.fulfillmentRequest.quantityRequested
+                );
+              }
+            }
+          );
+      }
+
+      let left_to_buy =
         Number(
           SatoshiToBtcConverter(
             satoshisToReceive - (satoshisReserved + satoshisReceived)
           )
         ) / price_per_ETH_in_BTC;
-
+      left_to_buy = tofixedEther(left_to_buy);
       return [
         // offer.offerDetailsInJson.offeredBlockNumber,
         // offer.offerEvent.to.toString(),

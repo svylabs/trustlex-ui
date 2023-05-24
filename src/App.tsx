@@ -278,10 +278,12 @@ export default function App() {
           provider,
           ContractMap[selectedToken].address
         );
+
         if (trustlex) {
           setContract(trustlex as ethers.Contract);
 
           const offers = await listOffers(trustlex);
+
           setListenedOfferData(offers);
 
           setMoreTableDataLoading(true);

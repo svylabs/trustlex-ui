@@ -49,25 +49,23 @@ const getTableData = (offers: IListenedOfferData[]) => {
       );
 
       // update satoshisReserved amount
-      if (satoshisToReceive == satoshisReserved + satoshisReceived) {
-        let fullfillmentResults = offer.offerDetailsInJson.fullfillmentResults;
-
-        fullfillmentResults &&
-          fullfillmentResults?.map(
-            (value: IFullfillmentResult, index: number) => {
-              // if (offer.offerDetailsInJson.offerId == "21") {
-              //   console.log(offer, value);
-              // }
-              let expiryTime =
-                Number(value.fulfillmentRequest.expiryTime) * 1000;
-              if (expiryTime < Date.now()) {
-                satoshisReserved -= Number(
-                  value.fulfillmentRequest.quantityRequested
-                );
-              }
+      // if (satoshisToReceive == satoshisReserved + satoshisReceived) {
+      let fullfillmentResults = offer.offerDetailsInJson.fullfillmentResults;
+      console.log(fullfillmentResults);
+      fullfillmentResults &&
+        fullfillmentResults?.map(
+          (value: IFullfillmentResult, index: number) => {
+            let expiryTime = Number(value.fulfillmentRequest.expiryTime) * 1000;
+            let isExpired = value.fulfillmentRequest.isExpired;
+            console.log(typeof isExpired, isExpired);
+            if (expiryTime < Date.now() && isExpired == false) {
+              satoshisReserved -= Number(
+                value.fulfillmentRequest.quantityRequested
+              );
             }
-          );
-      }
+          }
+        );
+      // }
 
       let left_to_buy =
         Number(

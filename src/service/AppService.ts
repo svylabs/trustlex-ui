@@ -335,18 +335,20 @@ export const getOffersList = async (
         fullfillmentResults: undefined,
       };
 
-      if (
-        Number(offerDetailsInJson.satoshisToReceive) ==
-        Number(offerDetailsInJson.satoshisReserved) +
-          Number(offerDetailsInJson.satoshisReceived)
-      ) {
-        // fetch the intial fullfillment
-        let allFullfillments = await getInitializedFulfillmentsByOfferId(
-          trustLex,
-          offerDetailsInJson.offerId
-        );
-        offerDetailsInJson.fullfillmentResults = allFullfillments;
-      }
+      // if (
+      //   Number(offerDetailsInJson.satoshisToReceive) ==
+      //   Number(offerDetailsInJson.satoshisReserved) +
+      //     Number(offerDetailsInJson.satoshisReceived)
+      // ) {
+
+      // fetch the intial fullfillment
+      let allFullfillments = await getInitializedFulfillmentsByOfferId(
+        trustLex,
+        offerDetailsInJson.offerId
+      );
+      offerDetailsInJson.fullfillmentResults = allFullfillments;
+
+      // }
       // console.log(offerDetailsInJson);
       promises.push({ offerDetailsInJson });
     }

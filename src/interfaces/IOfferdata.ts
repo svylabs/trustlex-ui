@@ -39,6 +39,7 @@ export interface IFullfillmentEvent {
   fulfilledTime: number | string | Date;
   collateralAddedBy: string;
   paymentProofSubmitted: boolean;
+  isExpired: boolean;
 }
 
 export interface IFullfillmentResult {

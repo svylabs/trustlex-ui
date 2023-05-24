@@ -77,7 +77,7 @@ export const getTimeInSeconds = () => {
   return Math.floor(time / 1000);
 };
 export const getOfferOrderExpiryDurationInSeconds = () => {
-  return OFFER_ORDER_EXPIRY_DIRATION * 60 * 60;
+  return OFFER_ORDER_EXPIRY_DIRATION;
 };
 
 export const calculateTimeDiiference = (timeInSeconds: number) => {

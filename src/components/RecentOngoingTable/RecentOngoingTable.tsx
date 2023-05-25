@@ -1,5 +1,5 @@
-import { TableProps } from "@mantine/core";
-import { useEffect, useState } from "react";
+import { Divider, TableProps } from "@mantine/core";
+import { useState, useEffect } from "react";
 import { CurrencyEnum } from "~/enums/CurrencyEnum";
 import { IPlanning } from "~/interfaces/IPlanning";
 import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";

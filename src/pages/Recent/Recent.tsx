@@ -37,8 +37,8 @@ type Props = {};
 const Recent = (props: Props) => {
   return (
     <MainLayout
-      title="Recents"
-      description="Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+      title=""
+      description=""
     >
       <Tabs
         tabs={[
@@ -326,9 +326,9 @@ function MySwaps() {
               tableCaption="Ongoing"
               cols={[
                 "# of order",
-                "Planning to sell",
-                "Planning to buy",
-                "Price per ETH in BTC",
+                "Selling",
+                "Asking",
+                "Price in BTC",
                 "Progress",
                 "Actions",
               ]}
@@ -398,9 +398,9 @@ function MySwaps() {
               tableCaption="History"
               cols={[
                 "# of order",
-                "Planning to sell",
-                "Planning to buy",
-                "Price per ETH in BTC",
+                "Selling",
+                "Asking",
+                "Price in BTC",
                 "Date",
                 "Status",
               ]}

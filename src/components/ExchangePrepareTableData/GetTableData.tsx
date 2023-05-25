@@ -12,6 +12,8 @@ import {
 import { tofixedEther } from "~/utils/Ether.utills";
 import { IFullfillmentResult } from "~/interfaces/IOfferdata";
 import { getInitializedFulfillmentsByOfferId } from "~/service/AppService";
+import { tofixedBTC } from "~/utils/BitcoinUtils";
+import { BTC_DECIMAL_PLACE } from "~/Context/Constants";
 
 const getTableData = (offers: IListenedOfferData[]) => {
   return offers
@@ -27,12 +29,15 @@ const getTableData = (offers: IListenedOfferData[]) => {
     })
     .map((offer: IListenedOfferData) => {
       // console.log(offer);
-      const planningToSell = Number(
+      let planningToSell = Number(
         SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)
-      ).toFixed(4);
+      );
+      planningToSell = tofixedBTC(planningToSell);
+
       const offerQuantity = ethers.utils.formatEther(
         offer.offerDetailsInJson.offerQuantity
       );
+
       const price_per_ETH_in_BTC =
         Number(
           SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)
@@ -44,6 +49,7 @@ const getTableData = (offers: IListenedOfferData[]) => {
         offer.offerDetailsInJson.satoshisToReceive
       );
       let satoshisReserved = Number(offer.offerDetailsInJson.satoshisReserved);
+      console.log(satoshisReserved);
       const satoshisReceived = Number(
         offer.offerDetailsInJson.satoshisReceived
       );
@@ -51,14 +57,20 @@ const getTableData = (offers: IListenedOfferData[]) => {
       // update satoshisReserved amount
       // if (satoshisToReceive == satoshisReserved + satoshisReceived) {
       let fullfillmentResults = offer.offerDetailsInJson.fullfillmentResults;
-      console.log(fullfillmentResults);
+
       fullfillmentResults &&
         fullfillmentResults?.map(
           (value: IFullfillmentResult, index: number) => {
             let expiryTime = Number(value.fulfillmentRequest.expiryTime) * 1000;
             let isExpired = value.fulfillmentRequest.isExpired;
-            console.log(typeof isExpired, isExpired);
-            if (expiryTime < Date.now() && isExpired == false) {
+            let paymentProofSubmitted =
+              value.fulfillmentRequest.paymentProofSubmitted;
+
+            if (
+              expiryTime < Date.now() &&
+              isExpired == false &&
+              paymentProofSubmitted == false
+            ) {
               satoshisReserved -= Number(
                 value.fulfillmentRequest.quantityRequested
               );
@@ -66,7 +78,7 @@ const getTableData = (offers: IListenedOfferData[]) => {
           }
         );
       // }
-
+      console.log(satoshisReserved);
       let left_to_buy =
         Number(
           SatoshiToBtcConverter(
@@ -89,7 +101,7 @@ const getTableData = (offers: IListenedOfferData[]) => {
           {CurrencyEnum.BTC}
         </>,
         <>
-          {price_per_ETH_in_BTC.toFixed(4)}{" "}
+          {price_per_ETH_in_BTC.toFixed(BTC_DECIMAL_PLACE)}{" "}
           <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
           {CurrencyEnum.BTC}
         </>,

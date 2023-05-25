@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { TOKEN_DECIMAL_PLACE } from "~/Context/Constants";
+import { TOKEN_DECIMAL_PLACE, ETH_DECIMAL_PLACE } from "~/Context/Constants";
 
 export const EthtoWei = (eth: string) => {
   const wei = ethers.utils.parseEther(eth);
@@ -16,5 +16,5 @@ export const formatERC20Tokens = (amount: number) => {
 };
 
 export const tofixedEther = (amount: number) => {
-  return Number(amount.toFixed(8));
+  return Number(amount.toFixed(ETH_DECIMAL_PLACE));
 };

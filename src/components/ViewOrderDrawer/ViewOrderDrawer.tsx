@@ -21,6 +21,7 @@ import { IFullfillmentResult } from "~/interfaces/IOfferdata";
 import { getInitializedFulfillmentsByOfferId } from "~/service/AppService";
 import { EthtoWei, WeitoEth } from "~/utils/Ether.utills";
 import { TimestampTotoNow, TimestampfromNow } from "~/utils/TimeConverter";
+import { tofixedBTC } from "~/utils/BitcoinUtils";
 
 type Props = {
   isOpened: boolean;
@@ -79,12 +80,12 @@ const ViewOrderDrawer = ({ isOpened, onClose, offerData, contract }: Props) => {
       setPlanningToSell(planningToSell_);
       setBuyAmount(planningToSell_);
       setPlanningToBuy(
-        Number(
+        tofixedBTC(
           Number(
             SatoshiToBtcConverter(
               offerData.offerDetailsInJson.satoshisToReceive
             )
-          ).toFixed(4)
+          )
         )
       );
       (async () => {
@@ -135,7 +136,7 @@ const ViewOrderDrawer = ({ isOpened, onClose, offerData, contract }: Props) => {
   }, [fullfillmentResult]);
 
   const getBTCAmount = () => {
-    return Number(((buyAmount / planningToSell) * planningToBuy).toFixed(3));
+    return tofixedBTC((buyAmount / planningToSell) * planningToBuy);
   };
 
   return (

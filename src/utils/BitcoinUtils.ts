@@ -2,6 +2,7 @@ import * as tinysecp from "tiny-secp256k1";
 import * as bitcoin from "bitcoinjs-lib";
 import { ECPairFactory, ECPairAPI, networks } from "ecpair";
 import * as bip38 from "bip38";
+import { BTC_DECIMAL_PLACE } from "~/Context/Constants";
 
 export interface Wallet {
   privateKey: Buffer;
@@ -30,8 +31,10 @@ export const generateBitcoinWallet = (): Wallet => {
 };
 
 export const encryptWallet = (keyPair: Wallet, password: string): string => {
+  const { bip38_encrypt } = window;
   // const encryptedKey = bip38.encrypt(keyPair.privateKey, true, password);
-  const encryptedKey = window.bip38_encrypt(keyPair.privateKey, true, password);
+  // const encryptedKey = window.bip38_encrypt(keyPair.privateKey, true, password);
+  const encryptedKey = bip38_encrypt(keyPair.privateKey, true, password);
   return JSON.stringify({
     address: bitcoin.payments.p2wpkh({ pubkey: keyPair.publicKey })?.address,
     publicKey: keyPair.publicKey.toString("hex"),
@@ -69,4 +72,8 @@ export const generateTrustlexAddress = (
   ]);
   const p2wsh = bitcoin.payments.p2wsh({ redeem: { output: witnessScript } });
   return p2wsh.address;
+};
+
+export const tofixedBTC = (amount: number) => {
+  return Number(amount.toFixed(BTC_DECIMAL_PLACE));
 };

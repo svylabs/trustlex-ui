@@ -69,6 +69,15 @@
 .buttonContainer {
   padding: 0 0 4rem 0;
 }
+span.toAddress {
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 19px;
+  text-decoration: underline;
+  color: #ffffff;
+  text-align: center;
+  overflow-wrap: break-word;
+}
 
 @media screen and (max-width: 500px) {
   .root {

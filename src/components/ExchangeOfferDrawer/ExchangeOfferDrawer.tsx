@@ -12,6 +12,7 @@ import useAutoHideScrollbar from "~/hooks/useAutoHideScrollBar";
 import StepSvg, { StepFilledSvg, StepSuccessFilledSvg } from "./StepSvg";
 import useDetectScrollUpDown from "~/hooks/useDetectScrollUpDown";
 import Countdown from "~/utils/Countdown";
+import { tofixedEther } from "~/utils/Ether.utills";
 import { AppContext } from "~/Context/AppContext";
 import {
   IFullfillmentEvent,
@@ -23,6 +24,8 @@ import {
   showErrorMessage,
   getOffer,
   submitPaymentProof,
+  getInitializedFulfillmentsByOfferId,
+  getInitializedFulfillments,
 } from "~/service/AppService";
 import { QRCodeCanvas } from "qrcode.react";
 import { address } from "bitcoinjs-lib";
@@ -38,6 +41,7 @@ import {
   TimeToDateFormat,
   getTimeInSeconds,
   findOrderExpireColor,
+  getOfferOrderExpiryDurationInSeconds,
 } from "~/utils/TimeConverter";
 
 import {
@@ -63,6 +67,7 @@ type Props = {
   setrowFullFillmentExpiryTime: (
     rowFullFillmentExpiryTime: string | undefined
   ) => void;
+  rowFullFillmentQuantityRequested: string | undefined;
 };
 
 const ExchangeOfferDrawer = ({
@@ -76,6 +81,7 @@ const ExchangeOfferDrawer = ({
   rowOfferId,
   rowFullFillmentExpiryTime,
   setrowFullFillmentExpiryTime,
+  rowFullFillmentQuantityRequested,
 }: Props) => {
   // console.log(data);
   const { mobileView } = useWindowDimensions();
@@ -98,6 +104,8 @@ const ExchangeOfferDrawer = ({
     string | undefined
   >(undefined);
   const [countdowntimerTime, setCountdowntimerTime] = useState<number>(0);
+  const [countdowntimerKey, setCountdowntimerTimeKey] = useState<number>(0);
+  const [isOrderExpired, setIsOrderExpired] = useState<boolean>(false);
   const [countDownTimeColor, setCountDownTimeColor] =
     useState<string>("inherit");
   const { scrollDirection } = useDetectScrollUpDown();
@@ -128,16 +136,65 @@ const ExchangeOfferDrawer = ({
   useEffect(() => {
     if (!foundOffer || foundOffer === undefined) return;
 
-    setCountdowntimerTime(
-      rowFullFillmentExpiryTime ? parseInt(rowFullFillmentExpiryTime) * 1000 : 0
+    let countdowntimerTime_ = rowFullFillmentExpiryTime
+      ? parseInt(rowFullFillmentExpiryTime) * 1000
+      : 0;
+    setCountdowntimerTime(countdowntimerTime_);
+    setCountDownTimeColor(findOrderExpireColor(countdowntimerTime_));
+    setCountdowntimerTimeKey(countdowntimerKey + 1);
+
+    //check order is expired or not
+    console.log(
+      countdowntimerTime_,
+      Date.now(),
+      countdowntimerTime_ < Date.now()
     );
-    setCountDownTimeColor(findOrderExpireColor(countdowntimerTime));
+    let isOrderExpired = false;
+    if (rowFullFillmentExpiryTime && countdowntimerTime_ < Date.now()) {
+      isOrderExpired = true;
+      setIsOrderExpired(true);
+    }
 
     let planningToSell_ = Number(
       ethers.utils.formatEther(foundOffer.offerDetailsInJson.offerQuantity)
     ); //offerQuantity
+    let offer = foundOffer;
 
-    setPlanningToSell(planningToSell_);
+    const price_per_ETH_in_BTC =
+      Number(
+        SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)
+      ) /
+      Number(ethers.utils.formatEther(offer.offerDetailsInJson.offerQuantity));
+    const satoshisToReceive = Number(
+      offer.offerDetailsInJson.satoshisToReceive
+    );
+    let satoshisReserved = Number(offer.offerDetailsInJson.satoshisReserved);
+    const satoshisReceived = Number(offer.offerDetailsInJson.satoshisReceived);
+
+    // update satoshisReserved amount
+    // if (satoshisToReceive == satoshisReserved + satoshisReceived) {
+    let fullfillmentResults = offer.offerDetailsInJson.fullfillmentResults;
+
+    fullfillmentResults &&
+      fullfillmentResults?.map((value: IFullfillmentResult, index: number) => {
+        // if (offer.offerDetailsInJson.offerId == "21") {
+        //   console.log(offer, value);
+        // }
+        let expiryTime = Number(value.fulfillmentRequest.expiryTime) * 1000;
+        let isExpired = value.fulfillmentRequest.isExpired;
+        if (expiryTime < Date.now() && isExpired == false) {
+          satoshisReserved -= Number(
+            value.fulfillmentRequest.quantityRequested
+          );
+        }
+      });
+    // }
+    let left_to_buy =
+      Number(
+        SatoshiToBtcConverter(
+          satoshisToReceive - (satoshisReserved + satoshisReceived)
+        )
+      ) / price_per_ETH_in_BTC;
 
     setPlanningToBuy(
       Number(
@@ -147,16 +204,17 @@ const ExchangeOfferDrawer = ({
       )
     );
 
-    setEthValue(planningToSell_);
-
-    //if order already initiated
     setIsInitating("");
     setTo("");
     setActiveStep(1);
     setVerified(false);
     setConfirmed("");
 
-    if (rowFullFillmentId != undefined) {
+    // setPlanningToSell(planningToSell_);
+    // setEthValue(planningToSell_);
+
+    //if order already initiated
+    if (rowFullFillmentId != undefined && isOrderExpired == false) {
       setIsInitating("initiated");
       let toAddress = Buffer.from(
         foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
@@ -170,7 +228,21 @@ const ExchangeOfferDrawer = ({
       let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
       setTo(`${hashAdress}`);
       setActiveStep(2);
+
+      left_to_buy =
+        Number(
+          SatoshiToBtcConverter(rowFullFillmentQuantityRequested as string)
+        ) *
+        (Number(
+          ethers.utils.formatEther(offer.offerDetailsInJson.offerQuantity)
+        ) /
+          Number(
+            SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)
+          ));
     }
+    left_to_buy = tofixedEther(left_to_buy);
+    setPlanningToSell(left_to_buy);
+    setEthValue(left_to_buy);
   }, [foundOffer?.offerDetailsInJson?.offerId]);
 
   const handleInitate = async () => {
@@ -208,6 +280,11 @@ const ExchangeOfferDrawer = ({
       showErrorMessage("Please wait ,your account is not connected !");
       return false;
     }
+    // fisrt get the offer details
+    let offerDetails = await getOffer(
+      context.contract,
+      foundOffer.offerDetailsInJson.offerId
+    );
 
     const _fulfillment: IFullfillmentEvent = {
       // fulfillmentBy: foundOffer.offerEvent.from,
@@ -223,9 +300,10 @@ const ExchangeOfferDrawer = ({
       // collateralAddedBy: foundOffer.offerEvent.from,
       collateralAddedBy: account,
       paymentProofSubmitted: false,
+      isExpired: false,
     };
 
-    console.log(foundOffer, _fulfillment);
+    // console.log(foundOffer, _fulfillment);
 
     const data = await InitializeFullfillment(
       context.contract,
@@ -239,10 +317,8 @@ const ExchangeOfferDrawer = ({
       let offerId = event?.args["offerId"]?.toString();
       let fulfillmentId = event?.args["fulfillmentId"]?.toString();
       let expiryTime = (
-        parseInt(_fulfillment.expiryTime) *
-        3 *
-        60 *
-        60
+        parseInt(_fulfillment.expiryTime) +
+        getOfferOrderExpiryDurationInSeconds()
       ).toString();
       // console.log(event, claimedBy, offerId, fulfillmentId);
       setOfferFulfillmentId(fulfillmentId);
@@ -261,6 +337,9 @@ const ExchangeOfferDrawer = ({
       setActiveStep(activeStep + 1);
       setrowFullFillmentExpiryTime(expiryTime);
       setCountdowntimerTime(expiryTime ? parseInt(expiryTime) * 1000 : 0);
+      setCountdowntimerTimeKey(countdowntimerKey + 1);
+      setIsOrderExpired(false);
+      // setRefreshOffersListKey(refreshOffersListKey + 1);
     } else {
       return false;
     }
@@ -272,12 +351,29 @@ const ExchangeOfferDrawer = ({
       return false;
     }
     setConfirmed("loading");
+    // fetching the first fullfillment details
+    // get the Fulfillments By OfferId
+    let fullfillmentEvent: IFullfillmentEvent =
+      await getInitializedFulfillments(
+        contract,
+        offerId,
+        Number(offerFulfillmentId)
+      );
+    // console.log(fullfillmentEvent);
+    let expiryTime = Number(fullfillmentEvent.expiryTime) * 1000;
+    // console.log(expiryTime, Date.now(), expiryTime < Date.now());
+    if (expiryTime < Date.now()) {
+      showErrorMessage("Order has been expired !");
+      setConfirmed("");
+      return false;
+    }
+
     let result = await submitPaymentProof(
       contract,
       offerId,
       offerFulfillmentId
     );
-    console.log(result);
+
     if (result) {
       setSubmitPaymentProofTxHash(result.transactionHash);
       setConfirmed("confirmed");
@@ -309,7 +405,7 @@ const ExchangeOfferDrawer = ({
   if (!isOpened) return null;
 
   const getBTCAmount = () => {
-    return Number(((ethValue / planningToSell) * planningToBuy).toFixed(3));
+    return Number(((ethValue / planningToSell) * planningToBuy).toFixed(8));
   };
 
   return (
@@ -350,6 +446,7 @@ const ExchangeOfferDrawer = ({
                 Initiate your order
               </Text>
             </Grid.Col>
+
             {!mobileView && (
               <Grid.Col span={1}>
                 <Button variant={VariantsEnum.default} onClick={onClose} p={0}>
@@ -419,7 +516,7 @@ const ExchangeOfferDrawer = ({
                     float: "right",
                   }}
                 >
-                  {rowFullFillmentExpiryTime ? (
+                  {rowFullFillmentExpiryTime && isOrderExpired == false ? (
                     <>
                       <span>Time Left</span>: &nbsp;
                       <span style={{ color: countDownTimeColor }}>
@@ -433,6 +530,7 @@ const ExchangeOfferDrawer = ({
                               findOrderExpireColor(countdowntimerTime)
                             );
                           }}
+                          key={countdowntimerKey}
                         />
                       </span>
                       <br />

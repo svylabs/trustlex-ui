@@ -1,5 +1,5 @@
 import { Divider, TableProps } from "@mantine/core";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CurrencyEnum } from "~/enums/CurrencyEnum";
 import { IPlanning } from "~/interfaces/IPlanning";
 import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";
@@ -9,6 +9,8 @@ import Table from "../Table/Table";
 import ViewOrderDrawer from "../ViewOrderDrawer/ViewOrderDrawer";
 import styles from "./RecentOngoingTable.module.scss";
 import SeeMoreButton from "../SeeMoreButton/SeeMoreButton";
+import { IListInitiatedFullfillmentDataByNonEvent } from "~/interfaces/IOfferdata";
+import { ethers } from "ethers";
 
 export interface ITableRow {
   orderNumber: string | number;
@@ -19,7 +21,9 @@ export interface ITableRow {
   offerType: string;
   fullfillmentRequestId: string | undefined;
   offerId: number | string;
-  fullfillmentExpiryTime: string;
+  fullfillmentExpiryTime: string | undefined;
+  quantityRequested: string | undefined;
+  offerData: IListInitiatedFullfillmentDataByNonEvent;
 }
 
 interface Props extends TableProps {
@@ -30,9 +34,11 @@ interface Props extends TableProps {
   handleSubmitPaymentProof: (
     fullfillmentRequestId: string | undefined,
     offerId: number,
-    fullfillmentExpiryTime: string
+    fullfillmentExpiryTime: string | undefined,
+    quantityRequested: string | undefined
   ) => void;
   mySwapOngoingLoadingText: string;
+  contract: ethers.Contract | undefined;
 }
 
 const RecentOngoingTable = ({
@@ -42,8 +48,12 @@ const RecentOngoingTable = ({
   mobile,
   handleSubmitPaymentProof,
   mySwapOngoingLoadingText,
+  contract,
 }: Props) => {
   const [isViewOrderDrawerOpen, setViewOrderDrawerOpen] = useState(false);
+  const [offerData, setOfferData] =
+    useState<IListInitiatedFullfillmentDataByNonEvent>();
+  const [viewOrderDrawerKey, setViewOrderDrawerKey] = useState(0);
 
   const tableData = !mobile
     ? data.map((row) => [
@@ -74,7 +84,8 @@ const RecentOngoingTable = ({
                   handleSubmitPaymentProof(
                     row.fullfillmentRequestId,
                     row.offerId as number,
-                    row.fullfillmentExpiryTime
+                    row.fullfillmentExpiryTime,
+                    row.quantityRequested
                   );
                 }}
               >
@@ -93,7 +104,11 @@ const RecentOngoingTable = ({
               <ActionButton
                 size="compact"
                 variant={"primary"}
-                onClick={() => setViewOrderDrawerOpen(true)}
+                onClick={() => {
+                  console.log("ok");
+                  handleViewClick(row.offerData);
+                  // console.log(row.offerData);
+                }}
               >
                 View
               </ActionButton>
@@ -121,17 +136,31 @@ const RecentOngoingTable = ({
           <SeeMoreButton
             buttonText=""
             onClick={(e) => {
-              setViewOrderDrawerOpen(true);
+              // setViewOrderDrawerOpen(true);
+              handleViewClick(row.offerData);
+              console.log("ok2");
             }}
           />
         </div>,
       ]);
 
+  const handleViewClick = (
+    offerData: IListInitiatedFullfillmentDataByNonEvent
+  ) => {
+    setOfferData(offerData);
+    setViewOrderDrawerOpen(true);
+  };
+  useEffect(() => {
+    setViewOrderDrawerKey(viewOrderDrawerKey + 1);
+  }, []);
   return (
     <>
       <ViewOrderDrawer
         isOpened={isViewOrderDrawerOpen}
         onClose={() => setViewOrderDrawerOpen(false)}
+        offerData={offerData}
+        contract={contract}
+        key={viewOrderDrawerKey}
       />
 
       <Table

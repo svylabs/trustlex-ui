@@ -9,19 +9,134 @@ import GradientBackgroundContainer from "../GradientBackgroundContainer/Gradient
 import ViewOrderDrawerHistoryTable from "../ViewOrderDrawerHistoryTable/ViewOrderDrawerHistoryTable";
 import styles from "./ViewOrderDrawer.module.scss";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import useAutoHideScrollbar from "~/hooks/useAutoHideScrollBar";
+import { IListInitiatedFullfillmentDataByNonEvent } from "~/interfaces/IOfferdata";
+import { TimeToDateFormat } from "~/utils/TimeConverter";
+import { generateTrustlexAddress } from "~/utils/BitcoinUtils";
+import { ethers } from "ethers";
+import { useState } from "react";
+import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
+import { IFullfillmentResult } from "~/interfaces/IOfferdata";
+import { getInitializedFulfillmentsByOfferId } from "~/service/AppService";
+import { EthtoWei, WeitoEth } from "~/utils/Ether.utills";
+import { TimestampTotoNow, TimestampfromNow } from "~/utils/TimeConverter";
+
 type Props = {
   isOpened: boolean;
   onClose: () => void;
+  offerData: IListInitiatedFullfillmentDataByNonEvent | undefined;
+  contract: ethers.Contract | undefined;
 };
 
-const ViewOrderDrawer = ({ isOpened, onClose }: Props) => {
+const ViewOrderDrawer = ({ isOpened, onClose, offerData, contract }: Props) => {
   const { width } = useWindowDimensions();
   let mobileView: boolean = width !== null && width < 500 ? true : false;
   const rootRef = useRef(null);
+  const [buyAmount, setBuyAmount] = useState<number>(0);
+  const [planningToSell, setPlanningToSell] = useState<number>(0);
+  const [planningToBuy, setPlanningToBuy] = useState<number>(0);
+  const [hashAddress, setHashAddress] = useState<string>("");
+  const [offerExpiry, setOfferExpiry] = useState<string>("");
+  const [fullfillmentResult, setFullfillmentResult] = useState<
+    IFullfillmentResult[]
+  >([]);
+  const [
+    viewOrderDrawerHistoryTableData2,
+    SetViewOrderDrawerHistoryTableData2,
+  ] = useState<any[]>();
 
   useAutoHideScrollbar(rootRef);
+  useEffect(() => {
+    if (!offerData) {
+      onClose();
+      return;
+    }
+    let offerExpiry = TimeToDateFormat(
+      (
+        parseInt(offerData?.offerDetailsInJson.offerValidTill) +
+        parseInt(offerData?.offerDetailsInJson.orderedTime)
+      ).toString()
+    );
+    setOfferExpiry(offerExpiry);
+    let offerId_: number | string = offerData?.offerDetailsInJson.offerId;
+
+    if (offerData?.offerDetailsInJson) {
+      let toAddress = Buffer.from(
+        offerData.offerDetailsInJson.bitcoinAddress.substring(2),
+        "hex"
+      );
+      let offerId = offerId_;
+      offerId_ = Number(offerId_);
+      if (offerId.length % 2 != 0) {
+        offerId = "0" + offerId;
+      }
+      let hashAddress = generateTrustlexAddress(toAddress, offerId);
+      setHashAddress(hashAddress as string);
+      let planningToSell_ = Number(
+        ethers.utils.formatEther(offerData.offerDetailsInJson.offerQuantity)
+      ); //offerQuantity
+      setPlanningToSell(planningToSell_);
+      setBuyAmount(planningToSell_);
+      setPlanningToBuy(
+        Number(
+          Number(
+            SatoshiToBtcConverter(
+              offerData.offerDetailsInJson.satoshisToReceive
+            )
+          ).toFixed(4)
+        )
+      );
+      (async () => {
+        // get the Fulfillments By OfferId
+        let FullfillmentResult: IFullfillmentResult[] =
+          await getInitializedFulfillmentsByOfferId(
+            contract,
+            offerId_ as number
+          );
+        console.log(FullfillmentResult);
+        setFullfillmentResult(FullfillmentResult);
+      })();
+    }
+  }, [offerData?.offerDetailsInJson.offerId]);
+
+  useEffect(() => {
+    let viewOrderDrawerHistoryTableData2_ = fullfillmentResult
+      ? fullfillmentResult.map((value, index) => {
+          let fulfillmentRequest = value.fulfillmentRequest;
+          let fulfillmentRequestId = value.fulfillmentRequestId;
+          let ETHAmountPricePerBTC: string = (
+            Number(fulfillmentRequest?.quantityRequested?.toString()) *
+            (Number(offerData?.offerDetailsInJson.offerQuantity) /
+              Number(offerData?.offerDetailsInJson.satoshisToReceive))
+          ).toString();
+          let ETHAmount = WeitoEth(ETHAmountPricePerBTC);
+          let expiryTime = TimestampTotoNow(fulfillmentRequest.expiryTime);
+
+          let row = {
+            orderNumber: fulfillmentRequestId.toString(),
+            planningToSell: {
+              amount: ETHAmount,
+              type: CurrencyEnum.ETH,
+            },
+            planningToBuy: {
+              amount: SatoshiToBtcConverter(
+                fulfillmentRequest?.quantityRequested?.toString()
+              ),
+              type: CurrencyEnum.BTC,
+            },
+            date: expiryTime,
+          };
+          return row;
+        })
+      : [];
+    console.log(viewOrderDrawerHistoryTableData2_);
+    SetViewOrderDrawerHistoryTableData2(viewOrderDrawerHistoryTableData2_);
+  }, [fullfillmentResult]);
+
+  const getBTCAmount = () => {
+    return Number(((buyAmount / planningToSell) * planningToBuy).toFixed(3));
+  };
 
   return (
     <Drawer
@@ -49,8 +164,13 @@ const ViewOrderDrawer = ({ isOpened, onClose }: Props) => {
             <Grid.Col span={11}>
               {!mobileView ? (
                 <Text component="h1" className={styles.title}>
-                  Buy <CurrencyDisplay amount={1} type={CurrencyEnum.BTC} /> for
-                  <CurrencyDisplay amount={10} type={CurrencyEnum.ETH} />
+                  Buy{" "}
+                  <CurrencyDisplay
+                    amount={getBTCAmount()}
+                    type={CurrencyEnum.BTC}
+                  />{" "}
+                  for{" "}
+                  <CurrencyDisplay amount={buyAmount} type={CurrencyEnum.ETH} />
                 </Text>
               ) : (
                 <Text component="h1" className={styles.title}>
@@ -75,18 +195,21 @@ const ViewOrderDrawer = ({ isOpened, onClose }: Props) => {
           <Box>
             <Text className={styles.label}>Address to receive Bitcoin</Text>
             <Text className={styles.value}>
-              1BoatSLRHtKNngkdXEeobR76b53LETtpyT
+              {/* 1BoatSLRHtKNngkdXEeobR76b53LETtpyT{" "} */}
+              <span className={styles.toAddress}>{hashAddress}</span>
             </Text>
           </Box>
           <Box>
             <Text className={styles.label}>Order status</Text>
-            <Text className={styles.value}>95% filled </Text>
+            <Text className={styles.value}>
+              {offerData?.offerDetailsInJson?.progress}
+            </Text>
           </Box>
           <Grid className={styles.offerExpire}>
             <Grid.Col span={"auto"} className={styles.data}>
               <Box>
                 <Text className={styles.label}>Offer Expiry</Text>
-                <Text className={styles.value}>In 23 hours </Text>
+                <Text className={styles.value}>{offerExpiry} </Text>
               </Box>
             </Grid.Col>
             <Grid.Col span={"content"} className={styles.button}>
@@ -105,7 +228,7 @@ const ViewOrderDrawer = ({ isOpened, onClose }: Props) => {
                   "Planning to buy",
                   "Date",
                 ]}
-                data={viewOrderDrawerHistoryTableData}
+                data={viewOrderDrawerHistoryTableData2}
               />
             </GradientBackgroundContainer>
           </Box>

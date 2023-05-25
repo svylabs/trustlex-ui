@@ -99,7 +99,12 @@ const Exchange = (props: Props) => {
   const [rowFullFillmentExpiryTime, setrowFullFillmentExpiryTime] = useState<
     string | undefined
   >();
-
+  const [
+    rowFullFillmentQuantityRequested,
+    setRowFullFillmentQuantityRequested,
+  ] = useState<string | undefined>();
+  const [exchangeOfferDrawerKey, setExchangeOfferDrawerKey] =
+    useState<number>(0);
   const context = React.useContext(AppContext);
   if (context === null) {
     return <>Loading...</>;
@@ -179,7 +184,8 @@ const Exchange = (props: Props) => {
         offers: [...listenedOfferData.offers, ...offers.offers],
       };
       setListenedOfferData(listenedOffers);
-      setTableData(getTableData(listenedOffers.offers));
+      let tableData = getTableData(listenedOffers.offers);
+      setTableData(tableData);
       setMoreTableDataLoading(false);
       console.log(listenedOffers);
     });
@@ -446,6 +452,7 @@ const Exchange = (props: Props) => {
       return false;
     }
     let offerId = data[0] as number;
+
     // get the Fulfillments By OfferId
     let FullfillmentResult: IFullfillmentResult[] =
       await getInitializedFulfillmentsByOfferId(contract, offerId);
@@ -458,11 +465,17 @@ const Exchange = (props: Props) => {
           account.toLowerCase()
         );
       });
+
+    let quantityRequested =
+      fullfillmentResult?.fulfillmentRequest?.quantityRequested.toString();
+
     setRowOfferId(offerId);
     setRowFullFillmentId(fullfillmentResult?.fulfillmentRequestId);
     setrowFullFillmentExpiryTime(
       fullfillmentResult?.fulfillmentRequest.expiryTime
     );
+    setRowFullFillmentQuantityRequested(quantityRequested);
+    setExchangeOfferDrawerKey(exchangeOfferDrawerKey + 1);
   };
 
   return (
@@ -667,6 +680,8 @@ const Exchange = (props: Props) => {
         setRefreshOffersListKey={setRefreshOffersListKey}
         rowFullFillmentExpiryTime={rowFullFillmentExpiryTime}
         setrowFullFillmentExpiryTime={setrowFullFillmentExpiryTime}
+        rowFullFillmentQuantityRequested={rowFullFillmentQuantityRequested}
+        key={exchangeOfferDrawerKey}
       />
 
       <div className={styles.overlay}>

@@ -78,6 +78,20 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "liquidateCollateral",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "address",
@@ -166,6 +180,11 @@
               "internalType": "bool",
               "name": "paymentProofSubmitted",
               "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "isExpired",
+              "type": "bool"
             }
           ],
           "internalType": "struct TrustlexPerAssetOrderBook.FulfillmentRequest",
@@ -174,13 +193,6 @@
         }
       ],
       "name": "initiateFulfillment",
-      "outputs": [],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "liquidateCollateral",
       "outputs": [],
       "stateMutability": "payable",
       "type": "function"
@@ -202,6 +214,25 @@
         }
       ],
       "name": "NEW_OFFER",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
       "type": "event"
     },
     {
@@ -232,6 +263,19 @@
     {
       "inputs": [
         {
+          "internalType": "uint32",
+          "name": "expiryTime",
+          "type": "uint32"
+        }
+      ],
+      "name": "setFullFillmentExpiryTime",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "uint256",
           "name": "offerId",
           "type": "uint256"
@@ -243,6 +287,19 @@
         }
       ],
       "name": "submitPaymentProof",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -267,6 +324,19 @@
           "internalType": "struct TrustlexPerAssetOrderBook.CompactMetadata",
           "name": "result",
           "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "fullFillmentExpiryTime",
+      "outputs": [
+        {
+          "internalType": "uint32",
+          "name": "",
+          "type": "uint32"
         }
       ],
       "stateMutability": "view",
@@ -342,6 +412,11 @@
                 {
                   "internalType": "bool",
                   "name": "paymentProofSubmitted",
+                  "type": "bool"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "isExpired",
                   "type": "bool"
                 }
               ],
@@ -604,6 +679,11 @@
           "internalType": "bool",
           "name": "paymentProofSubmitted",
           "type": "bool"
+        },
+        {
+          "internalType": "bool",
+          "name": "isExpired",
+          "type": "bool"
         }
       ],
       "stateMutability": "view",
@@ -694,6 +774,19 @@
           "internalType": "uint256",
           "name": "",
           "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
         }
       ],
       "stateMutability": "view",

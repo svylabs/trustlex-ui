@@ -266,7 +266,7 @@ export default function App() {
         if (networkId !== NetworkInfo.ChainID) {
           return;
         }
-        console.log("ok");
+        // console.log("ok");
         setMoreTableDataLoading(true);
         setExchangeLoadingText("Connecting to the Network!");
 
@@ -278,10 +278,12 @@ export default function App() {
           provider,
           ContractMap[selectedToken].address
         );
+
         if (trustlex) {
           setContract(trustlex as ethers.Contract);
 
           const offers = await listOffers(trustlex);
+
           setListenedOfferData(offers);
 
           setMoreTableDataLoading(true);

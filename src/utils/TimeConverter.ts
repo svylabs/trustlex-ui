@@ -1,5 +1,6 @@
 import React from "react";
 import moment from "moment";
+import { OFFER_ORDER_EXPIRY_DIRATION } from "~/Context/Constants";
 
 export const TimeToNumber = (time: string) => {
   // return time === "1d"
@@ -74,6 +75,9 @@ export const TimeToDateFormat = (time: string | undefined) => {
 export const getTimeInSeconds = () => {
   let time = moment().valueOf();
   return Math.floor(time / 1000);
+};
+export const getOfferOrderExpiryDurationInSeconds = () => {
+  return OFFER_ORDER_EXPIRY_DIRATION;
 };
 
 export const calculateTimeDiiference = (timeInSeconds: number) => {

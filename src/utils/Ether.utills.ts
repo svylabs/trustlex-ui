@@ -14,3 +14,7 @@ export const WeitoEth = (wei: string) => {
 export const formatERC20Tokens = (amount: number) => {
   return amount.toFixed(TOKEN_DECIMAL_PLACE);
 };
+
+export const tofixedEther = (amount: number) => {
+  return Number(amount.toFixed(8));
+};

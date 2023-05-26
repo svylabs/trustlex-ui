@@ -36,10 +36,7 @@ type Props = {};
 
 const Recent = (props: Props) => {
   return (
-    <MainLayout
-      title=""
-      description=""
-    >
+    <MainLayout title="" description="">
       <Tabs
         tabs={[
           { label: "My Swaps", value: "my-swaps" },
@@ -107,6 +104,10 @@ function MySwaps() {
   const [rowFullFillmentExpiryTime, setrowFullFillmentExpiryTime] = useState<
     string | undefined
   >();
+  const [
+    fullFillmentPaymentProofSubmitted,
+    setFullFillmentPaymentProofSubmitted,
+  ] = useState<boolean | undefined>();
   const [
     rowFullFillmentQuantityRequested,
     setRowFullFillmentQuantityRequested,
@@ -196,13 +197,15 @@ function MySwaps() {
     fullfillmentRequestId: string | undefined,
     offerId: number,
     fullfillmentExpiryTime: string | undefined,
-    quantityRequested: string | undefined
+    quantityRequested: string | undefined,
+    paymentProofSubmitted: boolean | undefined
   ) => {
     setRowFullFillmentId(fullfillmentRequestId);
     setRowOfferId(offerId);
     setrowFullFillmentExpiryTime(fullfillmentExpiryTime);
     setRowFullFillmentQuantityRequested(quantityRequested);
     setExchangeOfferDrawerKey(exchangeOfferDrawerKey + 1);
+    setFullFillmentPaymentProofSubmitted(paymentProofSubmitted);
   };
 
   const showLoadMoreMySwapOngoingButton = () => {
@@ -270,6 +273,8 @@ function MySwaps() {
           value.offerDetailsInJson?.fulfillmentRequestExpiryTime,
         quantityRequested:
           value.offerDetailsInJson?.fulfillmentRequestQuantityRequested,
+        paymentProofSubmitted:
+          value.offerDetailsInJson?.fulfillmentRequestPaymentProofSubmitted,
         offerData: value,
       };
       return row;
@@ -388,6 +393,10 @@ function MySwaps() {
           rowFullFillmentExpiryTime={rowFullFillmentExpiryTime}
           rowFullFillmentQuantityRequested={rowFullFillmentQuantityRequested}
           key={exchangeOfferDrawerKey}
+          fullFillmentPaymentProofSubmitted={fullFillmentPaymentProofSubmitted}
+          setFullFillmentPaymentProofSubmitted={
+            setFullFillmentPaymentProofSubmitted
+          }
         />
       </GradientBackgroundContainer>
       {/* Star My Swap History */}

@@ -187,7 +187,7 @@ export const getOffer = async (
   try {
     if (!trustLex) return false;
 
-    let offerData = await trustLex.getOffer(offerId);
+    let offerData: IOfferdata = await trustLex.getOffer(offerId);
 
     return offerData;
   } catch (error) {
@@ -632,6 +632,8 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
         fullfillmentResult.fulfillmentRequest.expiryTime;
       offerDetailsInJson.fulfillmentRequestQuantityRequested =
         fullfillmentResult.fulfillmentRequest.quantityRequested.toString();
+      offerDetailsInJson.fulfillmentRequestPaymentProofSubmitted =
+        fullfillmentResult.fulfillmentRequest.paymentProofSubmitted;
     }
     fullfillmentResult &&
       MyOffersPromises.push({ offerDetailsInJson: offerDetailsInJson });
@@ -771,13 +773,15 @@ export const getInitializedFulfillmentsByOfferId = async (
 export const InitializeFullfillment = async (
   trustLex: ethers.Contract | undefined,
   offerId: string,
-  _fulfillment: IFullfillmentEvent
+  _fulfillment: IFullfillmentEvent,
+  colletarealValue: string
 ) => {
   try {
     if (!trustLex) return false;
     const initializeFullfillment = await trustLex.initiateFulfillment(
       offerId,
-      _fulfillment
+      _fulfillment,
+      { value: colletarealValue }
     );
 
     await initializeFullfillment.wait();

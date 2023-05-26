@@ -24,6 +24,7 @@ export interface ITableRow {
   fullfillmentExpiryTime: string | undefined;
   quantityRequested: string | undefined;
   offerData: IListInitiatedFullfillmentDataByNonEvent;
+  paymentProofSubmitted: boolean | undefined;
 }
 
 interface Props extends TableProps {
@@ -35,7 +36,8 @@ interface Props extends TableProps {
     fullfillmentRequestId: string | undefined,
     offerId: number,
     fullfillmentExpiryTime: string | undefined,
-    quantityRequested: string | undefined
+    quantityRequested: string | undefined,
+    paymentProofSubmitted: boolean | undefined
   ) => void;
   mySwapOngoingLoadingText: string;
   contract: ethers.Contract | undefined;
@@ -85,7 +87,8 @@ const RecentOngoingTable = ({
                     row.fullfillmentRequestId,
                     row.offerId as number,
                     row.fullfillmentExpiryTime,
-                    row.quantityRequested
+                    row.quantityRequested,
+                    row.paymentProofSubmitted
                   );
                 }}
               >

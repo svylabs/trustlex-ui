@@ -10,12 +10,13 @@ export interface IOfferdata {
   satoshisReceived: string;
   satoshisReserved: string;
   collateralPer3Hours: string;
-  progress: string;
-  offerType: string;
-  fullfillmentRequestId: undefined;
+  progress?: string;
+  offerType?: string;
+  fullfillmentRequestId?: undefined;
   fulfillmentRequests?: IFullfillmentEvent;
   fulfillmentRequestExpiryTime?: string;
   fulfillmentRequestQuantityRequested?: string;
+  fulfillmentRequestPaymentProofSubmitted?: boolean;
   fullfillmentResults?: IFullfillmentResult;
 }
 

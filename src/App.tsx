@@ -11,9 +11,9 @@ import {
   connect,
   findMetaMaskAccount,
   getBalance,
-  listOffers,
+  // listOffers,
   InitializeFullfillment,
-  listInitializeFullfillment,
+  // listInitializeFullfillment,
   getOffersList,
   getTotalOffers,
   getERC20TokenBalance,
@@ -282,9 +282,9 @@ export default function App() {
         if (trustlex) {
           setContract(trustlex as ethers.Contract);
 
-          const offers = await listOffers(trustlex);
+          // const offers = await listOffers(trustlex);
 
-          setListenedOfferData(offers);
+          // setListenedOfferData(offers);
 
           setMoreTableDataLoading(true);
           setExchangeLoadingText("Loading List");

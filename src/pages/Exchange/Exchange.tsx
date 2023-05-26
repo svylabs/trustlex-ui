@@ -100,6 +100,10 @@ const Exchange = (props: Props) => {
     string | undefined
   >();
   const [
+    fullFillmentPaymentProofSubmitted,
+    setFullFillmentPaymentProofSubmitted,
+  ] = useState<boolean | undefined>();
+  const [
     rowFullFillmentQuantityRequested,
     setRowFullFillmentQuantityRequested,
   ] = useState<string | undefined>();
@@ -173,22 +177,22 @@ const Exchange = (props: Props) => {
       listenedOfferData.fromBlock - MAX_ITERATIONS * MAX_BLOCKS_TO_QUERY
     );
 
-    listOffers(
-      context.contract,
-      fromBlock,
-      listenedOfferData.fromBlock - 1
-    ).then((offers) => {
-      const listenedOffers = {
-        fromBlock: offers.fromBlock,
-        toBlock: listenedOfferData.toBlock,
-        offers: [...listenedOfferData.offers, ...offers.offers],
-      };
-      setListenedOfferData(listenedOffers);
-      let tableData = getTableData(listenedOffers.offers);
-      setTableData(tableData);
-      setMoreTableDataLoading(false);
-      console.log(listenedOffers);
-    });
+    // listOffers(
+    //   context.contract,
+    //   fromBlock,
+    //   listenedOfferData.fromBlock - 1
+    // ).then((offers) => {
+    //   const listenedOffers = {
+    //     fromBlock: offers.fromBlock,
+    //     toBlock: listenedOfferData.toBlock,
+    //     offers: [...listenedOfferData.offers, ...offers.offers],
+    //   };
+    //   setListenedOfferData(listenedOffers);
+    //   let tableData = getTableData(listenedOffers.offers);
+    //   setTableData(tableData);
+    //   setMoreTableDataLoading(false);
+    //   console.log(listenedOffers);
+    // });
   };
   const loadMoreOffersByNonEvent = async () => {
     setMoreTableDataLoading(true);
@@ -460,14 +464,25 @@ const Exchange = (props: Props) => {
     let fullfillmentResult: IFullfillmentResult | undefined =
       FullfillmentResult &&
       FullfillmentResult.find((fullfillmentResult) => {
+        let isExpired = fullfillmentResult.fulfillmentRequest.isExpired;
+        let paymentProofSubmitted =
+          fullfillmentResult.fulfillmentRequest.paymentProofSubmitted;
+
         return (
           fullfillmentResult.fulfillmentRequest.fulfillmentBy.toLowerCase() ===
-          account.toLowerCase()
+            account.toLowerCase() &&
+          isExpired == false &&
+          paymentProofSubmitted == false
         );
       });
-
+    // console.log(
+    //   "fullfillmentResult?.fulfillmentRequest",
+    //   fullfillmentResult?.fulfillmentRequest
+    // );
     let quantityRequested =
       fullfillmentResult?.fulfillmentRequest?.quantityRequested.toString();
+    let fullFillmentPaymentProofSubmitted =
+      fullfillmentResult?.fulfillmentRequest?.paymentProofSubmitted;
 
     setRowOfferId(offerId);
     setRowFullFillmentId(fullfillmentResult?.fulfillmentRequestId);
@@ -476,6 +491,7 @@ const Exchange = (props: Props) => {
     );
     setRowFullFillmentQuantityRequested(quantityRequested);
     setExchangeOfferDrawerKey(exchangeOfferDrawerKey + 1);
+    setFullFillmentPaymentProofSubmitted(fullFillmentPaymentProofSubmitted);
   };
 
   return (
@@ -668,8 +684,11 @@ const Exchange = (props: Props) => {
         </GradientBackgroundContainer>
       </div>
       <ExchangeOfferDrawer
-        onClose={() => {
+        onClose={(clickedOnInitiateButton: boolean) => {
           setRowOfferId(null);
+          if (clickedOnInitiateButton == true) {
+            setRefreshOffersListKey(refreshOffersListKey + 1);
+          }
         }}
         isOpened={rowOfferId !== null ? true : false}
         rowOfferId={rowOfferId}
@@ -682,6 +701,10 @@ const Exchange = (props: Props) => {
         setrowFullFillmentExpiryTime={setrowFullFillmentExpiryTime}
         rowFullFillmentQuantityRequested={rowFullFillmentQuantityRequested}
         key={exchangeOfferDrawerKey}
+        fullFillmentPaymentProofSubmitted={fullFillmentPaymentProofSubmitted}
+        setFullFillmentPaymentProofSubmitted={
+          setFullFillmentPaymentProofSubmitted
+        }
       />
 
       <div className={styles.overlay}>

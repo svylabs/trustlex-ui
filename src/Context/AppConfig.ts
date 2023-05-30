@@ -1,20 +1,22 @@
-import { ERC20TokenKey } from "~/Context/Constants";
+import { ERC20TokenKey, ERC20TokenLabel } from "~/Context/Constants";
 
 export const ContractMap: any = {
   ETH: {
     // Address of TrustlexPerAssetOrderBook for addOfferWithETH
-    address: "0xB78E846DfFB6bC8d5C04a40A749Ff23374BCE599", //Mumbai
-    // address: "0x860b9C22C912045154e43876feA97F4A65757D3E", //Trustless Network
+    address: "0x8b2CC6807687E4b350DA69ad1232D3ac749232b5", //Mumbai
+    // address: "0x41b80920255a5c385221AEf56eD7377B1210acC6", //Trustless Network
   },
-  Token: {
+  [ERC20TokenLabel]: {
     // Address of TrustlexPerAssetOrderBook for addOfferWithToken
-    address: "0x97ed9e3bD0B8c219B21d5Efe7E61CA8240b78940",
+    address: "0x37e8221031AD9DBD9A216b20CF96050A351CC319", //Mumbai
+    // address: "0xbEB864983Ded627C247b3237E8752D43e9CfeC06", //Trustless Network
   },
 };
 
 //Address for sample ERC20 contract
 export const ERC20: any = {
-  address: "0x1cE30Fdb52ceb9BB1E2232cfBF17e57845F053C8",
+  address: "0xa89315E69a8eE3EFbE835736B35aaf265c84B3e1", //Mumbai
+  // address: "0x174f05d21c5e45c5AcfeAe2ba967c7af5a1BD8a3", //Trustless Network
 };
 
 //Address for sample ERC20 contract

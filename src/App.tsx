@@ -141,17 +141,28 @@ export default function App() {
     // console.log(userInputData);
   }, [userInputData]);
 
-  useEffect(() => {
-    set(
-      "selectedToken",
-      // if you have multiple token address in AppConfig.tsx,
-      // you can use this line instead of ETH
-      // this line throws error if all the activeExchange are not in AppConfig.tsx
+  // useEffect(() => {
+  //   let setSelectedToken_ =
+  //     userInputData.activeExchange[1].currency.toUpperCase();
+  //   console.log(setSelectedToken_);
+  //   set(
+  //     "selectedToken",
+  //     // if you have multiple token address in AppConfig.tsx,
+  //     // you can use this line instead of ETH
+  //     // this line throws error if all the activeExchange are not in AppConfig.tsx
 
-      // userInputData.activeExchange[1].currency.toUpperCase()
-      "ETH"
-    );
-  }, [userInputData.activeExchange]);
+  //     setSelectedToken_
+  //     // "ETH"
+  //   );
+  //   setSelectedToken(setSelectedToken_);
+  // }, [userInputData.activeExchange]);
+
+  useEffect(() => {
+    setTimeout(() => {
+      set("selectedToken", selectedToken);
+      let tokenData = get("selectedToken", false);
+    }, 800);
+  }, [selectedToken]);
 
   useEffect(() => {
     (async () => {
@@ -273,7 +284,7 @@ export default function App() {
         // update the eth balance
         let account = await findMetaMaskAccount();
         updateAccountBalance(account);
-
+        console.log(ContractMap);
         let trustlex = await connect(
           provider,
           ContractMap[selectedToken].address
@@ -323,7 +334,7 @@ export default function App() {
       //   setBalance("");
       // };
     })();
-  }, [refreshOffersListKey, account]);
+  }, [refreshOffersListKey, account, selectedToken]);
 
   // Do the activity on account changed
   useEffect(() => {
@@ -360,7 +371,7 @@ export default function App() {
         console.log(err);
       }
     })();
-  }, [account]);
+  }, [account, selectedToken]);
 
   // update the eth balance
   async function updateAccountBalance(account: string) {

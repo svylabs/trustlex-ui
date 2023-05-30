@@ -256,14 +256,8 @@ export const addOfferWithToken = async (data: IAddOfferWithToken) => {
         return false;
       }
 
-      let spender = ContractMap.Token.address;
+      let spender = ContractMap.SPVC.address;
       tokens = EthtoWei(tokens as string);
-      console.log(
-        tokens,
-        data.satoshis,
-        "0x" + data.bitcoinAddress,
-        data.offerValidTill
-      );
 
       let transaction = await erc20TokenContract.increaseAllowance(
         spender,

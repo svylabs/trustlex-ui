@@ -495,10 +495,7 @@ const Exchange = (props: Props) => {
   };
 
   return (
-    <MainLayout
-      title="Place your offer"
-      description="   "
-    >
+    <MainLayout title="Place your offer" description="   ">
       <div className={styles.offersTable}>
         <GradientBackgroundContainer
           colorRight="#FEBD3863"
@@ -510,7 +507,9 @@ const Exchange = (props: Props) => {
                 <div>
                   <div className={styles.heading}>
                     <div className={styles.caption}>All Offers</div>
-                    <button onClick={() => setAddOffer(false)}>Cancel</button>
+                    <button onClick={() => setAddOffer(false)}>
+                      Cancel
+                    </button>{" "}
                   </div>
                   <div className={styles.exchangeFormContent}>
                     <div className={styles.font}>Adding offer</div>

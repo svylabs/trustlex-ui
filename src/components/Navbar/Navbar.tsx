@@ -11,6 +11,7 @@ import {
 } from "~/service/AppService";
 import SendBtcDrawer from "~/components/SendBtc/SendBtcDrawer/SendBtcDrawer";
 import SendBtcBox from "~/components/SendBtc/SendBtcBox/SendBtcBox";
+import OfferCurrencyDropdown from "~/components/OfferCurrencyDropdown/OfferCurrencyDropdown";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 type Props = {
   toggleSidebar: () => void;
@@ -21,7 +22,15 @@ const Navbar = (props: Props) => {
   if (context === null) {
     return <>Loading...</>;
   }
-  const { account, setAccount, balance } = context;
+  const {
+    account,
+    setAccount,
+    balance,
+    selectedToken,
+    setSelectedToken,
+    userInputData,
+    setUserInputData,
+  } = context;
 
   const handleConnect = async () => {
     if (account !== "" && (account as unknown as boolean) != false) {
@@ -48,9 +57,8 @@ const Navbar = (props: Props) => {
       href: "",
       onClick: handleConnect,
     },
-    // { title: " RPC Password", href: "" },
-    // { title: " RPC Username", href: "" },
   ];
+
   const [showSendBtcBox, setShowSendBtcBox] = useState(false);
 
   const handleShowSendBtc = () => {
@@ -79,6 +87,15 @@ const Navbar = (props: Props) => {
         ) : (
           ""
         )}
+      </div>
+      <div className={styles.left}>
+        <strong>Offer Currency : &nbsp;&nbsp;</strong>
+        <OfferCurrencyDropdown
+          selectedToken={selectedToken}
+          setSelectedToken={setSelectedToken}
+          userInputData={userInputData}
+          setUserInputData={setUserInputData}
+        />
       </div>
       <div className={styles.right}>
         <div className={styles.btcNavbutton}>

@@ -49,7 +49,7 @@ const getTableData = (offers: IListenedOfferData[]) => {
         offer.offerDetailsInJson.satoshisToReceive
       );
       let satoshisReserved = Number(offer.offerDetailsInJson.satoshisReserved);
-      console.log(satoshisReserved);
+      // console.log(satoshisReserved);
       const satoshisReceived = Number(
         offer.offerDetailsInJson.satoshisReceived
       );
@@ -78,7 +78,7 @@ const getTableData = (offers: IListenedOfferData[]) => {
           }
         );
       // }
-      console.log(satoshisReserved);
+      // console.log(satoshisReserved);
       let left_to_buy =
         Number(
           SatoshiToBtcConverter(

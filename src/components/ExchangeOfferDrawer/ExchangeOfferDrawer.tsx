@@ -203,32 +203,6 @@ const ExchangeOfferDrawer = ({
 
       const satoshisReceived = Number(offerDetails.satoshisReceived);
 
-      // update satoshisReserved amount
-      // if (satoshisToReceive == satoshisReserved + satoshisReceived) {
-      // let fullfillmentResults = offer.offerDetailsInJson.fullfillmentResults;
-      let isColletaralNeeded = false;
-      fullfillmentResults &&
-        fullfillmentResults?.map(
-          (value: IFullfillmentResult, index: number) => {
-            let expiryTime = Number(value.fulfillmentRequest.expiryTime) * 1000;
-            let isExpired = value.fulfillmentRequest.isExpired;
-            let paymentProofSubmitted =
-              value.fulfillmentRequest.paymentProofSubmitted;
-            if (
-              expiryTime < Date.now() &&
-              isExpired == false &&
-              paymentProofSubmitted == false
-            ) {
-              satoshisReserved -= Number(
-                value.fulfillmentRequest.quantityRequested
-              );
-            }
-          }
-        );
-      // }
-      if (satoshisReserved > 0) {
-        setIsColletaralNeeded(true);
-      }
       let left_to_buy =
         Number(
           SatoshiToBtcConverter(
@@ -257,12 +231,13 @@ const ExchangeOfferDrawer = ({
       setPlanningToSell(planningToSell_);
       // setEthValue(planningToSell_);
       //if order already initiated
-      console.log(left_to_buy);
+      let isInitating = false;
       if (
         rowFullFillmentId != undefined &&
         isOrderExpired == false &&
         fullFillmentPaymentProofSubmitted == false
       ) {
+        isInitating = true;
         setIsInitating("initiated");
         let toAddress = Buffer.from(
           foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
@@ -292,6 +267,33 @@ const ExchangeOfferDrawer = ({
       console.log(left_to_buy);
       setLeftToBuy(left_to_buy);
       setEthValue(left_to_buy);
+
+      // update satoshisReserved amount
+      // if (satoshisToReceive == satoshisReserved + satoshisReceived) {
+      // let fullfillmentResults = offer.offerDetailsInJson.fullfillmentResults;
+      let isColletaralNeeded = false;
+      fullfillmentResults &&
+        fullfillmentResults?.map(
+          (value: IFullfillmentResult, index: number) => {
+            let expiryTime = Number(value.fulfillmentRequest.expiryTime) * 1000;
+            let isExpired = value.fulfillmentRequest.isExpired;
+            let paymentProofSubmitted =
+              value.fulfillmentRequest.paymentProofSubmitted;
+            if (
+              expiryTime < Date.now() &&
+              isExpired == false &&
+              paymentProofSubmitted == false
+            ) {
+              satoshisReserved -= Number(
+                value.fulfillmentRequest.quantityRequested
+              );
+            }
+          }
+        );
+      // }
+      if (satoshisReserved > 0 && isInitating == false) {
+        setIsColletaralNeeded(true);
+      }
     })();
   }, [foundOffer?.offerDetailsInJson?.offerId]);
 

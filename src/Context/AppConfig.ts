@@ -3,12 +3,12 @@ import { ERC20TokenKey, ERC20TokenLabel } from "~/Context/Constants";
 export const ContractMap: any = {
   ETH: {
     // Address of TrustlexPerAssetOrderBook for addOfferWithETH
-    address: "0x8b2CC6807687E4b350DA69ad1232D3ac749232b5", //Mumbai
+    address: "0x7169B041F4e6E51B10e59Dc8b03F029C7fa658b7", //Mumbai
     // address: "0x41b80920255a5c385221AEf56eD7377B1210acC6", //Trustless Network
   },
   [ERC20TokenLabel]: {
     // Address of TrustlexPerAssetOrderBook for addOfferWithToken
-    address: "0x37e8221031AD9DBD9A216b20CF96050A351CC319", //Mumbai
+    address: "0x5df66269f4ddaBcB7fc044AAd00363E8753a8fD4", //Mumbai
     // address: "0xbEB864983Ded627C247b3237E8752D43e9CfeC06", //Trustless Network
   },
 };

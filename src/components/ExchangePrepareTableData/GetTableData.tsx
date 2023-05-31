@@ -1,3 +1,4 @@
+import React from "react";
 import { IListenedOfferData } from "~/interfaces/IOfferdata";
 import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
 import { ethers } from "ethers";
@@ -9,13 +10,19 @@ import {
   TimeToNumber,
   TimeToDateFormat,
 } from "~/utils/TimeConverter";
+import { AppContext } from "~/Context/AppContext";
 import { tofixedEther } from "~/utils/Ether.utills";
 import { IFullfillmentResult } from "~/interfaces/IOfferdata";
 import { getInitializedFulfillmentsByOfferId } from "~/service/AppService";
 import { tofixedBTC } from "~/utils/BitcoinUtils";
 import { BTC_DECIMAL_PLACE } from "~/Context/Constants";
+import { currencyObjects } from "~/Context/Constants";
 
-const getTableData = (offers: IListenedOfferData[]) => {
+const getTableData = (
+  offers: IListenedOfferData[],
+  selectedToken: string = "ETH"
+) => {
+  let selectedCurrencyIcon = currencyObjects[selectedToken.toLowerCase()].icon;
   return offers
     .filter(function (offer: IListenedOfferData) {
       let satoshisToReceive = +offer.offerDetailsInJson.satoshisToReceive;
@@ -91,9 +98,9 @@ const getTableData = (offers: IListenedOfferData[]) => {
         // offer.offerEvent.to.toString(),
         offer.offerDetailsInJson.offerId,
         <>
-          {offerQuantity}{" "}
-          <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />
-          {CurrencyEnum.ETH}
+          {offerQuantity} {selectedCurrencyIcon} {selectedToken}
+          {/* <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />
+          {CurrencyEnum.ETH} */}
         </>,
         <>
           {planningToSell}{" "}
@@ -106,9 +113,9 @@ const getTableData = (offers: IListenedOfferData[]) => {
           {CurrencyEnum.BTC}
         </>,
         <>
-          {left_to_buy}{" "}
-          <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />
-          {CurrencyEnum.ETH}
+          {left_to_buy} {selectedCurrencyIcon} {selectedToken}
+          {/* <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.ETH)} />
+          {CurrencyEnum.ETH} */}
         </>,
         // NumberToTime(offer.offerDetailsInJson.offerValidTill+offer.offerDetailsInJson.orderedTime),
         TimeToDateFormat(

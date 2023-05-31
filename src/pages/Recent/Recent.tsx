@@ -92,6 +92,7 @@ function MySwaps() {
 
     account,
     contract,
+    selectedToken,
   } = context;
 
   const [isMoreOngoingLoading, setMoreOngoingDataLoading] = useState(false);
@@ -397,6 +398,7 @@ function MySwaps() {
           setFullFillmentPaymentProofSubmitted={
             setFullFillmentPaymentProofSubmitted
           }
+          selectedToken={selectedToken}
         />
       </GradientBackgroundContainer>
       {/* Star My Swap History */}

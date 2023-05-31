@@ -27,6 +27,7 @@ import {
   submitPaymentProof,
   getInitializedFulfillmentsByOfferId,
   getInitializedFulfillments,
+  increaseContractAllownace,
 } from "~/service/AppService";
 import { QRCodeCanvas } from "qrcode.react";
 import { address } from "bitcoinjs-lib";
@@ -55,6 +56,7 @@ import {
 import { Tooltip } from "@mantine/core";
 import { default as Countdowntimer } from "react-countdown";
 import BtcToSatoshiConverter from "~/utils/BtcToSatoshiConverter";
+import { currencyObjects } from "~/Context/Constants";
 
 type Props = {
   isOpened: boolean;
@@ -74,6 +76,7 @@ type Props = {
   setFullFillmentPaymentProofSubmitted: (
     fullFillmentPaymentProofSubmitted: boolean | undefined
   ) => void;
+  selectedToken: string;
 };
 
 const ExchangeOfferDrawer = ({
@@ -90,6 +93,7 @@ const ExchangeOfferDrawer = ({
   rowFullFillmentQuantityRequested,
   fullFillmentPaymentProofSubmitted,
   setFullFillmentPaymentProofSubmitted,
+  selectedToken = "ETH",
 }: Props) => {
   // console.log(data);
   const { mobileView } = useWindowDimensions();
@@ -121,6 +125,8 @@ const ExchangeOfferDrawer = ({
     useState<boolean>(false);
   const [isColletaralNeeded, setIsColletaralNeeded] = useState<boolean>(false);
   const { scrollDirection } = useDetectScrollUpDown();
+
+  let selectedCurrencyIcon = currencyObjects[selectedToken.toLowerCase()].icon;
 
   useEffect(() => {
     if (rowOfferId === null) {
@@ -264,7 +270,7 @@ const ExchangeOfferDrawer = ({
             ));
       }
       left_to_buy = tofixedEther(left_to_buy);
-      console.log(left_to_buy);
+      // console.log(left_to_buy);
       setLeftToBuy(left_to_buy);
       setEthValue(left_to_buy);
 
@@ -340,10 +346,24 @@ const ExchangeOfferDrawer = ({
     let totalCollateralAdded =
       foundOffer.offerDetailsInJson.collateralPer3Hours;
     let colletarealValue = "0";
+
     if (isColletaralNeeded == true) {
       colletarealValue = getColletaralValue().toString();
       totalCollateralAdded = EthtoWei(colletarealValue).toString();
+      // if (selectedToken != "ETH") {
+      //   let tokenAmount = colletarealValue;
+      //   // Allow the contract to get the token
+      //   let allownaceResult = await increaseContractAllownace(
+      //     selectedToken,
+      //     tokenAmount
+      //   );
+      //   if (allownaceResult == false || !allownaceResult) {
+      //     return false;
+      //   }
+      //   // console.log(allownaceResult);
+      // }
     }
+
     const _fulfillment: IFullfillmentEvent = {
       // fulfillmentBy: foundOffer.offerEvent.from,
       fulfillmentBy: account,
@@ -361,7 +381,7 @@ const ExchangeOfferDrawer = ({
       isExpired: false,
     };
 
-    console.log(foundOffer, _fulfillment);
+    // console.log(foundOffer, _fulfillment);
 
     const data = await InitializeFullfillment(
       context.contract,
@@ -371,9 +391,20 @@ const ExchangeOfferDrawer = ({
       totalCollateralAdded
     );
     if (data) {
-      let event = data?.events[0];
-      let claimedBy = event?.args["claimedBy"];
-      let offerId = event?.args["offerId"]?.toString();
+      console.log(data);
+      let events =
+        data?.events &&
+        data?.events?.filter((value: any) => {
+          if (value?.event && value?.event == "INITIALIZED_FULFILLMENT") {
+            return true;
+          } else {
+            return false;
+          }
+        });
+      console.log(events);
+      let event = events[0];
+      // let claimedBy = event?.args["claimedBy"];
+      // let offerId = event?.args["offerId"]?.toString();
       let fulfillmentId = event?.args["fulfillmentId"]?.toString();
       let expiryTime = (
         parseInt(_fulfillment.expiryTime) +
@@ -467,7 +498,9 @@ const ExchangeOfferDrawer = ({
 
   const getBTCAmount = () => {
     let inputAmount = Number(ethValue);
-    return tofixedBTC((inputAmount / planningToSell) * planningToBuy);
+    let BTCAmount = tofixedBTC((inputAmount / planningToSell) * planningToBuy);
+    // console.log(inputAmount, planningToSell, planningToBuy, BTCAmount);
+    return BTCAmount;
   };
 
   const getColletaralValue = () => {
@@ -568,7 +601,7 @@ const ExchangeOfferDrawer = ({
                           if (isNaN(value)) {
                             setEthValue("");
                           } else {
-                            setEthValue(Number(value));
+                            setEthValue(tofixedEther(Number(value)));
                           }
                           // if (isNaN(ethValue)) {
                           //   setEthValue(Number(e.target.value));
@@ -581,9 +614,10 @@ const ExchangeOfferDrawer = ({
                   ) : (
                     <span style={{ marginRight: "10px" }}>{ethValue}</span>
                   )}
-                  <ImageIcon
+                  {selectedCurrencyIcon}
+                  {/* <ImageIcon
                     image={getIconFromCurrencyType(CurrencyEnum.ETH)}
-                  />
+                  /> */}
                   <span className={styles.for}>with</span>
                   <CurrencyDisplay
                     amount={getBTCAmount()}

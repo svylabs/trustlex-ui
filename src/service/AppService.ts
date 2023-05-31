@@ -18,7 +18,7 @@ import {
   IListInitiatedFullfillmentDataByNonEvent,
 } from "~/interfaces/IOfferdata";
 import axios from "axios";
-import { PAGE_SIZE } from "~/Context/Constants";
+import { PAGE_SIZE, currencyObjects } from "~/Context/Constants";
 import { MAX_BLOCKS_TO_QUERY, MAX_ITERATIONS } from "~/Context/Constants";
 import { EthtoWei, WeitoEth } from "~/utils/Ether.utills";
 import { AppContext } from "~/Context/AppContext";
@@ -126,7 +126,9 @@ export const getBalance = async (address: string) => {
 };
 
 export const getERC20TokenBalance = async (
-  address: string
+  address: string,
+  contractAddress: string = "",
+  contractABI: string = ""
 ): Promise<number> => {
   try {
     if (typeof window.ethereum !== undefined) {
@@ -235,7 +237,11 @@ export const AddOfferWithEth = async (
   }
 };
 
-export const addOfferWithToken = async (data: IAddOfferWithToken) => {
+export const addOfferWithToken = async (
+  data: IAddOfferWithToken,
+  sellCurrecny: string,
+  inputTokens: string
+) => {
   // first approve contract to spend the tokens
   try {
     if (typeof window.ethereum !== undefined) {
@@ -249,15 +255,24 @@ export const addOfferWithToken = async (data: IAddOfferWithToken) => {
         signer
       );
       let tokens = data.tokens;
+      sellCurrecny;
       // To do Add the balance validation check
-      let accountOwnerBal: number = await getERC20TokenBalance(accounts[0]);
-      if (accountOwnerBal < (tokens as number)) {
+      let contractAddress =
+        currencyObjects[sellCurrecny.toLowerCase()].ERC20Address;
+
+      let contractABI = currencyObjects[sellCurrecny.toLowerCase()].ERC20ABI;
+      let accountOwnerBal: number = await getERC20TokenBalance(
+        accounts[0],
+        contractAddress,
+        contractABI
+      );
+      if (accountOwnerBal < Number(inputTokens)) {
         showErrorMessage("Your token balance is low.");
         return false;
       }
 
       let spender = ContractMap.SPVC.address;
-      tokens = EthtoWei(tokens as string);
+      //tokens = EthtoWei(tokens as string);
 
       let transaction = await erc20TokenContract.increaseAllowance(
         spender,
@@ -282,6 +297,81 @@ export const addOfferWithToken = async (data: IAddOfferWithToken) => {
       await transaction2.wait();
       console.log(transaction2);
       return transaction2;
+    } else {
+      showErrorMessage("Metamask not found!");
+      return false;
+    }
+  } catch (error: any) {
+    let message = error?.message;
+    console.log(error);
+    return false;
+  }
+};
+
+export const increaseContractAllownace = async (
+  selectedToken: string,
+  tokenAmount: string // in SPVC
+) => {
+  // first approve contract to spend the tokens
+  try {
+    if (typeof window.ethereum !== undefined) {
+      const { ethereum } = window;
+      const provider = new ethers.providers.Web3Provider(ethereum);
+      let accounts = await provider.send("eth_requestAccounts", []);
+      const signer = provider.getSigner();
+
+      let contractAddress =
+        currencyObjects[selectedToken.toLowerCase()].ERC20Address;
+
+      let contractABI = currencyObjects[selectedToken.toLowerCase()].ERC20ABI;
+      let spender =
+        currencyObjects[selectedToken.toLowerCase()].orderBookContractAddreess;
+      if (!(contractAddress && contractABI && spender)) return false;
+
+      const erc20TokenContract = new ethers.Contract(
+        contractAddress,
+        contractABI,
+        signer
+      );
+      let tokens = Number(tokenAmount);
+
+      // To do Add the balance validation check
+      let accountOwnerBal: number = await getERC20TokenBalance(
+        accounts[0],
+        contractAddress,
+        contractABI
+      );
+
+      if (accountOwnerBal < tokens) {
+        showErrorMessage("Your token balance is low.");
+        return false;
+      }
+
+      let tokens_ = EthtoWei(tokenAmount);
+
+      let transaction = await erc20TokenContract.increaseAllowance(
+        spender,
+        tokens_
+      );
+      await transaction.wait();
+      console.log(transaction);
+
+      // create the contract instance
+      // let OrderBookContractForTokenAddress = spender;
+      // const OrderBookContractForToken = new ethers.Contract(
+      //   OrderBookContractForTokenAddress,
+      //   abi.abi,
+      //   signer
+      // );
+      // let transaction2 = await OrderBookContractForToken.addOfferWithToken(
+      //   tokens,
+      //   data.satoshis,
+      //   "0x" + data.bitcoinAddress,
+      //   data.offerValidTill
+      // );
+      // await transaction2.wait();
+      // console.log(transaction2);
+      return transaction;
     } else {
       showErrorMessage("Metamask not found!");
       return false;

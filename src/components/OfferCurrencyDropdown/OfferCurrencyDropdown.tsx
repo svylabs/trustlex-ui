@@ -33,7 +33,6 @@ const OfferCurrencyDropdown = ({
   >();
 
   useEffect(() => {
-    console.log(selectedToken);
     setSelectedCurrency(selectedToken);
     setSelectedCurrencyIcon(currencyObjects[selectedToken.toLowerCase()].icon);
   }, [selectedToken]);

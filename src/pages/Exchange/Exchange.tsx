@@ -64,6 +64,7 @@ import {
   MAX_ITERATIONS,
   PAGE_SIZE,
   ERC20TokenKey,
+  currencyObjects,
 } from "~/Context/Constants";
 import { IFullfillmentResult } from "~/interfaces/IOfferdata";
 
@@ -133,6 +134,7 @@ const Exchange = (props: Props) => {
     setRefreshOffersListKey,
     account,
     contract,
+    selectedToken,
   } = context;
 
   const [exchangeData, setExchangeData] = useState({
@@ -202,7 +204,9 @@ const Exchange = (props: Props) => {
         offers: [...listenedOfferDataByNonEvent.offers, ...offers.offers],
       };
       setListenedOfferDataByNonEvent(listenedOffersByNonEvent);
-      setTableData(getTableData(listenedOffersByNonEvent.offers));
+      setTableData(
+        getTableData(listenedOffersByNonEvent.offers, selectedToken)
+      );
       setMoreTableDataLoading(false);
 
       let fromOfferId_ =
@@ -262,6 +266,7 @@ const Exchange = (props: Props) => {
 
       let addedOffer;
       let sellCurrecny = userInputData?.activeExchange[1]?.currency;
+
       if (sellCurrecny === "eth") {
         const data = {
           weieth: EthtoWei(inputEther),
@@ -275,16 +280,20 @@ const Exchange = (props: Props) => {
 
         addedOffer = await AddOfferWithEth(context.contract, data);
       } else if (sellCurrecny === ERC20TokenKey) {
+        let decimalPlace = Number(
+          currencyObjects[sellCurrecny.toLowerCase()].decimalPlace
+        );
+
         const data = {
-          tokens: inputEther,
+          tokens: (Number(inputEther) * 10 ** decimalPlace).toString(),
           satoshis: BtcToSatoshiConverter(
             userInputData.activeExchange[0].value
           ),
-          bitcoinAddress: generatedBitcoinData?.pubkeyHash.toString("hex"),
+          bitcoinAddress: generatedBitcoinData?.pubkeyHash?.toString("hex"),
           offerValidTill: TimeToNumber(exchangeData.valid),
           account: account,
         };
-        addedOffer = await addOfferWithToken(data);
+        addedOffer = await addOfferWithToken(data, sellCurrecny, inputEther);
       } else {
       }
 
@@ -420,7 +429,10 @@ const Exchange = (props: Props) => {
 
   useEffect(() => {
     if (listenedOfferDataByNonEvent?.offers) {
-      const result = getTableData(listenedOfferDataByNonEvent?.offers);
+      const result = getTableData(
+        listenedOfferDataByNonEvent?.offers,
+        selectedToken
+      );
       setTableData(result);
     }
   }, [listenedOfferDataByNonEvent]);
@@ -704,6 +716,7 @@ const Exchange = (props: Props) => {
         setFullFillmentPaymentProofSubmitted={
           setFullFillmentPaymentProofSubmitted
         }
+        selectedToken={selectedToken}
       />
 
       <div className={styles.overlay}>

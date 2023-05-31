@@ -284,7 +284,7 @@ export default function App() {
         // update the eth balance
         let account = await findMetaMaskAccount();
         updateAccountBalance(account);
-        console.log(ContractMap);
+        // console.log(ContractMap);
         let trustlex = await connect(
           provider,
           ContractMap[selectedToken].address

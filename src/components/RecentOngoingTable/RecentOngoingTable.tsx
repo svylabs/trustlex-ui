@@ -42,6 +42,33 @@ interface Props extends TableProps {
   mySwapOngoingLoadingText: string;
   contract: ethers.Contract | undefined;
 }
+export const GetProgressText = ({ progress }: { progress: string }) => {
+  const progressArr = progress.split(" ");
+  let progressArrLen = progressArr.length;
+  const progresText = [];
+  for (let i = 0; i < progressArrLen; i = i + 2) {
+    progresText.push(
+      progressArr[i] +
+        " " +
+        (typeof progressArr[i + 1] !== "undefined"
+          ? progressArr[i + 1] + " "
+          : "")
+    );
+  }
+
+  return (
+    <>
+      {progresText.map((value) => {
+        return (
+          <>
+            {value}
+            <br />
+          </>
+        );
+      })}
+    </>
+  );
+};
 
 const RecentOngoingTable = ({
   tableCaption,
@@ -58,94 +85,112 @@ const RecentOngoingTable = ({
   const [viewOrderDrawerKey, setViewOrderDrawerKey] = useState(0);
 
   const tableData = !mobile
-    ? data.map((row) => [
-        row.orderNumber,
-        <div className={styles.planningCell}>
-          {row.planningToSell.amount}{" "}
-          <ImageIcon image={getIconFromCurrencyType(row.planningToSell.type)} />{" "}
-          {row.planningToSell.type}
-        </div>,
-        <div className={styles.planningCell}>
-          {row.planningToBuy.amount}{" "}
-          <ImageIcon image={getIconFromCurrencyType(row.planningToBuy.type)} />{" "}
-          {row.planningToBuy.type}
-        </div>,
-        <div className={styles.planningCell}>
-          {row.rateInBTC}{" "}
-          <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
-          {CurrencyEnum.BTC}
-        </div>,
-        row.progress,
-        <div className={styles.actionsCell}>
-          {row.offerType == "my_order" ? (
-            <>
-              <ActionButton
-                size="compact"
-                variant={"default"}
-                onClick={() => {
-                  handleSubmitPaymentProof(
-                    row.fullfillmentRequestId,
-                    row.offerId as number,
-                    row.fullfillmentExpiryTime,
-                    row.quantityRequested,
-                    row.paymentProofSubmitted
-                  );
-                }}
-              >
-                Submit Payment Proof
-              </ActionButton>
-            </>
-          ) : (
-            <>
-              <ActionButton
-                size="compact"
-                variant={"default"}
-                onClick={() => {}}
-              >
-                Cancel
-              </ActionButton>
-              <ActionButton
-                size="compact"
-                variant={"primary"}
-                onClick={() => {
-                  console.log("ok");
-                  handleViewClick(row.offerData);
-                  // console.log(row.offerData);
-                }}
-              >
-                View
-              </ActionButton>
-            </>
-          )}
-        </div>,
-      ])
-    : data.map((row) => [
-        <div className={styles.planningCell}>
-          {row.planningToSell.amount}{" "}
-          <ImageIcon image={getIconFromCurrencyType(row.planningToSell.type)} />{" "}
-          {row.planningToSell.type}
-        </div>,
-        <div className={styles.planningCell}>
-          {row.planningToBuy.amount}{" "}
-          <ImageIcon image={getIconFromCurrencyType(row.planningToBuy.type)} />{" "}
-          {row.planningToBuy.type}
-        </div>,
-
-        row.progress.substring(0, row.progress.indexOf(" ")).toLowerCase() ===
-        "submit"
-          ? "Done"
-          : row.progress.substring(0, row.progress.indexOf(" ")),
-        <div className={styles.actionsCell}>
-          <SeeMoreButton
-            buttonText=""
-            onClick={(e) => {
-              // setViewOrderDrawerOpen(true);
-              handleViewClick(row.offerData);
-              console.log("ok2");
-            }}
-          />
-        </div>,
-      ]);
+    ? data.map((row) => {
+        let progress = row.progress;
+        return [
+          row.orderNumber,
+          <div className={styles.planningCell}>
+            {row.planningToSell.amount}{" "}
+            <ImageIcon
+              image={getIconFromCurrencyType(row.planningToSell.type)}
+            />{" "}
+            {row.planningToSell.type}
+          </div>,
+          <div className={styles.planningCell}>
+            {row.planningToBuy.amount}{" "}
+            <ImageIcon
+              image={getIconFromCurrencyType(row.planningToBuy.type)}
+            />{" "}
+            {row.planningToBuy.type}
+          </div>,
+          <div className={styles.planningCell}>
+            {row.rateInBTC}{" "}
+            <ImageIcon image={getIconFromCurrencyType(CurrencyEnum.BTC)} />{" "}
+            {CurrencyEnum.BTC}
+          </div>,
+          <>
+            <GetProgressText progress={progress} />
+          </>,
+          <div className={styles.actionsCell}>
+            {row.offerType == "my_order" ? (
+              <>
+                <ActionButton
+                  size="compact"
+                  variant={"default"}
+                  onClick={() => {
+                    handleSubmitPaymentProof(
+                      row.fullfillmentRequestId,
+                      row.offerId as number,
+                      row.fullfillmentExpiryTime,
+                      row.quantityRequested,
+                      row.paymentProofSubmitted
+                    );
+                  }}
+                >
+                  Submit <br /> Payment Proof
+                </ActionButton>
+              </>
+            ) : (
+              <>
+                <ActionButton
+                  size="compact"
+                  variant={"default"}
+                  onClick={() => {}}
+                >
+                  Cancel
+                </ActionButton>
+                <ActionButton
+                  size="compact"
+                  variant={"primary"}
+                  onClick={() => {
+                    console.log("ok");
+                    handleViewClick(row.offerData);
+                    // console.log(row.offerData);
+                  }}
+                >
+                  View
+                </ActionButton>
+              </>
+            )}
+          </div>,
+        ];
+      })
+    : data.map((row) => {
+        const progress = row.progress.split("and");
+        return [
+          <div className={styles.planningCell}>
+            {row.planningToSell.amount}{" "}
+            <ImageIcon
+              image={getIconFromCurrencyType(row.planningToSell.type)}
+            />{" "}
+            {row.planningToSell.type}
+          </div>,
+          <div className={styles.planningCell}>
+            {row.planningToBuy.amount}{" "}
+            <ImageIcon
+              image={getIconFromCurrencyType(row.planningToBuy.type)}
+            />{" "}
+            {row.planningToBuy.type}
+          </div>,
+          <>
+            {row.progress
+              .substring(0, row.progress.indexOf(" "))
+              .toLowerCase() === "submit"
+              ? "Done"
+              : row.progress.substring(0, row.progress.indexOf(" "))}
+          </>,
+          <div className={styles.actionsCell}>
+            <SeeMoreButton
+              buttonText=""
+              onClick={(e) => {
+                // setViewOrderDrawerOpen(true);
+                handleViewClick(row.offerData);
+                console.log("ok2");
+              }}
+            />
+          </div>,
+        ];
+      });
 
   const handleViewClick = (
     offerData: IListInitiatedFullfillmentDataByNonEvent

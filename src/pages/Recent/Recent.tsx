@@ -392,6 +392,7 @@ function MySwaps() {
           refreshOffersListKey={refreshMySwapOngoingListKey}
           setRefreshOffersListKey={setRefreshMySwapOngoingListKey}
           rowFullFillmentExpiryTime={rowFullFillmentExpiryTime}
+          setrowFullFillmentExpiryTime={setrowFullFillmentExpiryTime}
           rowFullFillmentQuantityRequested={rowFullFillmentQuantityRequested}
           key={exchangeOfferDrawerKey}
           fullFillmentPaymentProofSubmitted={fullFillmentPaymentProofSubmitted}

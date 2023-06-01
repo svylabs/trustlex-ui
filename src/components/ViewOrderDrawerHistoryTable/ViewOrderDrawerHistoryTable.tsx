@@ -18,9 +18,15 @@ interface Props extends TableProps {
   tableCaption?: string;
   cols: string[];
   data: ITableRow[];
+  GetProgressText: ({ progress }: { progress: string }) => any;
 }
 
-const ViewOrderDrawerHistoryTable = ({ tableCaption, cols, data }: Props) => {
+const ViewOrderDrawerHistoryTable = ({
+  tableCaption,
+  cols,
+  data,
+  GetProgressText,
+}: Props) => {
   const [isMoreTableDataLoading, setIsMoreTableDataLoading] = useState(false);
   const { width } = useWindowDimensions();
   let mobileView: boolean = width !== null && width < 500 ? true : false;
@@ -35,7 +41,7 @@ const ViewOrderDrawerHistoryTable = ({ tableCaption, cols, data }: Props) => {
     item.orderNumber,
     <CurrencyDisplay {...item.planningToSell} />,
     <CurrencyDisplay {...item.planningToBuy} />,
-    item.date,
+    <GetProgressText progress={item.date} />,
   ]);
   return (
     <div className={styles.root}>
@@ -58,13 +64,13 @@ const ViewOrderDrawerHistoryTable = ({ tableCaption, cols, data }: Props) => {
       <br />
       {!mobileView && (
         <Center>
-          <ActionButton
+          {/* <ActionButton
             variant={"transparent"}
             loading={isMoreTableDataLoading}
             onClick={loadMoreData}
           >
             Load more
-          </ActionButton>
+          </ActionButton> */}
         </Center>
       )}
     </div>

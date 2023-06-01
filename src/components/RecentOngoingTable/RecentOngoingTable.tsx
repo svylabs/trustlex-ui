@@ -11,6 +11,7 @@ import styles from "./RecentOngoingTable.module.scss";
 import SeeMoreButton from "../SeeMoreButton/SeeMoreButton";
 import { IListInitiatedFullfillmentDataByNonEvent } from "~/interfaces/IOfferdata";
 import { ethers } from "ethers";
+import { currencyObjects } from "~/Context/Constants";
 
 export interface ITableRow {
   orderNumber: string | number;
@@ -41,6 +42,7 @@ interface Props extends TableProps {
   ) => void;
   mySwapOngoingLoadingText: string;
   contract: ethers.Contract | undefined;
+  selectedToken: string;
 }
 export const GetProgressText = ({ progress }: { progress: string }) => {
   const progressArr = progress.split(" ");
@@ -58,12 +60,12 @@ export const GetProgressText = ({ progress }: { progress: string }) => {
 
   return (
     <>
-      {progresText.map((value) => {
+      {progresText.map((value, index) => {
         return (
-          <>
+          <div key={index}>
             {value}
             <br />
-          </>
+          </div>
         );
       })}
     </>
@@ -78,11 +80,21 @@ const RecentOngoingTable = ({
   handleSubmitPaymentProof,
   mySwapOngoingLoadingText,
   contract,
+  selectedToken,
 }: Props) => {
+  // let selectedCurrencyIcon = currencyObjects[selectedToken.toLowerCase()].icon;
+  // console.log(selectedToken, selectedCurrencyIcon);
   const [isViewOrderDrawerOpen, setViewOrderDrawerOpen] = useState(false);
   const [offerData, setOfferData] =
     useState<IListInitiatedFullfillmentDataByNonEvent>();
   const [viewOrderDrawerKey, setViewOrderDrawerKey] = useState(0);
+
+  const [selectedCurrencyIcon, setSelectedCurrencyIcon] = useState<
+    JSX.Element | string
+  >(currencyObjects[selectedToken.toLowerCase()].icon);
+  useEffect(() => {
+    setSelectedCurrencyIcon(currencyObjects[selectedToken.toLowerCase()].icon);
+  }, [selectedToken]);
 
   const tableData = !mobile
     ? data.map((row) => {
@@ -91,10 +103,12 @@ const RecentOngoingTable = ({
           row.orderNumber,
           <div className={styles.planningCell}>
             {row.planningToSell.amount}{" "}
-            <ImageIcon
+            {/* <ImageIcon
               image={getIconFromCurrencyType(row.planningToSell.type)}
-            />{" "}
-            {row.planningToSell.type}
+            />{" "} */}
+            {selectedCurrencyIcon}
+            {/* {row.planningToSell.type} */}
+            {selectedToken}
           </div>,
           <div className={styles.planningCell}>
             {row.planningToBuy.amount}{" "}
@@ -195,6 +209,7 @@ const RecentOngoingTable = ({
   const handleViewClick = (
     offerData: IListInitiatedFullfillmentDataByNonEvent
   ) => {
+    console.log(offerData);
     setOfferData(offerData);
     setViewOrderDrawerOpen(true);
   };
@@ -209,6 +224,8 @@ const RecentOngoingTable = ({
         offerData={offerData}
         contract={contract}
         key={viewOrderDrawerKey}
+        GetProgressText={GetProgressText}
+        selectedCurrencyIcon={selectedCurrencyIcon}
       />
 
       <Table

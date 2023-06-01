@@ -342,6 +342,7 @@ function MySwaps() {
               handleSubmitPaymentProof={handleSubmitPaymentProof}
               mySwapOngoingLoadingText={mySwapOngoingLoadingText}
               contract={contract}
+              selectedToken={selectedToken}
             />
           </div>
           <div className={styles.recentMobileTable}>
@@ -353,6 +354,7 @@ function MySwaps() {
               handleSubmitPaymentProof={handleSubmitPaymentProof}
               mySwapOngoingLoadingText={mySwapOngoingLoadingText}
               contract={contract}
+              selectedToken={selectedToken}
             />
           </div>
           <br />

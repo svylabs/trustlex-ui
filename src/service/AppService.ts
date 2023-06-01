@@ -125,6 +125,32 @@ export const getBalance = async (address: string) => {
   }
 };
 
+export const createContractInstance = async (
+  contractAddress: string,
+  contractABI: string
+): Promise<ethers.Contract | false> => {
+  try {
+    if (typeof window.ethereum !== undefined) {
+      const { ethereum } = window;
+      const provider = new ethers.providers.Web3Provider(ethereum);
+
+      const signer = provider.getSigner();
+      const contract = new ethers.Contract(
+        contractAddress,
+        contractABI,
+        signer
+      );
+
+      return contract;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
+
 export const getERC20TokenBalance = async (
   address: string,
   contractAddress: string = "",
@@ -680,7 +706,11 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
       let filled = 0;
       let satoshisReserved = offer.satoshisReserved;
       let satoshisToReceive = offer.satoshisToReceive;
-      filled = (satoshisReserved / satoshisToReceive) * 100;
+      let satoshisReceived = offer.satoshisReceived;
+      filled =
+        ((Number(satoshisReserved) + Number(satoshisReceived)) /
+          satoshisToReceive) *
+        100;
       offerDetailsInJson.progress = filled + "% filled";
       offerDetailsInJson.offerType = "my_offer";
       MyOffersPromises.push({ offerDetailsInJson });

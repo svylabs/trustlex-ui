@@ -32,6 +32,8 @@ import {
 } from "~/service/AppService";
 import { PAGE_SIZE } from "~/Context/Constants";
 import { TimeToDateFormat } from "~/utils/TimeConverter";
+import { tofixedEther } from "~/utils/Ether.utills";
+import { tofixedBTC } from "~/utils/BitcoinUtils";
 type Props = {};
 
 const Recent = (props: Props) => {
@@ -240,32 +242,47 @@ function MySwaps() {
     })
     .map((value, key) => {
       // let fulfillmentBy: string = value?.offerDetailsInJson.fulfillmentBy;
+      let planningToSell = Number(
+        tofixedEther(
+          Number(
+            ethers.utils.formatEther(value.offerDetailsInJson.offerQuantity)
+          )
+        )
+      );
+      let planningToBuyAmount = Number(
+        tofixedBTC(
+          Number(
+            SatoshiToBtcConverter(value.offerDetailsInJson.satoshisToReceive)
+          )
+        )
+      );
+      let orderBuyAmount;
+      if (value.offerDetailsInJson.offerType == "my_offer") {
+        orderBuyAmount = planningToBuyAmount;
+      } else if (value.offerDetailsInJson.offerType == "my_order") {
+        orderBuyAmount = Number(
+          tofixedBTC(
+            Number(
+              SatoshiToBtcConverter(
+                value.offerDetailsInJson
+                  .fulfillmentRequestQuantityRequested as string
+              )
+            )
+          )
+        );
+      }
+      let rateInBTC = Number(tofixedBTC(planningToBuyAmount / planningToSell));
       let row = {
         orderNumber: value.offerDetailsInJson.offerId.toString(),
         planningToSell: {
-          amount: Number(
-            ethers.utils.formatEther(value.offerDetailsInJson.offerQuantity)
-          ),
+          amount: planningToSell,
           type: CurrencyEnum.ETH,
         },
         planningToBuy: {
-          amount: Number(
-            Number(
-              SatoshiToBtcConverter(value.offerDetailsInJson.satoshisToReceive)
-            ).toFixed(4)
-          ),
+          amount: planningToBuyAmount,
           type: CurrencyEnum.BTC,
         },
-        rateInBTC: Number(
-          Number(
-            Number(
-              SatoshiToBtcConverter(value.offerDetailsInJson.satoshisToReceive)
-            ) /
-              Number(
-                ethers.utils.formatEther(value.offerDetailsInJson.offerQuantity)
-              )
-          ).toFixed(4)
-        ),
+        rateInBTC: rateInBTC,
         progress: value.offerDetailsInJson.progress, //TimestampTofromNow(value?.offersFullfillmentJson.expiryTime),
         offerType: value.offerDetailsInJson.offerType,
         fullfillmentRequestId: value.offerDetailsInJson.fullfillmentRequestId,
@@ -290,33 +307,72 @@ function MySwaps() {
   };
   const HistoryTableData2 = listenedMySwapCompletedDataByNonEvent.map(
     (value, index, data) => {
+      // console.log(value);
+      let offerType = value.offerDetailsInJson.offerType;
+      let planningToSell = Number(
+        tofixedEther(
+          Number(
+            ethers.utils.formatEther(value.offerDetailsInJson.offerQuantity)
+          )
+        )
+      );
+      let planningToBuyAmount = Number(
+        tofixedBTC(
+          Number(
+            SatoshiToBtcConverter(value.offerDetailsInJson.satoshisToReceive)
+          )
+        )
+      );
+      let rateInBTC = Number(tofixedBTC(planningToBuyAmount / planningToSell));
+      let OrderSellAmount;
+      if (offerType == "my_offer") {
+        OrderSellAmount = planningToSell;
+      } else if (offerType == "my_order") {
+        OrderSellAmount = Number(
+          tofixedBTC(
+            Number(
+              SatoshiToBtcConverter(
+                value.offerDetailsInJson
+                  .fulfillmentRequestQuantityRequested as string
+              )
+            ) / rateInBTC
+          )
+        );
+      }
+      let orderBuyAmount;
+      if (offerType == "my_offer") {
+        orderBuyAmount = planningToSell;
+      } else if (offerType == "my_order") {
+        orderBuyAmount = Number(
+          tofixedBTC(
+            Number(
+              SatoshiToBtcConverter(
+                value.offerDetailsInJson
+                  .fulfillmentRequestQuantityRequested as string
+              )
+            )
+          )
+        );
+      }
+
       let row = {
         orderNumber: value.offerDetailsInJson.offerId.toString(),
         planningToSell: {
-          amount: Number(
-            ethers.utils.formatEther(value.offerDetailsInJson.offerQuantity)
-          ),
+          amount: OrderSellAmount,
           type: CurrencyEnum.ETH,
         },
         planningToBuy: {
-          amount: Number(
-            Number(
-              SatoshiToBtcConverter(value.offerDetailsInJson.satoshisToReceive)
-            ).toFixed(4)
-          ),
+          amount: orderBuyAmount,
           type: CurrencyEnum.BTC,
         },
-        rateInBTC: Number(
-          Number(
-            Number(
-              SatoshiToBtcConverter(value.offerDetailsInJson.satoshisToReceive)
-            ) /
-              Number(
-                ethers.utils.formatEther(value.offerDetailsInJson.offerQuantity)
-              )
-          ).toFixed(4)
-        ),
-        date: TimeToDateFormat(value.offerDetailsInJson.orderedTime), //"09 Jan, 13:45pm",
+        rateInBTC: rateInBTC,
+
+        date:
+          offerType == "my_offer"
+            ? TimeToDateFormat(value.offerDetailsInJson.orderedTime)
+            : TimeToDateFormat(
+                value.offerDetailsInJson.fulfillmentRequestfulfilledTime
+              ), //"09 Jan, 13:45pm",
         status: StatusEnum.Completed,
       };
       return row;
@@ -404,7 +460,7 @@ function MySwaps() {
           selectedToken={selectedToken}
         />
       </GradientBackgroundContainer>
-      {/* Star My Swap History */}
+      {/* Star My Swap completed History */}
       <GradientBackgroundContainer colorLeft="#FFD57243">
         <Box p={"lg"} className={styles.box}>
           <div className={styles.historyTable}>
@@ -419,6 +475,7 @@ function MySwaps() {
                 "Status",
               ]}
               data={HistoryTableData2}
+              selectedToken={selectedToken}
             />
           </div>
           <div className={styles.mobileHistoryTable}>
@@ -427,6 +484,7 @@ function MySwaps() {
               cols={["# of order", "Date", "More Details"]}
               mobile={true}
               data={HistoryTableData}
+              selectedToken={selectedToken}
             />
           </div>
           <br />
@@ -456,7 +514,7 @@ function MySwaps() {
           </Center>
         </Box>
       </GradientBackgroundContainer>
-      {/* End My Swap History */}
+      {/* End My Swap completed History */}
     </div>
   );
 }

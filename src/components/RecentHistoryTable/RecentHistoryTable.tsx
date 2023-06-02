@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { TableProps } from "@mantine/core";
 import { CurrencyEnum } from "~/enums/CurrencyEnum";
 import { StatusEnum } from "~/enums/StatusEnum";
@@ -7,6 +8,7 @@ import ImageIcon from "../ImageIcon/ImageIcon";
 import Table from "../Table/Table";
 import styles from "./RecentHistoryTable.module.scss";
 import SeeMoreButton from "../SeeMoreButton/SeeMoreButton";
+import { currencyObjects } from "~/Context/Constants";
 
 export interface ITableRow {
   orderNumber: string | number;
@@ -22,16 +24,34 @@ interface Props extends TableProps {
   cols: string[];
   data: ITableRow[];
   mobile?: boolean;
+  selectedToken: string;
 }
 
-const RecentHistoryTable = ({ tableCaption, cols, data, mobile }: Props) => {
+const RecentHistoryTable = ({
+  tableCaption,
+  cols,
+  data,
+  mobile,
+  selectedToken,
+}: Props) => {
+  const [selectedCurrencyIcon, setSelectedCurrencyIcon] = useState<
+    JSX.Element | string
+  >(currencyObjects[selectedToken?.toLowerCase()]?.icon);
+  useEffect(() => {
+    setSelectedCurrencyIcon(
+      currencyObjects[selectedToken?.toLowerCase()]?.icon
+    );
+  }, [selectedToken]);
+
   const tableData = !mobile
     ? data.map((row) => [
         row.orderNumber,
         <div className={styles.planningCell}>
           {row.planningToSell.amount}{" "}
-          <ImageIcon image={getIconFromCurrencyType(row.planningToSell.type)} />{" "}
-          {row.planningToSell.type}
+          {/* <ImageIcon image={getIconFromCurrencyType(row.planningToSell.type)} />{" "}
+          {row.planningToSell.type} */}
+          {selectedCurrencyIcon}
+          {selectedToken}
         </div>,
         <div className={styles.planningCell}>
           {row.planningToBuy.amount}{" "}

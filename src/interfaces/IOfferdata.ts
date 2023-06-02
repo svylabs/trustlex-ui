@@ -12,11 +12,12 @@ export interface IOfferdata {
   collateralPer3Hours: string;
   progress?: string;
   offerType?: string;
-  fullfillmentRequestId?: undefined;
+  fullfillmentRequestId?: string | undefined;
   fulfillmentRequests?: IFullfillmentEvent;
   fulfillmentRequestExpiryTime?: string;
   fulfillmentRequestQuantityRequested?: string;
   fulfillmentRequestPaymentProofSubmitted?: boolean;
+  fulfillmentRequestfulfilledTime: any;
   fullfillmentResults?: IFullfillmentResult;
 }
 

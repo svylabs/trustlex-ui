@@ -47,9 +47,7 @@ const Table = ({
               {!addOffer ? (
                 <>
                   <h2 className={styles.caption}>{tableCaption}</h2>
-                  <button onClick={() => setOffer(true)}>
-                    Add your offer
-                  </button>
+                  <button onClick={() => setOffer(true)}>Add your offer</button>
                 </>
               ) : (
                 <div className={styles.font1}>Existing offers</div>

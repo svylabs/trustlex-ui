@@ -18,7 +18,7 @@ import {
   IListInitiatedFullfillmentDataByNonEvent,
 } from "~/interfaces/IOfferdata";
 import axios from "axios";
-import { PAGE_SIZE } from "~/Context/Constants";
+import { PAGE_SIZE, currencyObjects } from "~/Context/Constants";
 import { MAX_BLOCKS_TO_QUERY, MAX_ITERATIONS } from "~/Context/Constants";
 import { EthtoWei, WeitoEth } from "~/utils/Ether.utills";
 import { AppContext } from "~/Context/AppContext";
@@ -125,8 +125,36 @@ export const getBalance = async (address: string) => {
   }
 };
 
+export const createContractInstance = async (
+  contractAddress: string,
+  contractABI: string
+): Promise<ethers.Contract | false> => {
+  try {
+    if (typeof window.ethereum !== undefined) {
+      const { ethereum } = window;
+      const provider = new ethers.providers.Web3Provider(ethereum);
+
+      const signer = provider.getSigner();
+      const contract = new ethers.Contract(
+        contractAddress,
+        contractABI,
+        signer
+      );
+
+      return contract;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
+
 export const getERC20TokenBalance = async (
-  address: string
+  address: string,
+  contractAddress: string = "",
+  contractABI: string = ""
 ): Promise<number> => {
   try {
     if (typeof window.ethereum !== undefined) {
@@ -187,7 +215,7 @@ export const getOffer = async (
   try {
     if (!trustLex) return false;
 
-    let offerData = await trustLex.getOffer(offerId);
+    let offerData: IOfferdata = await trustLex.getOffer(offerId);
 
     return offerData;
   } catch (error) {
@@ -235,7 +263,11 @@ export const AddOfferWithEth = async (
   }
 };
 
-export const addOfferWithToken = async (data: IAddOfferWithToken) => {
+export const addOfferWithToken = async (
+  data: IAddOfferWithToken,
+  sellCurrecny: string,
+  inputTokens: string
+) => {
   // first approve contract to spend the tokens
   try {
     if (typeof window.ethereum !== undefined) {
@@ -249,21 +281,24 @@ export const addOfferWithToken = async (data: IAddOfferWithToken) => {
         signer
       );
       let tokens = data.tokens;
+      sellCurrecny;
       // To do Add the balance validation check
-      let accountOwnerBal: number = await getERC20TokenBalance(accounts[0]);
-      if (accountOwnerBal < (tokens as number)) {
+      let contractAddress =
+        currencyObjects[sellCurrecny.toLowerCase()].ERC20Address;
+
+      let contractABI = currencyObjects[sellCurrecny.toLowerCase()].ERC20ABI;
+      let accountOwnerBal: number = await getERC20TokenBalance(
+        accounts[0],
+        contractAddress,
+        contractABI
+      );
+      if (accountOwnerBal < Number(inputTokens)) {
         showErrorMessage("Your token balance is low.");
         return false;
       }
 
-      let spender = ContractMap.Token.address;
-      tokens = EthtoWei(tokens as string);
-      console.log(
-        tokens,
-        data.satoshis,
-        "0x" + data.bitcoinAddress,
-        data.offerValidTill
-      );
+      let spender = ContractMap.SPVC.address;
+      //tokens = EthtoWei(tokens as string);
 
       let transaction = await erc20TokenContract.increaseAllowance(
         spender,
@@ -288,6 +323,81 @@ export const addOfferWithToken = async (data: IAddOfferWithToken) => {
       await transaction2.wait();
       console.log(transaction2);
       return transaction2;
+    } else {
+      showErrorMessage("Metamask not found!");
+      return false;
+    }
+  } catch (error: any) {
+    let message = error?.message;
+    console.log(error);
+    return false;
+  }
+};
+
+export const increaseContractAllownace = async (
+  selectedToken: string,
+  tokenAmount: string // in SPVC
+) => {
+  // first approve contract to spend the tokens
+  try {
+    if (typeof window.ethereum !== undefined) {
+      const { ethereum } = window;
+      const provider = new ethers.providers.Web3Provider(ethereum);
+      let accounts = await provider.send("eth_requestAccounts", []);
+      const signer = provider.getSigner();
+
+      let contractAddress =
+        currencyObjects[selectedToken.toLowerCase()].ERC20Address;
+
+      let contractABI = currencyObjects[selectedToken.toLowerCase()].ERC20ABI;
+      let spender =
+        currencyObjects[selectedToken.toLowerCase()].orderBookContractAddreess;
+      if (!(contractAddress && contractABI && spender)) return false;
+
+      const erc20TokenContract = new ethers.Contract(
+        contractAddress,
+        contractABI,
+        signer
+      );
+      let tokens = Number(tokenAmount);
+
+      // To do Add the balance validation check
+      let accountOwnerBal: number = await getERC20TokenBalance(
+        accounts[0],
+        contractAddress,
+        contractABI
+      );
+
+      if (accountOwnerBal < tokens) {
+        showErrorMessage("Your token balance is low.");
+        return false;
+      }
+
+      let tokens_ = EthtoWei(tokenAmount);
+
+      let transaction = await erc20TokenContract.increaseAllowance(
+        spender,
+        tokens_
+      );
+      await transaction.wait();
+      console.log(transaction);
+
+      // create the contract instance
+      // let OrderBookContractForTokenAddress = spender;
+      // const OrderBookContractForToken = new ethers.Contract(
+      //   OrderBookContractForTokenAddress,
+      //   abi.abi,
+      //   signer
+      // );
+      // let transaction2 = await OrderBookContractForToken.addOfferWithToken(
+      //   tokens,
+      //   data.satoshis,
+      //   "0x" + data.bitcoinAddress,
+      //   data.offerValidTill
+      // );
+      // await transaction2.wait();
+      // console.log(transaction2);
+      return transaction;
     } else {
       showErrorMessage("Metamask not found!");
       return false;
@@ -596,7 +706,11 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
       let filled = 0;
       let satoshisReserved = offer.satoshisReserved;
       let satoshisToReceive = offer.satoshisToReceive;
-      filled = (satoshisReserved / satoshisToReceive) * 100;
+      let satoshisReceived = offer.satoshisReceived;
+      filled =
+        ((Number(satoshisReserved) + Number(satoshisReceived)) /
+          satoshisToReceive) *
+        100;
       offerDetailsInJson.progress = filled + "% filled";
       offerDetailsInJson.offerType = "my_offer";
       MyOffersPromises.push({ offerDetailsInJson });
@@ -632,6 +746,8 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
         fullfillmentResult.fulfillmentRequest.expiryTime;
       offerDetailsInJson.fulfillmentRequestQuantityRequested =
         fullfillmentResult.fulfillmentRequest.quantityRequested.toString();
+      offerDetailsInJson.fulfillmentRequestPaymentProofSubmitted =
+        fullfillmentResult.fulfillmentRequest.paymentProofSubmitted;
     }
     fullfillmentResult &&
       MyOffersPromises.push({ offerDetailsInJson: offerDetailsInJson });
@@ -698,32 +814,51 @@ export const listInitializeFullfillmentCompletedByNonEvent = async (
     // get the fullfillment list
     let FullfillmentResults: IFullfillmentResult[] =
       await getInitializedFulfillmentsByOfferId(trustLex, value.offerId);
-
-    let fullfillmentRequestId = undefined;
-    let fullfillmentResult =
-      FullfillmentResults &&
-      FullfillmentResults.find((fullfillmentResult, index) => {
-        if (
-          fullfillmentResult.fulfillmentRequest.fulfillmentBy.toLowerCase() ===
-            account.toLowerCase() &&
-          fullfillmentResult.fulfillmentRequest.paymentProofSubmitted == true
-        ) {
-          fullfillmentRequestId = offer.fulfillmentRequests[index];
-          return true;
-        } else {
-          return false;
+    if (FullfillmentResults && FullfillmentResults.length > 0) {
+      // console.log(FullfillmentResults);
+      let fullfillmentRequestIds: string[] = [];
+      let fullfillmentFilteredResult = FullfillmentResults.filter(
+        (fullfillmentResult, index) => {
+          if (
+            fullfillmentResult.fulfillmentRequest.fulfillmentBy.toLowerCase() ===
+              account.toLowerCase() &&
+            fullfillmentResult.fulfillmentRequest.paymentProofSubmitted == true
+          ) {
+            let fullfillmentRequestId = offer.fulfillmentRequests[index];
+            fullfillmentRequestIds.push(fullfillmentRequestId);
+            return true;
+          } else {
+            return false;
+          }
         }
+      );
+
+      fullfillmentFilteredResult.map((value, index) => {
+        let fullfillmentResult = value;
+        let offerDetailsInJson2: IOfferdata = { ...offerDetailsInJson };
+        let quantityRequested =
+          fullfillmentResult.fulfillmentRequest.quantityRequested.toString();
+
+        offerDetailsInJson2.offerType = "my_order";
+        offerDetailsInJson2.progress =
+          TimestampTotoNow(fullfillmentResult.fulfillmentRequest.expiryTime) +
+          " and " +
+          TimestampfromNow(fullfillmentResult.fulfillmentRequest.expiryTime);
+        offerDetailsInJson2.fullfillmentRequestId =
+          fullfillmentRequestIds[index];
+        offerDetailsInJson2.fulfillmentRequestExpiryTime =
+          fullfillmentResult.fulfillmentRequest.expiryTime;
+        offerDetailsInJson2.fulfillmentRequestQuantityRequested =
+          quantityRequested;
+
+        offerDetailsInJson2.fulfillmentRequestPaymentProofSubmitted =
+          fullfillmentResult.fulfillmentRequest.paymentProofSubmitted;
+        offerDetailsInJson2.fulfillmentRequestfulfilledTime =
+          fullfillmentResult.fulfillmentRequest.fulfilledTime;
+
+        MyOffersPromises.push({ offerDetailsInJson: offerDetailsInJson2 });
       });
-    if (fullfillmentResult) {
-      offerDetailsInJson.offerType = "my_order";
-      offerDetailsInJson.progress =
-        TimestampTotoNow(fullfillmentResult.fulfillmentRequest.expiryTime) +
-        " and " +
-        TimestampfromNow(fullfillmentResult.fulfillmentRequest.expiryTime);
-      offerDetailsInJson.fullfillmentRequestId = fullfillmentRequestId;
     }
-    fullfillmentResult &&
-      MyOffersPromises.push({ offerDetailsInJson: offerDetailsInJson });
   }
   MyoffersList = await Promise.all(MyOffersPromises);
   return MyoffersList;
@@ -771,13 +906,15 @@ export const getInitializedFulfillmentsByOfferId = async (
 export const InitializeFullfillment = async (
   trustLex: ethers.Contract | undefined,
   offerId: string,
-  _fulfillment: IFullfillmentEvent
+  _fulfillment: IFullfillmentEvent,
+  colletarealValue: string
 ) => {
   try {
     if (!trustLex) return false;
     const initializeFullfillment = await trustLex.initiateFulfillment(
       offerId,
-      _fulfillment
+      _fulfillment,
+      { value: colletarealValue }
     );
 
     await initializeFullfillment.wait();

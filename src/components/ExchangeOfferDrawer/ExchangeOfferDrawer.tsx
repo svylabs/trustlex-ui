@@ -12,11 +12,12 @@ import useAutoHideScrollbar from "~/hooks/useAutoHideScrollBar";
 import StepSvg, { StepFilledSvg, StepSuccessFilledSvg } from "./StepSvg";
 import useDetectScrollUpDown from "~/hooks/useDetectScrollUpDown";
 import Countdown from "~/utils/Countdown";
-import { tofixedEther } from "~/utils/Ether.utills";
+import { tofixedEther, EthtoWei } from "~/utils/Ether.utills";
 import { AppContext } from "~/Context/AppContext";
 import {
   IFullfillmentEvent,
   IFullfillmentResult,
+  IOfferdata,
 } from "~/interfaces/IOfferdata";
 import {
   InitializeFullfillment,
@@ -26,6 +27,7 @@ import {
   submitPaymentProof,
   getInitializedFulfillmentsByOfferId,
   getInitializedFulfillments,
+  increaseContractAllownace,
 } from "~/service/AppService";
 import { QRCodeCanvas } from "qrcode.react";
 import { address } from "bitcoinjs-lib";
@@ -43,6 +45,7 @@ import {
   findOrderExpireColor,
   getOfferOrderExpiryDurationInSeconds,
 } from "~/utils/TimeConverter";
+import { DEFAULT_COLLETARAL_FEES } from "~/Context/Constants";
 
 import {
   IconAdjustments,
@@ -53,6 +56,7 @@ import {
 import { Tooltip } from "@mantine/core";
 import { default as Countdowntimer } from "react-countdown";
 import BtcToSatoshiConverter from "~/utils/BtcToSatoshiConverter";
+import { currencyObjects } from "~/Context/Constants";
 
 type Props = {
   isOpened: boolean;
@@ -72,6 +76,7 @@ type Props = {
   setFullFillmentPaymentProofSubmitted: (
     fullFillmentPaymentProofSubmitted: boolean | undefined
   ) => void;
+  selectedToken: string;
 };
 
 const ExchangeOfferDrawer = ({
@@ -88,6 +93,7 @@ const ExchangeOfferDrawer = ({
   rowFullFillmentQuantityRequested,
   fullFillmentPaymentProofSubmitted,
   setFullFillmentPaymentProofSubmitted,
+  selectedToken = "ETH",
 }: Props) => {
   // console.log(data);
   const { mobileView } = useWindowDimensions();
@@ -117,7 +123,10 @@ const ExchangeOfferDrawer = ({
     useState<string>("inherit");
   const [clickedOnInitiateButton, setClickedOnInitiateButton] =
     useState<boolean>(false);
+  const [isColletaralNeeded, setIsColletaralNeeded] = useState<boolean>(false);
   const { scrollDirection } = useDetectScrollUpDown();
+
+  let selectedCurrencyIcon = currencyObjects[selectedToken.toLowerCase()].icon;
 
   useEffect(() => {
     if (rowOfferId === null) {
@@ -131,7 +140,7 @@ const ExchangeOfferDrawer = ({
 
   const { listenedOfferData, listenedOfferDataByNonEvent } = context;
 
-  const foundOffer =
+  let foundOffer =
     rowOfferId &&
     // listenedOfferData.offers.find((offer) => {
     listenedOfferDataByNonEvent.offers.find((offer) => {
@@ -141,14 +150,22 @@ const ExchangeOfferDrawer = ({
 
   // console.log(foundOffer, data, listenedOfferData, listenedOfferDataByNonEvent);
   useAutoHideScrollbar(rootRef);
-
   useEffect(() => {
     (async () => {
+      if (!rowOfferId || rowOfferId === undefined) return;
+
       // get offer details
-      // if (!rowOfferId || rowOfferId === undefined) return;
-      // console.log(contract, rowOfferId);
-      // let offerDetails = await getOffer(contract, rowOfferId);
+      let offerDetails: IOfferdata | false | undefined = await getOffer(
+        contract,
+        rowOfferId
+      );
+      if (!offerDetails || offerDetails === undefined) return;
       // console.log(offerDetails);
+      // get the offerfullfillment details
+      let fullfillmentResults = await getInitializedFulfillmentsByOfferId(
+        contract,
+        rowOfferId
+      );
 
       if (!foundOffer || foundOffer === undefined) return;
 
@@ -166,7 +183,6 @@ const ExchangeOfferDrawer = ({
         isOrderExpired = true;
         setIsOrderExpired(true);
       }
-      console.log(isOrderExpired);
 
       let planningToSell_ = Number(
         ethers.utils.formatEther(foundOffer.offerDetailsInJson.offerQuantity)
@@ -180,41 +196,19 @@ const ExchangeOfferDrawer = ({
         Number(
           ethers.utils.formatEther(offer.offerDetailsInJson.offerQuantity)
         );
-      const satoshisToReceive = Number(
-        offer.offerDetailsInJson.satoshisToReceive
-      );
-      let satoshisReserved = Number(offer.offerDetailsInJson.satoshisReserved);
-      const satoshisReceived = Number(
-        offer.offerDetailsInJson.satoshisReceived
-      );
+      // const satoshisToReceive = Number(
+      //   offer.offerDetailsInJson.satoshisToReceive
+      // );
+      // let satoshisReserved = Number(offer.offerDetailsInJson.satoshisReserved);
 
-      // update satoshisReserved amount
-      // if (satoshisToReceive == satoshisReserved + satoshisReceived) {
-      let fullfillmentResults = offer.offerDetailsInJson.fullfillmentResults;
+      // const satoshisReceived = Number(
+      //   offer.offerDetailsInJson.satoshisReceived
+      // );
+      const satoshisToReceive = Number(offerDetails.satoshisToReceive);
+      let satoshisReserved = Number(offerDetails.satoshisReserved);
 
-      fullfillmentResults &&
-        fullfillmentResults?.map(
-          (value: IFullfillmentResult, index: number) => {
-            // if (offer.offerDetailsInJson.offerId == "21") {
-            //   console.log(offer, value);
-            // }
-            let expiryTime = Number(value.fulfillmentRequest.expiryTime) * 1000;
-            let isExpired = value.fulfillmentRequest.isExpired;
-            let paymentProofSubmitted =
-              value.fulfillmentRequest.paymentProofSubmitted;
-            if (
-              expiryTime < Date.now() &&
-              isExpired == false &&
-              paymentProofSubmitted == false
-            ) {
-              satoshisReserved -= Number(
-                value.fulfillmentRequest.quantityRequested
-              );
-            }
-          }
-        );
-      // }
-      console.log(satoshisToReceive - (satoshisReserved + satoshisReceived));
+      const satoshisReceived = Number(offerDetails.satoshisReceived);
+
       let left_to_buy =
         Number(
           SatoshiToBtcConverter(
@@ -243,12 +237,13 @@ const ExchangeOfferDrawer = ({
       setPlanningToSell(planningToSell_);
       // setEthValue(planningToSell_);
       //if order already initiated
-      console.log(left_to_buy);
+      let isInitating = false;
       if (
         rowFullFillmentId != undefined &&
         isOrderExpired == false &&
         fullFillmentPaymentProofSubmitted == false
       ) {
+        isInitating = true;
         setIsInitating("initiated");
         let toAddress = Buffer.from(
           foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
@@ -275,9 +270,36 @@ const ExchangeOfferDrawer = ({
             ));
       }
       left_to_buy = tofixedEther(left_to_buy);
-      console.log(left_to_buy);
+      // console.log(left_to_buy);
       setLeftToBuy(left_to_buy);
       setEthValue(left_to_buy);
+
+      // update satoshisReserved amount
+      // if (satoshisToReceive == satoshisReserved + satoshisReceived) {
+      // let fullfillmentResults = offer.offerDetailsInJson.fullfillmentResults;
+      let isColletaralNeeded = false;
+      fullfillmentResults &&
+        fullfillmentResults?.map(
+          (value: IFullfillmentResult, index: number) => {
+            let expiryTime = Number(value.fulfillmentRequest.expiryTime) * 1000;
+            let isExpired = value.fulfillmentRequest.isExpired;
+            let paymentProofSubmitted =
+              value.fulfillmentRequest.paymentProofSubmitted;
+            if (
+              expiryTime < Date.now() &&
+              isExpired == false &&
+              paymentProofSubmitted == false
+            ) {
+              satoshisReserved -= Number(
+                value.fulfillmentRequest.quantityRequested
+              );
+            }
+          }
+        );
+      // }
+      if (satoshisReserved > 0 && isInitating == false) {
+        setIsColletaralNeeded(true);
+      }
     })();
   }, [foundOffer?.offerDetailsInJson?.offerId]);
 
@@ -321,6 +343,26 @@ const ExchangeOfferDrawer = ({
       context.contract,
       foundOffer.offerDetailsInJson.offerId
     );
+    let totalCollateralAdded =
+      foundOffer.offerDetailsInJson.collateralPer3Hours;
+    let colletarealValue = "0";
+
+    if (isColletaralNeeded == true) {
+      colletarealValue = getColletaralValue().toString();
+      totalCollateralAdded = EthtoWei(colletarealValue).toString();
+      // if (selectedToken != "ETH") {
+      //   let tokenAmount = colletarealValue;
+      //   // Allow the contract to get the token
+      //   let allownaceResult = await increaseContractAllownace(
+      //     selectedToken,
+      //     tokenAmount
+      //   );
+      //   if (allownaceResult == false || !allownaceResult) {
+      //     return false;
+      //   }
+      //   // console.log(allownaceResult);
+      // }
+    }
 
     const _fulfillment: IFullfillmentEvent = {
       // fulfillmentBy: foundOffer.offerEvent.from,
@@ -329,7 +371,7 @@ const ExchangeOfferDrawer = ({
       quantityRequested: BtcToSatoshiConverter(getBTCAmount()),
       allowAnyoneToSubmitPaymentProofForFee: true,
       allowAnyoneToAddCollateralForFee: true,
-      totalCollateralAdded: foundOffer.offerDetailsInJson.collateralPer3Hours,
+      totalCollateralAdded: totalCollateralAdded.toString(),
       // expiryTime: foundOffer.offerDetailsInJson.offerValidTill,
       expiryTime: getTimeInSeconds().toString(),
       fulfilledTime: 0,
@@ -339,18 +381,30 @@ const ExchangeOfferDrawer = ({
       isExpired: false,
     };
 
-    console.log(foundOffer, _fulfillment);
+    // console.log(foundOffer, _fulfillment);
 
     const data = await InitializeFullfillment(
       context.contract,
       // foundOffer.offerEvent.to,
       foundOffer.offerDetailsInJson.offerId,
-      _fulfillment
+      _fulfillment,
+      totalCollateralAdded
     );
     if (data) {
-      let event = data?.events[0];
-      let claimedBy = event?.args["claimedBy"];
-      let offerId = event?.args["offerId"]?.toString();
+      console.log(data);
+      let events =
+        data?.events &&
+        data?.events?.filter((value: any) => {
+          if (value?.event && value?.event == "INITIALIZED_FULFILLMENT") {
+            return true;
+          } else {
+            return false;
+          }
+        });
+      console.log(events);
+      let event = events[0];
+      // let claimedBy = event?.args["claimedBy"];
+      // let offerId = event?.args["offerId"]?.toString();
       let fulfillmentId = event?.args["fulfillmentId"]?.toString();
       let expiryTime = (
         parseInt(_fulfillment.expiryTime) +
@@ -443,7 +497,18 @@ const ExchangeOfferDrawer = ({
   if (!isOpened) return null;
 
   const getBTCAmount = () => {
-    return tofixedBTC((ethValue / planningToSell) * planningToBuy);
+    let inputAmount = Number(ethValue);
+    let BTCAmount = tofixedBTC((inputAmount / planningToSell) * planningToBuy);
+    // console.log(inputAmount, planningToSell, planningToBuy, BTCAmount);
+    return BTCAmount;
+  };
+
+  const getColletaralValue = () => {
+    let inputAmount = Number(ethValue);
+    let colletaralValue = tofixedEther(
+      (inputAmount * DEFAULT_COLLETARAL_FEES) / 100
+    );
+    return colletaralValue;
   };
 
   return (
@@ -536,7 +601,7 @@ const ExchangeOfferDrawer = ({
                           if (isNaN(value)) {
                             setEthValue("");
                           } else {
-                            setEthValue(Number(value));
+                            setEthValue(tofixedEther(Number(value)));
                           }
                           // if (isNaN(ethValue)) {
                           //   setEthValue(Number(e.target.value));
@@ -549,16 +614,17 @@ const ExchangeOfferDrawer = ({
                   ) : (
                     <span style={{ marginRight: "10px" }}>{ethValue}</span>
                   )}
-                  <ImageIcon
+                  {selectedCurrencyIcon}
+                  {/* <ImageIcon
                     image={getIconFromCurrencyType(CurrencyEnum.ETH)}
-                  />
+                  /> */}
                   <span className={styles.for}>with</span>
                   <CurrencyDisplay
                     amount={getBTCAmount()}
                     type={CurrencyEnum.BTC}
                   />{" "}
                 </Text>
-
+                {/* Time Left Countdown timer Start Here */}
                 <div
                   style={{
                     display: "inline-block",
@@ -593,6 +659,7 @@ const ExchangeOfferDrawer = ({
                     ""
                   )}
                 </div>
+                {/* Time Left Countdown timer End Here */}
               </div>
             </Grid.Col>
           </Grid>
@@ -615,6 +682,41 @@ const ExchangeOfferDrawer = ({
               <div className={styles.stepsContentsContainer}>
                 <div className={styles.stepContent}>
                   <div className={styles.spacing} />
+                  {/* Colloerateral section start here */}
+                  {isColletaralNeeded == true ? (
+                    <>
+                      <div className={styles.colletaralTextContainer}>
+                        <span
+                          className={styles.colletaralText}
+                        >{`Colletaral (optional)`}</span>
+                        <span className={styles.colletaralText}>
+                          There is already one offer fullfillment in progress.
+                          Post {getColletaralValue()} {DEFAULT_COLLETARAL_FEES}%{" "}
+                          <ImageIcon
+                            image={getIconFromCurrencyType(CurrencyEnum.ETH)}
+                          />
+                          collateral to increase the payment confirmation time
+                          by 3 more hours
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <></>
+                  )}
+
+                  {/* <div className={styles.actionButton}>
+                    <Button
+                      variant={VariantsEnum.outlinePrimary}
+                      style={{ background: "transparent" }}
+                      radius={10}
+                    >
+                      Add Collateral
+                    </Button>
+                    <span className={styles.rightText}>
+                      5% collateral posted already
+                    </span>
+                  </div> */}
+                  {/* Colloerateral section end here */}
                   <div
                     className={`${styles.stepItem} ${
                       checked === "allow" && styles.activeStepItem
@@ -633,7 +735,6 @@ const ExchangeOfferDrawer = ({
                       Allow anyone to post payment proof for 0.05% fee
                     </span>
                   </div>
-
                   <div
                     className={`${styles.stepItem} ${
                       checked !== "allow" && styles.activeStepItem
@@ -688,11 +789,22 @@ const ExchangeOfferDrawer = ({
                                 : "transparent",
                           }}
                           loading={isInitiatng === "loading" ? true : false}
-                          onClick={handleInitate}
+                          onClick={
+                            isColletaralNeeded == true
+                              ? handleInitate
+                              : handleInitate
+                          }
                         >
-                          {isInitiatng === "loading"
-                            ? "Initiating"
-                            : "Initiate"}
+                          {isInitiatng === "loading" ? (
+                            "Initiating"
+                          ) : (
+                            <>
+                              Initiate{" "}
+                              {isColletaralNeeded == true
+                                ? "with Colletaral"
+                                : ""}
+                            </>
+                          )}
                         </Button>
                       )}
                       {isInitiatng === "loading" ? (
@@ -778,28 +890,6 @@ const ExchangeOfferDrawer = ({
                         </div>
                       </>
                     )}
-                  </div>
-                  <div className={styles.colletaralTextContainer}>
-                    <span
-                      className={styles.colletaralText}
-                    >{`Colletaral (optional)`}</span>
-                    <span className={styles.colletaralText}>
-                      Post 10% collateral to increase the payment confirmation
-                      time by 3 more hours
-                    </span>
-                  </div>
-
-                  <div className={styles.actionButton}>
-                    <Button
-                      variant={VariantsEnum.outlinePrimary}
-                      style={{ background: "transparent" }}
-                      radius={10}
-                    >
-                      Add Collateral
-                    </Button>
-                    <span className={styles.rightText}>
-                      5% collateral posted already
-                    </span>
                   </div>
                 </div>
               </div>

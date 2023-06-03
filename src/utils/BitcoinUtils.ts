@@ -2,7 +2,10 @@ import * as tinysecp from "tiny-secp256k1";
 import * as bitcoin from "bitcoinjs-lib";
 import { ECPairFactory, ECPairAPI, networks } from "ecpair";
 import * as bip38 from "bip38";
-import { BTC_DECIMAL_PLACE } from "~/Context/Constants";
+import { BTC_DECIMAL_PLACE, PRODUCTION_MODE } from "~/Context/Constants";
+
+export const network =
+  PRODUCTION_MODE === true ? networks.bitcoin : networks.testnet;
 
 export interface Wallet {
   privateKey: Buffer;
@@ -20,7 +23,7 @@ export const generateBitcoinWallet = (): Wallet => {
   const ecpair: ECPairAPI = ECPairFactory(tinysecp);
   const keypair = ecpair.makeRandom({
     compressed: true,
-    network: networks.bitcoin,
+    network: network,
   });
 
   return {
@@ -34,6 +37,8 @@ export const encryptWallet = (keyPair: Wallet, password: string): string => {
   const { bip38_encrypt } = window;
   // const encryptedKey = bip38.encrypt(keyPair.privateKey, true, password);
   // const encryptedKey = window.bip38_encrypt(keyPair.privateKey, true, password);
+  console.log(keyPair.privateKey.toString());
+
   const encryptedKey = bip38_encrypt(keyPair.privateKey, true, password);
   return JSON.stringify({
     address: bitcoin.payments.p2wpkh({ pubkey: keyPair.publicKey })?.address,
@@ -70,7 +75,10 @@ export const generateTrustlexAddress = (
     bitcoin.opcodes.OP_EQUALVERIFY,
     bitcoin.opcodes.OP_CHECKSIG,
   ]);
-  const p2wsh = bitcoin.payments.p2wsh({ redeem: { output: witnessScript } });
+  const p2wsh = bitcoin.payments.p2wsh({
+    redeem: { output: witnessScript, network },
+    network,
+  });
   return p2wsh.address;
 };
 

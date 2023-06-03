@@ -9,32 +9,33 @@ import {
   ERC20TokenKey,
   ERC20TokenLabel,
   ERC20TokenValue,
+  currencyObjects,
 } from "~/Context/Constants";
 
-const currencyObjects: {
-  [key: string]: {
-    label: string;
-    value: string;
-    icon: JSX.Element;
-  };
-} = {
-  eth: {
-    label: "ETH",
-    value: "Ethereum",
-    icon: <ImageIcon image={"/icons/ethereum-2.svg"} />,
-  },
-  btc: {
-    label: "BTC",
-    value: "bitcoin",
-    icon: <ImageIcon image={"/icons/bitcoin.svg"} />,
-  },
+// const currencyObjects: {
+//   [key: string]: {
+//     label: string;
+//     value: string;
+//     icon: JSX.Element;
+//   };
+// } = {
+//   eth: {
+//     label: "ETH",
+//     value: "Ethereum",
+//     icon: <ImageIcon image={"/icons/ethereum-2.svg"} />,
+//   },
+//   btc: {
+//     label: "BTC",
+//     value: "bitcoin",
+//     icon: <ImageIcon image={"/icons/bitcoin.svg"} />,
+//   },
 
-  [ERC20TokenKey]: {
-    label: ERC20TokenLabel,
-    value: ERC20TokenValue,
-    icon: <ImageIcon image={"/icons/bitcoin.svg"} />,
-  },
-};
+//   [ERC20TokenKey]: {
+//     label: ERC20TokenLabel,
+//     value: ERC20TokenValue,
+//     icon: <ImageIcon image={"/icons/bitcoin.svg"} />,
+//   },
+// };
 // console.log(currencyObjects);
 type Props = {};
 
@@ -122,6 +123,7 @@ const ExchangeSwapGroup = (props: Props) => {
       let activeExchange = prev.activeExchange;
 
       activeExchange[1].value = e.target.value;
+      console.log(e.target.value);
       return { ...prev, activeExchange: activeExchange };
     });
   };

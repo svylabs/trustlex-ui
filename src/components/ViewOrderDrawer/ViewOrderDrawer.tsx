@@ -19,7 +19,7 @@ import { useState } from "react";
 import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
 import { IFullfillmentResult } from "~/interfaces/IOfferdata";
 import { getInitializedFulfillmentsByOfferId } from "~/service/AppService";
-import { EthtoWei, WeitoEth } from "~/utils/Ether.utills";
+import { EthtoWei, WeitoEth, tofixedEther } from "~/utils/Ether.utills";
 import { TimestampTotoNow, TimestampfromNow } from "~/utils/TimeConverter";
 import { tofixedBTC } from "~/utils/BitcoinUtils";
 
@@ -28,9 +28,18 @@ type Props = {
   onClose: () => void;
   offerData: IListInitiatedFullfillmentDataByNonEvent | undefined;
   contract: ethers.Contract | undefined;
+  GetProgressText: ({ progress }: { progress: string }) => void;
+  selectedCurrencyIcon: JSX.Element | string;
 };
 
-const ViewOrderDrawer = ({ isOpened, onClose, offerData, contract }: Props) => {
+const ViewOrderDrawer = ({
+  isOpened,
+  onClose,
+  offerData,
+  contract,
+  GetProgressText,
+  selectedCurrencyIcon,
+}: Props) => {
   const { width } = useWindowDimensions();
   let mobileView: boolean = width !== null && width < 500 ? true : false;
   const rootRef = useRef(null);
@@ -111,18 +120,23 @@ const ViewOrderDrawer = ({ isOpened, onClose, offerData, contract }: Props) => {
             (Number(offerData?.offerDetailsInJson.offerQuantity) /
               Number(offerData?.offerDetailsInJson.satoshisToReceive))
           ).toString();
-          let ETHAmount = WeitoEth(ETHAmountPricePerBTC);
+          let ETHAmount = tofixedEther(Number(WeitoEth(ETHAmountPricePerBTC)));
           let expiryTime = TimestampTotoNow(fulfillmentRequest.expiryTime);
 
           let row = {
             orderNumber: fulfillmentRequestId.toString(),
             planningToSell: {
               amount: ETHAmount,
-              type: CurrencyEnum.ETH,
+              // type: CurrencyEnum.ETH,
+              type: selectedCurrencyIcon,
             },
             planningToBuy: {
-              amount: SatoshiToBtcConverter(
-                fulfillmentRequest?.quantityRequested?.toString()
+              amount: tofixedBTC(
+                Number(
+                  SatoshiToBtcConverter(
+                    fulfillmentRequest?.quantityRequested?.toString()
+                  )
+                )
               ),
               type: CurrencyEnum.BTC,
             },
@@ -131,7 +145,7 @@ const ViewOrderDrawer = ({ isOpened, onClose, offerData, contract }: Props) => {
           return row;
         })
       : [];
-    console.log(viewOrderDrawerHistoryTableData2_);
+    // console.log(viewOrderDrawerHistoryTableData2_);
     SetViewOrderDrawerHistoryTableData2(viewOrderDrawerHistoryTableData2_);
   }, [fullfillmentResult]);
 
@@ -170,8 +184,8 @@ const ViewOrderDrawer = ({ isOpened, onClose, offerData, contract }: Props) => {
                     amount={getBTCAmount()}
                     type={CurrencyEnum.BTC}
                   />{" "}
-                  for{" "}
-                  <CurrencyDisplay amount={buyAmount} type={CurrencyEnum.ETH} />
+                  for {selectedCurrencyIcon}
+                  {/* <CurrencyDisplay amount={buyAmount} type={CurrencyEnum.ETH} /> */}
                 </Text>
               ) : (
                 <Text component="h1" className={styles.title}>
@@ -230,6 +244,7 @@ const ViewOrderDrawer = ({ isOpened, onClose, offerData, contract }: Props) => {
                   "Date",
                 ]}
                 data={viewOrderDrawerHistoryTableData2}
+                GetProgressText={GetProgressText}
               />
             </GradientBackgroundContainer>
           </Box>

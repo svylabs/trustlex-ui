@@ -17,7 +17,7 @@ export interface IOfferdata {
   fulfillmentRequestExpiryTime?: string;
   fulfillmentRequestQuantityRequested?: string;
   fulfillmentRequestPaymentProofSubmitted?: boolean;
-  fulfillmentRequestfulfilledTime: any;
+  fulfillmentRequestfulfilledTime?: any;
   fullfillmentResults?: IFullfillmentResult;
 }
 

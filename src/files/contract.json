@@ -71,22 +71,32 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "extendOffer",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "liquidateCollateral",
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "offerId",
+          "type": "uint256"
+        }
+      ],
+      "name": "cancelOffer",
       "outputs": [],
       "stateMutability": "payable",
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "renounceOwnership",
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "offerId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint32",
+          "name": "offerValidTill",
+          "type": "uint32"
+        }
+      ],
+      "name": "extendOffer",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -198,6 +208,13 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "liquidateCollateral",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
       "anonymous": false,
       "inputs": [
         {
@@ -214,6 +231,38 @@
         }
       ],
       "name": "NEW_OFFER",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "offerId",
+          "type": "uint256"
+        }
+      ],
+      "name": "OfferCancelEvent",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "offerId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint32",
+          "name": "offerValidTill",
+          "type": "uint32"
+        }
+      ],
+      "name": "OfferExtendedEvent",
       "type": "event"
     },
     {
@@ -259,6 +308,13 @@
       ],
       "name": "PAYMENT_SUCCESSFUL",
       "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
     },
     {
       "inputs": [
@@ -504,6 +560,11 @@
               "internalType": "uint256[]",
               "name": "fulfillmentRequests",
               "type": "uint256[]"
+            },
+            {
+              "internalType": "bool",
+              "name": "isCanceled",
+              "type": "bool"
             }
           ],
           "internalType": "struct TrustlexPerAssetOrderBook.Offer",
@@ -587,6 +648,11 @@
                   "internalType": "uint256[]",
                   "name": "fulfillmentRequests",
                   "type": "uint256[]"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "isCanceled",
+                  "type": "bool"
                 }
               ],
               "internalType": "struct TrustlexPerAssetOrderBook.Offer",
@@ -761,6 +827,11 @@
           "internalType": "uint8",
           "name": "collateralPer3Hours",
           "type": "uint8"
+        },
+        {
+          "internalType": "bool",
+          "name": "isCanceled",
+          "type": "bool"
         }
       ],
       "stateMutability": "view",

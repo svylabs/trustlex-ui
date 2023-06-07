@@ -210,14 +210,93 @@ export const getOffers = async (
 
 export const getOffer = async (
   trustLex: ethers.Contract | undefined,
-  offerId: any
+  offerId: any,
+  account: string = ""
 ) => {
   try {
     if (!trustLex) return false;
 
-    let offerData: IOfferdata = await trustLex.getOffer(offerId);
+    let offer: IOfferdata = await trustLex.getOffer(offerId);
 
-    return offerData;
+    const offerDetailsInJson: IOfferdata = {
+      offerId: offerId,
+      offerQuantity: offer.offerQuantity.toString(),
+      offeredBy: offer.offeredBy.toString(),
+      offerValidTill: offer.offerValidTill.toString(),
+      orderedTime: offer.orderedTime.toString(),
+      offeredBlockNumber: offer.offeredBlockNumber.toString(),
+      bitcoinAddress: offer.bitcoinAddress.toString(),
+      satoshisToReceive: offer.satoshisToReceive.toString(),
+      satoshisReceived: offer.satoshisReceived.toString(),
+      satoshisReserved: offer.satoshisReserved.toString(),
+      collateralPer3Hours: offer.collateralPer3Hours.toString(),
+      fulfillmentRequests: offer.fulfillmentRequests,
+      progress: "",
+      offerType: "",
+      fullfillmentRequestId: undefined,
+    };
+    let satoshisToReceive = offer.satoshisToReceive;
+    let satoshisReceived = offer.satoshisReceived;
+    let ConditionFlag;
+    if (account != "") {
+      if (offer.offeredBy.toLowerCase() == account.toLowerCase()) {
+        ConditionFlag = true;
+      } else {
+        ConditionFlag = false;
+      }
+    } else {
+      ConditionFlag = true;
+    }
+    if (
+      ConditionFlag &&
+      satoshisReceived.toString() != satoshisToReceive.toString()
+    ) {
+      let filled = 0;
+      let satoshisReserved = offer.satoshisReserved;
+      let satoshisToReceive = offer.satoshisToReceive;
+      let satoshisReceived = offer.satoshisReceived;
+      filled =
+        ((Number(satoshisReserved) + Number(satoshisReceived)) /
+          Number(satoshisToReceive)) *
+        100;
+      offerDetailsInJson.progress = filled + "% filled";
+      offerDetailsInJson.offerType = "my_offer";
+    }
+    // get the fullfillment list
+    let FullfillmentResults: IFullfillmentResult[] =
+      await getInitializedFulfillmentsByOfferId(trustLex, offerId);
+
+    let fullfillmentRequestId = undefined;
+    let fullfillmentResult =
+      FullfillmentResults &&
+      FullfillmentResults.find((fullfillmentResult, index) => {
+        if (
+          fullfillmentResult.fulfillmentRequest.fulfillmentBy.toLowerCase() ===
+            account.toLowerCase() &&
+          fullfillmentResult.fulfillmentRequest.paymentProofSubmitted == false
+        ) {
+          fullfillmentRequestId = offer.fulfillmentRequests[index];
+          return true;
+        } else {
+          return false;
+        }
+      });
+    if (fullfillmentResult) {
+      offerDetailsInJson.offerType = "my_order";
+      offerDetailsInJson.progress =
+        TimestampTotoNow(fullfillmentResult.fulfillmentRequest.expiryTime) +
+        " and " +
+        TimestampfromNow(fullfillmentResult.fulfillmentRequest.expiryTime);
+      offerDetailsInJson.fullfillmentRequestId = fullfillmentRequestId;
+      offerDetailsInJson.fulfillmentRequestExpiryTime =
+        fullfillmentResult.fulfillmentRequest.expiryTime;
+      offerDetailsInJson.fulfillmentRequestQuantityRequested =
+        fullfillmentResult.fulfillmentRequest.quantityRequested.toString();
+      offerDetailsInJson.fulfillmentRequestPaymentProofSubmitted =
+        fullfillmentResult.fulfillmentRequest.paymentProofSubmitted;
+    }
+
+    return offerDetailsInJson;
   } catch (error) {
     console.log(error);
     return;
@@ -466,204 +545,12 @@ export const getOffersList = async (
     return <IOffersResultByNonEvent>{
       offers: offersList,
     };
-
-    console.log(offersData);
   } catch (error) {
     console.log(error);
     return <IOffersResultByNonEvent | any>{ offers: [] };
   }
 };
 
-// Old method to fetch the list by events
-// export const listOffers = async (
-//   trustLex: ethers.Contract | undefined,
-//   fromBlock: number = 0,
-//   toBlock: "latest" | number = "latest"
-// ) => {
-//   try {
-//     if (!trustLex || toBlock == -1)
-//       return { fromBlock: fromBlock, toBlock: toBlock, offers: [] };
-//     let estimatedFromBlock = fromBlock;
-//     if (toBlock === "latest") {
-//       toBlock = await trustLex.provider.getBlockNumber();
-//       // estimatedFromBlock = Math.max(0, toBlock - MAX_BLOCKS_TO_QUERY);
-//       estimatedFromBlock = Math.max(0, toBlock);
-//     } else if (toBlock > 0) {
-//       estimatedFromBlock = Math.max(fromBlock, toBlock - MAX_BLOCKS_TO_QUERY);
-//     }
-
-//     const offers: IListenedOfferData[] = [];
-//     let iterations = 0;
-//     do {
-//       estimatedFromBlock = Math.max(
-//         fromBlock,
-//         estimatedFromBlock - MAX_BLOCKS_TO_QUERY
-//       );
-//       const offersSubSet = await trustLex.queryFilter(
-//         "NEW_OFFER",
-//         estimatedFromBlock,
-//         estimatedFromBlock + MAX_BLOCKS_TO_QUERY
-//       );
-//       const promises = offersSubSet.map(async (offer) => {
-//         const offerEvent = {
-//           from: offer.args ? offer.args[0] : "",
-//           to: offer.args ? offer.args[1] : "",
-//         };
-
-//         const offerData = await getOffers(trustLex, offerEvent.to);
-//         // console.log(offerData);
-//         const offerDetailsInJson = {
-//           offerId: offerEvent.to.toString(),
-//           offerQuantity: offerData[0].toString(),
-//           offeredBy: offerData[1].toString(),
-//           offerValidTill: offerData[2].toString(),
-//           orderedTime: offerData[3].toString(),
-//           offeredBlockNumber: offerData[4].toString(),
-//           bitcoinAddress: offerData[5].toString(),
-//           satoshisToReceive: offerData[6].toString(),
-//           satoshisReceived: offerData[7].toString(),
-//           satoshisReserved: offerData[8].toString(),
-//           collateralPer3Hours: offerData[9].toString(),
-//         };
-//         return { offerEvent, offerDetailsInJson };
-//       });
-//       const offersList: IListenedOfferData[] = await Promise.all(promises);
-//       offersList.forEach((o) => {
-//         offers.push(o);
-//       });
-//       iterations++;
-//     } while (estimatedFromBlock > fromBlock && iterations < MAX_ITERATIONS);
-//     return {
-//       fromBlock: fromBlock,
-//       toBlock: toBlock,
-//       offers: offers,
-//     };
-//     /*
-//     offers.forEach((offer) => {
-//       console.log(offer);
-//       const offerEvent = {
-//         from: "",
-//         to:  "",
-//         value: "",
-//       };
-
-//       const offerData = await getOffers(trustLex, offerEvent.to);
-//       const offerDetailsInJson = {
-//         offerQuantity: offerData[0].toString(),
-//         offeredBy: offerData[1].toString(),
-//         offerValidTill: offerData[2].toString(),
-//         orderedTime: offerData[3].toString(),
-//         offeredBlockNumber: offerData[4].toString(),
-//         bitcoinAddress: offerData[5].toString(),
-//         satoshisToReceive: offerData[6].toString(),
-//         satoshisReceived: offerData[7].toString(),
-//         satoshisReserved: offerData[8].toString(),
-//         collateralPer3Hours: offerData[9].toString(),
-//       };
-//       return { offerEvent, offerDetailsInJson };
-//       */
-
-//     //});
-//     // console.log(newOfferData);
-//   } catch (error) {
-//     console.log(error);
-//     return { offers: [], fromBlock, toBlock };
-//   }
-// };
-
-// export const listInitializeFullfillment = async (
-//   trustLex: ethers.Contract | undefined,
-//   fromBlock: number = 0,
-//   toBlock: "latest" | number = "latest"
-// ) => {
-//   try {
-//     if (!trustLex || toBlock == -1)
-//       return { fromBlock: fromBlock, toBlock: toBlock, offers: [] };
-//     let estimatedFromBlock = fromBlock;
-//     if (toBlock === "latest") {
-//       toBlock = await trustLex.provider.getBlockNumber();
-//       // estimatedFromBlock = Math.max(0, toBlock - MAX_BLOCKS_TO_QUERY);
-//       estimatedFromBlock = Math.max(0, toBlock);
-//     } else if (toBlock > 0) {
-//       estimatedFromBlock = Math.max(fromBlock, toBlock - MAX_BLOCKS_TO_QUERY);
-//     }
-
-//     const offers: IListInitiatedFullfillmentData[] = [];
-//     let iterations = 0;
-//     do {
-//       estimatedFromBlock = Math.max(
-//         fromBlock,
-//         estimatedFromBlock - MAX_BLOCKS_TO_QUERY
-//       );
-//       const offersSubSet = await trustLex.queryFilter(
-//         "INITIALIZED_FULFILLMENT",
-//         estimatedFromBlock,
-//         estimatedFromBlock + MAX_BLOCKS_TO_QUERY
-//       );
-//       // console.log(offersSubSet);
-//       const promises = offersSubSet.map(async (offer) => {
-//         const offerEvent = {
-//           claimedBy: offer.args ? offer.args[0] : "",
-//           offerId: offer.args ? offer.args[1] : "",
-//           fulfillmentId: offer.args ? offer.args[2] : "",
-//         };
-
-//         const FulfillmentsData = await getInitializedFulfillments(
-//           trustLex,
-//           offerEvent.offerId,
-//           offerEvent.fulfillmentId
-//         );
-//         const offerData = await getOffers(trustLex, offerEvent.offerId);
-//         // console.log("FulfillmentsData", FulfillmentsData);
-//         // console.log("offerData", offerData);
-//         // return false;
-
-//         const offerDetailsInJson: IOfferdata = {
-//           offerId: offerEvent.offerId,
-//           offerQuantity: offerData[0].toString(),
-//           offeredBy: offerData[1].toString(),
-//           offerValidTill: offerData[2].toString(),
-//           orderedTime: offerData[3].toString(),
-//           offeredBlockNumber: offerData[4].toString(),
-//           bitcoinAddress: offerData[5].toString(),
-//           satoshisToReceive: offerData[6].toString(),
-//           satoshisReceived: offerData[7].toString(),
-//           satoshisReserved: offerData[8].toString(),
-//           collateralPer3Hours: offerData[9].toString(),
-//         };
-//         const offersFullfillmentJson: IFullfillmentEvent = {
-//           allowAnyoneToAddCollateralForFee:
-//             FulfillmentsData["allowAnyoneToAddCollateralForFee"],
-//           allowAnyoneToSubmitPaymentProofForFee:
-//             FulfillmentsData["allowAnyoneToSubmitPaymentProofForFee"],
-//           collateralAddedBy: FulfillmentsData["collateralAddedBy"],
-//           expiryTime: FulfillmentsData["expiryTime"],
-//           fulfilledTime: FulfillmentsData["fulfilledTime"],
-//           fulfillmentBy: FulfillmentsData["fulfillmentBy"],
-//           quantityRequested: FulfillmentsData["quantityRequested"].toString(),
-//           totalCollateralAdded:
-//             FulfillmentsData["totalCollateralAdded"].toString(),
-//         };
-//         return { offerEvent, offerDetailsInJson, offersFullfillmentJson };
-//       });
-//       const offersList: any[] = await Promise.all(promises);
-//       offersList.forEach((o) => {
-//         offers.push(o);
-//       });
-//       iterations++;
-//     } while (estimatedFromBlock > fromBlock && iterations < MAX_ITERATIONS);
-//     return {
-//       fromBlock: fromBlock,
-//       toBlock: toBlock,
-//       offers: offers,
-//     };
-//   } catch (error) {
-//     console.log(error);
-//     return { offers: [], fromBlock, toBlock };
-//   }
-// };
-
-//Get the My Swap ongoing offers list .Offers are created by an account or ordered by same account.
 export const listInitializeFullfillmentOnGoingByNonEvent = async (
   trustLex: ethers.Contract | undefined,
   account: string,
@@ -721,42 +608,6 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
       offerDetailsInJson.offerType = "my_offer";
       MyOffersPromises.push({ offerDetailsInJson });
     }
-
-    // get the fullfillment list
-    let FullfillmentResults: IFullfillmentResult[] =
-      await getInitializedFulfillmentsByOfferId(trustLex, value.offerId);
-
-    let fullfillmentRequestId = undefined;
-    let fullfillmentResult =
-      FullfillmentResults &&
-      FullfillmentResults.find((fullfillmentResult, index) => {
-        if (
-          fullfillmentResult.fulfillmentRequest.fulfillmentBy.toLowerCase() ===
-            account.toLowerCase() &&
-          fullfillmentResult.fulfillmentRequest.paymentProofSubmitted == false
-        ) {
-          fullfillmentRequestId = offer.fulfillmentRequests[index];
-          return true;
-        } else {
-          return false;
-        }
-      });
-    if (fullfillmentResult) {
-      offerDetailsInJson.offerType = "my_order";
-      offerDetailsInJson.progress =
-        TimestampTotoNow(fullfillmentResult.fulfillmentRequest.expiryTime) +
-        " and " +
-        TimestampfromNow(fullfillmentResult.fulfillmentRequest.expiryTime);
-      offerDetailsInJson.fullfillmentRequestId = fullfillmentRequestId;
-      offerDetailsInJson.fulfillmentRequestExpiryTime =
-        fullfillmentResult.fulfillmentRequest.expiryTime;
-      offerDetailsInJson.fulfillmentRequestQuantityRequested =
-        fullfillmentResult.fulfillmentRequest.quantityRequested.toString();
-      offerDetailsInJson.fulfillmentRequestPaymentProofSubmitted =
-        fullfillmentResult.fulfillmentRequest.paymentProofSubmitted;
-    }
-    fullfillmentResult &&
-      MyOffersPromises.push({ offerDetailsInJson: offerDetailsInJson });
   }
   MyoffersList = await Promise.all(MyOffersPromises);
   return MyoffersList;
@@ -989,5 +840,23 @@ export const submitPaymentProof = async (
   } catch (error: any) {
     console.log(error?.message);
     console.log(error);
+  }
+};
+
+export const extendOffer = async (
+  trustLex: ethers.Contract | undefined,
+  offerId: string,
+  offerValidTill: number
+) => {
+  try {
+    if (!trustLex) return false;
+    const transaction = await trustLex.extendOffer(offerId, offerValidTill);
+
+    let tx = await transaction.wait();
+    return tx;
+  } catch (error: any) {
+    console.log(error?.message);
+    console.log(error);
+    return false;
   }
 };

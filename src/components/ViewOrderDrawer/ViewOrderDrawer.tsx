@@ -9,7 +9,7 @@ import GradientBackgroundContainer from "../GradientBackgroundContainer/Gradient
 import ViewOrderDrawerHistoryTable from "../ViewOrderDrawerHistoryTable/ViewOrderDrawerHistoryTable";
 import styles from "./ViewOrderDrawer.module.scss";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import useAutoHideScrollbar from "~/hooks/useAutoHideScrollBar";
 import { IListInitiatedFullfillmentDataByNonEvent } from "~/interfaces/IOfferdata";
 import { TimeToDateFormat } from "~/utils/TimeConverter";
@@ -18,10 +18,18 @@ import { ethers } from "ethers";
 import { useState } from "react";
 import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
 import { IFullfillmentResult } from "~/interfaces/IOfferdata";
-import { getInitializedFulfillmentsByOfferId } from "~/service/AppService";
+import {
+  getInitializedFulfillmentsByOfferId,
+  extendOffer,
+  getOffer,
+} from "~/service/AppService";
 import { EthtoWei, WeitoEth, tofixedEther } from "~/utils/Ether.utills";
 import { TimestampTotoNow, TimestampfromNow } from "~/utils/TimeConverter";
 import { tofixedBTC } from "~/utils/BitcoinUtils";
+import ExtendOffer from "~/components/ExtendOffer/ExtendOffer";
+import { TimeToNumber } from "~/utils/TimeConverter";
+import { AppContext } from "~/Context/AppContext";
+import { IOfferdata } from "~/interfaces/IOfferdata";
 
 type Props = {
   isOpened: boolean;
@@ -40,6 +48,12 @@ const ViewOrderDrawer = ({
   GetProgressText,
   selectedCurrencyIcon,
 }: Props) => {
+  const context = React.useContext(AppContext);
+  if (context === null) {
+    return <>Loading...</>;
+  }
+  const { getSelectedTokenContractInstance, account } = context;
+
   const { width } = useWindowDimensions();
   let mobileView: boolean = width !== null && width < 500 ? true : false;
   const rootRef = useRef(null);
@@ -56,58 +70,75 @@ const ViewOrderDrawer = ({
     SetViewOrderDrawerHistoryTableData2,
   ] = useState<any[]>();
 
+  const [confirmExtendOffer, setConfirmExtendOffer] = useState("none");
+  const [openExtendOferSection, setOpenExtendOferSection] =
+    useState<boolean>(false);
   useAutoHideScrollbar(rootRef);
+
   useEffect(() => {
     if (!offerData) {
       onClose();
       return;
     }
-    let offerExpiry = TimeToDateFormat(
-      (
-        parseInt(offerData?.offerDetailsInJson.offerValidTill) +
-        parseInt(offerData?.offerDetailsInJson.orderedTime)
-      ).toString()
-    );
-    setOfferExpiry(offerExpiry);
     let offerId_: number | string = offerData?.offerDetailsInJson.offerId;
-
-    if (offerData?.offerDetailsInJson) {
-      let toAddress = Buffer.from(
-        offerData.offerDetailsInJson.bitcoinAddress.substring(2),
-        "hex"
+    (async () => {
+      let contractInstance = await getSelectedTokenContractInstance();
+      // get offer details
+      let offerDetails: IOfferdata | false | undefined = await getOffer(
+        contractInstance as ethers.Contract,
+        offerId_,
+        account
       );
-      let offerId = offerId_;
-      offerId_ = Number(offerId_);
-      if (offerId.length % 2 != 0) {
-        offerId = "0" + offerId;
+      if (offerDetails) {
+        offerData.offerDetailsInJson = offerDetails as IOfferdata;
       }
-      let hashAddress = generateTrustlexAddress(toAddress, offerId);
-      setHashAddress(hashAddress as string);
-      let planningToSell_ = Number(
-        ethers.utils.formatEther(offerData.offerDetailsInJson.offerQuantity)
-      ); //offerQuantity
-      setPlanningToSell(planningToSell_);
-      setBuyAmount(planningToSell_);
-      setPlanningToBuy(
-        tofixedBTC(
-          Number(
-            SatoshiToBtcConverter(
-              offerData.offerDetailsInJson.satoshisToReceive
+
+      let offerExpiry = TimeToDateFormat(
+        (
+          parseInt(offerData?.offerDetailsInJson.offerValidTill) +
+          parseInt(offerData?.offerDetailsInJson.orderedTime)
+        ).toString()
+      );
+      setOfferExpiry(offerExpiry);
+
+      if (offerData?.offerDetailsInJson) {
+        let toAddress = Buffer.from(
+          offerData.offerDetailsInJson.bitcoinAddress.substring(2),
+          "hex"
+        );
+        let offerId = offerId_;
+        offerId_ = Number(offerId_);
+        if (offerId.length % 2 != 0) {
+          offerId = "0" + offerId;
+        }
+        let hashAddress = generateTrustlexAddress(toAddress, offerId);
+        setHashAddress(hashAddress as string);
+        let planningToSell_ = Number(
+          ethers.utils.formatEther(offerData.offerDetailsInJson.offerQuantity)
+        ); //offerQuantity
+        setPlanningToSell(planningToSell_);
+        setBuyAmount(planningToSell_);
+        setPlanningToBuy(
+          tofixedBTC(
+            Number(
+              SatoshiToBtcConverter(
+                offerData.offerDetailsInJson.satoshisToReceive
+              )
             )
           )
-        )
-      );
-      (async () => {
-        // get the Fulfillments By OfferId
-        let FullfillmentResult: IFullfillmentResult[] =
-          await getInitializedFulfillmentsByOfferId(
-            contract,
-            offerId_ as number
-          );
-        console.log(FullfillmentResult);
-        setFullfillmentResult(FullfillmentResult);
-      })();
-    }
+        );
+        (async () => {
+          // get the Fulfillments By OfferId
+          let FullfillmentResult: IFullfillmentResult[] =
+            await getInitializedFulfillmentsByOfferId(
+              contract,
+              offerId_ as number
+            );
+          console.log(FullfillmentResult);
+          setFullfillmentResult(FullfillmentResult);
+        })();
+      }
+    })();
   }, [offerData?.offerDetailsInJson.offerId]);
 
   useEffect(() => {
@@ -152,11 +183,60 @@ const ViewOrderDrawer = ({
   const getBTCAmount = () => {
     return tofixedBTC((buyAmount / planningToSell) * planningToBuy);
   };
+  const handleOnClose = () => {
+    onClose();
+  };
+  const handleExtendOffer = async () => {
+    setOpenExtendOferSection(!openExtendOferSection);
+
+    setConfirmExtendOffer("none");
+  };
+  const handleOfferExtend = async (valid: string) => {
+    try {
+      setConfirmExtendOffer("loading");
+      let contractInstance = await getSelectedTokenContractInstance();
+
+      let offerValidTill = TimeToNumber(valid);
+      let offerId = offerData?.offerDetailsInJson.offerId;
+
+      if (contractInstance && offerId) {
+        let result = await extendOffer(
+          contractInstance,
+          offerId,
+          offerValidTill
+        );
+        if (result) {
+          setConfirmExtendOffer("confirmed");
+          // get offer details
+          let offerDetails: IOfferdata | false | undefined = await getOffer(
+            contractInstance,
+            offerId
+          );
+          if (offerDetails) {
+            let offerValidTill = offerDetails.offerValidTill;
+            let orderedTime = offerDetails.orderedTime;
+            let offerExpiry = TimeToDateFormat(
+              (parseInt(offerValidTill) + parseInt(orderedTime)).toString()
+            );
+            setTimeout(() => {
+              setOfferExpiry(offerExpiry);
+              setOpenExtendOferSection(!openExtendOferSection);
+            }, 2000);
+          }
+        } else {
+          setConfirmExtendOffer("none");
+        }
+        console.log(result);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   return (
     <Drawer
       opened={isOpened}
-      onClose={onClose}
+      onClose={handleOnClose}
       position="right"
       overlayBlur={2.5}
       overlayOpacity={0.5}
@@ -229,11 +309,34 @@ const ViewOrderDrawer = ({
               </Box>
             </Grid.Col>
             <Grid.Col span={"content"} className={styles.button}>
-              <Button radius={10} variant={VariantsEnum.outlinePrimary}>
+              <Button
+                radius={10}
+                variant={
+                  openExtendOferSection == false
+                    ? VariantsEnum.outlinePrimary
+                    : VariantsEnum.primary
+                }
+                style={{
+                  height: openExtendOferSection == false ? "" : "36px",
+                }}
+                onClick={handleExtendOffer}
+              >
                 Extend offer
               </Button>
             </Grid.Col>
           </Grid>
+          {openExtendOferSection == true ? (
+            <>
+              <ExtendOffer
+                confirmExtendOffer={confirmExtendOffer}
+                setConfirmExtendOffer={setConfirmExtendOffer}
+                handleOfferExtend={handleOfferExtend}
+              />
+            </>
+          ) : (
+            <></>
+          )}
+
           <Box className={styles.table}>
             <GradientBackgroundContainer colorLeft="#FFD57243">
               <ViewOrderDrawerHistoryTable

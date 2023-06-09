@@ -42,7 +42,7 @@ export const currencyObjects: {
     label: "ETH", // Please always keep the label  in upper case
     value: "Ethereum",
     icon: <ImageIcon image={"/icons/ethereum-2.svg"} />,
-    orderBookContractAddreess: "0x23d2cc58Fd6F782D4912865167b114f4d819Bc5a",
+    orderBookContractAddreess: "0x432d85454a618C4Bd7b6AC084C316007C155480A",
     orderBookContractABI: OrderBookETHABI.abi,
     decimalPlace: 18,
   },
@@ -56,7 +56,7 @@ export const currencyObjects: {
     label: ERC20TokenLabel,
     value: ERC20TokenValue,
     icon: <ImageIcon image={"/icons/bitcoin.svg"} />,
-    orderBookContractAddreess: "0xF6c57257c672ECeb42E77bDb77c7b2c0f7b4130A",
+    orderBookContractAddreess: "0x86E7a1c97dD7618C86070EbA5dF2bc87CF4a6f46",
     orderBookContractABI: OrderBookTOKENABI.abi,
     ERC20Address: "0xa89315E69a8eE3EFbE835736B35aaf265c84B3e1",
     ERC20ABI: erc20ContractABI.abi,

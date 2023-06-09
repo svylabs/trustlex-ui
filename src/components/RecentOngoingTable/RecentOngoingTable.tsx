@@ -209,6 +209,8 @@ const RecentOngoingTable = ({
   const handleViewClick = (
     offerData: IListInitiatedFullfillmentDataByNonEvent
   ) => {
+    setViewOrderDrawerKey(viewOrderDrawerKey + 1);
+
     console.log(offerData);
     setOfferData(offerData);
     setViewOrderDrawerOpen(true);

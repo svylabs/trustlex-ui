@@ -584,6 +584,7 @@ const Exchange = (props: Props) => {
                           label="Offer valid for"
                           data={offerValidity}
                           value={exchangeData.valid}
+                          styles={{ rightSection: { pointerEvents: "none" } }}
                         />
                         <div className={styles.temporary}></div>
                         <Select

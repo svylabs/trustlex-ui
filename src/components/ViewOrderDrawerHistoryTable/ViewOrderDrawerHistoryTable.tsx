@@ -37,12 +37,14 @@ const ViewOrderDrawerHistoryTable = ({
       setIsMoreTableDataLoading(false);
     }, 2000);
   };
-  const tableData = data.map((item) => [
-    item.orderNumber,
-    <CurrencyDisplay {...item.planningToSell} />,
-    <CurrencyDisplay {...item.planningToBuy} />,
-    <GetProgressText progress={item.date} />,
-  ]);
+  const tableData = data
+    ? data.map((item) => [
+        item.orderNumber,
+        <CurrencyDisplay {...item.planningToSell} />,
+        <CurrencyDisplay {...item.planningToBuy} />,
+        <GetProgressText progress={item.date} />,
+      ])
+    : [];
   return (
     <div className={styles.root}>
       {!mobileView ? (

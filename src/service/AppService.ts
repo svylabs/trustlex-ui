@@ -702,7 +702,13 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
       offerType: "",
       fullfillmentRequestId: undefined,
     };
-    if (offer.offeredBy.toLowerCase() === account.toLowerCase()) {
+    let satoshisToReceive = offer.satoshisToReceive;
+    let satoshisReceived = offer.satoshisReceived;
+
+    if (
+      offer.offeredBy.toLowerCase() === account.toLowerCase() &&
+      satoshisReceived.toString() != satoshisToReceive.toString()
+    ) {
       let filled = 0;
       let satoshisReserved = offer.satoshisReserved;
       let satoshisToReceive = offer.satoshisToReceive;
@@ -759,7 +765,7 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
 //Get the My Swap comleted offers list .Offers are created by an account or ordered by same account.
 export const listInitializeFullfillmentCompletedByNonEvent = async (
   trustLex: ethers.Contract | undefined,
-  account: string,
+  account: string = "",
   fromOfferId: number
 ) => {
   let MyoffersList: IListInitiatedFullfillmentDataByNonEvent[] = [];
@@ -770,7 +776,6 @@ export const listInitializeFullfillmentCompletedByNonEvent = async (
   let offersData = await trustLex.getOffers(fromOfferId);
   let totalFetchedRecords = offersData.total;
   let offers = offersData.result;
-  let MyOngoingOrdersPromises = [];
   const MyOffersPromises = [];
   for (let i = 0; i < totalFetchedRecords; i++) {
     let value = offers[i];
@@ -798,9 +803,19 @@ export const listInitializeFullfillmentCompletedByNonEvent = async (
     let satoshisReserved = offer.satoshisReserved;
     let satoshisToReceive = offer.satoshisToReceive;
     let satoshisReceived = offer.satoshisReceived;
+    let ConditionFlag;
+    if (account != "") {
+      if (offer.offeredBy.toLowerCase() == account.toLowerCase()) {
+        ConditionFlag = true;
+      } else {
+        ConditionFlag = false;
+      }
+    } else {
+      ConditionFlag = true;
+    }
     if (
-      offer.offeredBy.toLowerCase() === account.toLowerCase() &&
-      satoshisReceived == satoshisToReceive
+      ConditionFlag &&
+      satoshisReceived.toString() == satoshisToReceive.toString()
     ) {
       let filled = 0;
       let satoshisReserved = offer.satoshisReserved;
@@ -810,54 +825,56 @@ export const listInitializeFullfillmentCompletedByNonEvent = async (
       offerDetailsInJson.offerType = "my_offer";
       MyOffersPromises.push({ offerDetailsInJson });
     }
-
-    // get the fullfillment list
-    let FullfillmentResults: IFullfillmentResult[] =
-      await getInitializedFulfillmentsByOfferId(trustLex, value.offerId);
-    if (FullfillmentResults && FullfillmentResults.length > 0) {
-      // console.log(FullfillmentResults);
-      let fullfillmentRequestIds: string[] = [];
-      let fullfillmentFilteredResult = FullfillmentResults.filter(
-        (fullfillmentResult, index) => {
-          if (
-            fullfillmentResult.fulfillmentRequest.fulfillmentBy.toLowerCase() ===
-              account.toLowerCase() &&
-            fullfillmentResult.fulfillmentRequest.paymentProofSubmitted == true
-          ) {
-            let fullfillmentRequestId = offer.fulfillmentRequests[index];
-            fullfillmentRequestIds.push(fullfillmentRequestId);
-            return true;
-          } else {
-            return false;
+    if (account != "") {
+      // get the fullfillment list
+      let FullfillmentResults: IFullfillmentResult[] =
+        await getInitializedFulfillmentsByOfferId(trustLex, value.offerId);
+      if (FullfillmentResults && FullfillmentResults.length > 0) {
+        // console.log(FullfillmentResults);
+        let fullfillmentRequestIds: string[] = [];
+        let fullfillmentFilteredResult = FullfillmentResults.filter(
+          (fullfillmentResult, index) => {
+            if (
+              fullfillmentResult.fulfillmentRequest.fulfillmentBy.toLowerCase() ===
+                account.toLowerCase() &&
+              fullfillmentResult.fulfillmentRequest.paymentProofSubmitted ==
+                true
+            ) {
+              let fullfillmentRequestId = offer.fulfillmentRequests[index];
+              fullfillmentRequestIds.push(fullfillmentRequestId);
+              return true;
+            } else {
+              return false;
+            }
           }
-        }
-      );
+        );
 
-      fullfillmentFilteredResult.map((value, index) => {
-        let fullfillmentResult = value;
-        let offerDetailsInJson2: IOfferdata = { ...offerDetailsInJson };
-        let quantityRequested =
-          fullfillmentResult.fulfillmentRequest.quantityRequested.toString();
+        fullfillmentFilteredResult.map((value, index) => {
+          let fullfillmentResult = value;
+          let offerDetailsInJson2: IOfferdata = { ...offerDetailsInJson };
+          let quantityRequested =
+            fullfillmentResult.fulfillmentRequest.quantityRequested.toString();
 
-        offerDetailsInJson2.offerType = "my_order";
-        offerDetailsInJson2.progress =
-          TimestampTotoNow(fullfillmentResult.fulfillmentRequest.expiryTime) +
-          " and " +
-          TimestampfromNow(fullfillmentResult.fulfillmentRequest.expiryTime);
-        offerDetailsInJson2.fullfillmentRequestId =
-          fullfillmentRequestIds[index];
-        offerDetailsInJson2.fulfillmentRequestExpiryTime =
-          fullfillmentResult.fulfillmentRequest.expiryTime;
-        offerDetailsInJson2.fulfillmentRequestQuantityRequested =
-          quantityRequested;
+          offerDetailsInJson2.offerType = "my_order";
+          offerDetailsInJson2.progress =
+            TimestampTotoNow(fullfillmentResult.fulfillmentRequest.expiryTime) +
+            " and " +
+            TimestampfromNow(fullfillmentResult.fulfillmentRequest.expiryTime);
+          offerDetailsInJson2.fullfillmentRequestId =
+            fullfillmentRequestIds[index];
+          offerDetailsInJson2.fulfillmentRequestExpiryTime =
+            fullfillmentResult.fulfillmentRequest.expiryTime;
+          offerDetailsInJson2.fulfillmentRequestQuantityRequested =
+            quantityRequested;
 
-        offerDetailsInJson2.fulfillmentRequestPaymentProofSubmitted =
-          fullfillmentResult.fulfillmentRequest.paymentProofSubmitted;
-        offerDetailsInJson2.fulfillmentRequestfulfilledTime =
-          fullfillmentResult.fulfillmentRequest.fulfilledTime;
+          offerDetailsInJson2.fulfillmentRequestPaymentProofSubmitted =
+            fullfillmentResult.fulfillmentRequest.paymentProofSubmitted;
+          offerDetailsInJson2.fulfillmentRequestfulfilledTime =
+            fullfillmentResult.fulfillmentRequest.fulfilledTime;
 
-        MyOffersPromises.push({ offerDetailsInJson: offerDetailsInJson2 });
-      });
+          MyOffersPromises.push({ offerDetailsInJson: offerDetailsInJson2 });
+        });
+      }
     }
   }
   MyoffersList = await Promise.all(MyOffersPromises);

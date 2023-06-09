@@ -80,4 +80,23 @@ export const AppContext = createContext<null | {
   setRefreshMySwapCompletedListKey: React.Dispatch<
     React.SetStateAction<number>
   >;
+
+  listenedMySwapAllCompletedDataByNonEvent: IListInitiatedFullfillmentDataByNonEvent[];
+  setListenedMySwapAllCompletedDataByNonEvent: React.Dispatch<
+    React.SetStateAction<IListInitiatedFullfillmentDataByNonEvent[]>
+  >;
+  mySwapAllCompletedLoadingText: string;
+  setMySwapAllCompletedLoadingText: React.Dispatch<
+    React.SetStateAction<string>
+  >;
+  isMoreMySwapAllCompletedTableDataLoading: boolean;
+  mySwapAllCompletedfromOfferId: number;
+  setMySwapAllCompletedfromOfferId: React.Dispatch<
+    React.SetStateAction<number>
+  >;
+  refreshMySwapAllCompletedListKey: number;
+  setRefreshMySwapAllCompletedListKey: React.Dispatch<
+    React.SetStateAction<number>
+  >;
+  getSelectedTokenContractInstance: () => ethers.Contract | false;
 }>(null);

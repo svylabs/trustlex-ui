@@ -184,7 +184,7 @@ const ViewOrderDrawer = ({
                     amount={getBTCAmount()}
                     type={CurrencyEnum.BTC}
                   />{" "}
-                  for {selectedCurrencyIcon}
+                  for {selectedCurrencyIcon} {buyAmount}
                   {/* <CurrencyDisplay amount={buyAmount} type={CurrencyEnum.ETH} /> */}
                 </Text>
               ) : (
@@ -192,7 +192,8 @@ const ViewOrderDrawer = ({
                   <span className={styles.buy}>Buy:</span>
                   <CurrencyDisplay amount={1} type={CurrencyEnum.BTC} />
                   <span className={styles.for}> for </span>
-                  <CurrencyDisplay amount={10} type={CurrencyEnum.ETH} />
+                  for {selectedCurrencyIcon} {buyAmount}
+                  {/* <CurrencyDisplay amount={10} type={CurrencyEnum.ETH} /> */}
                 </Text>
               )}
             </Grid.Col>

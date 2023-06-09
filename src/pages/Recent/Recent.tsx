@@ -256,10 +256,28 @@ function MySwaps() {
           )
         )
       );
+      let rateInBTC = Number(tofixedBTC(planningToBuyAmount / planningToSell));
+      let offerType = value.offerDetailsInJson.offerType;
+
+      let OrderSellAmount;
+      if (offerType == "my_offer") {
+        OrderSellAmount = planningToSell;
+      } else if (offerType == "my_order") {
+        OrderSellAmount = Number(
+          tofixedBTC(
+            Number(
+              SatoshiToBtcConverter(
+                value.offerDetailsInJson
+                  .fulfillmentRequestQuantityRequested as string
+              )
+            ) / rateInBTC
+          )
+        );
+      }
       let orderBuyAmount;
-      if (value.offerDetailsInJson.offerType == "my_offer") {
+      if (offerType == "my_offer") {
         orderBuyAmount = planningToBuyAmount;
-      } else if (value.offerDetailsInJson.offerType == "my_order") {
+      } else if (offerType == "my_order") {
         orderBuyAmount = Number(
           tofixedBTC(
             Number(
@@ -271,15 +289,14 @@ function MySwaps() {
           )
         );
       }
-      let rateInBTC = Number(tofixedBTC(planningToBuyAmount / planningToSell));
       let row = {
         orderNumber: value.offerDetailsInJson.offerId.toString(),
         planningToSell: {
-          amount: planningToSell,
+          amount: OrderSellAmount,
           type: CurrencyEnum.ETH,
         },
         planningToBuy: {
-          amount: planningToBuyAmount,
+          amount: orderBuyAmount,
           type: CurrencyEnum.BTC,
         },
         rateInBTC: rateInBTC,
@@ -341,7 +358,7 @@ function MySwaps() {
       }
       let orderBuyAmount;
       if (offerType == "my_offer") {
-        orderBuyAmount = planningToSell;
+        orderBuyAmount = planningToBuyAmount;
       } else if (offerType == "my_order") {
         orderBuyAmount = Number(
           tofixedBTC(
@@ -408,19 +425,19 @@ function MySwaps() {
               data={OngoingTableData}
               mobile={true}
               handleSubmitPaymentProof={handleSubmitPaymentProof}
-              mySwapOngoingLoadingText={mySwapOngoingLoadingText}
+              mySwapOngoingLoadingText={mySwapCompletedLoadingText}
               contract={contract}
               selectedToken={selectedToken}
             />
           </div>
           <br />
           <Center>
-            {mySwapOngoingLoadingText != "" ? (
+            {mySwapCompletedLoadingText != "" ? (
               <ActionButton
                 variant={"transparent"}
-                loading={isMoreMySwapOngoinTableDataLoading}
+                loading={isMoreMySwapCompletedTableDataLoading}
               >
-                {mySwapOngoingLoadingText}
+                {mySwapCompletedLoadingText}
               </ActionButton>
             ) : (
               ""
@@ -520,21 +537,140 @@ function MySwaps() {
 }
 
 function AllSwaps() {
+  const context = React.useContext(AppContext);
+  if (context === null) {
+    return <>Loading...</>;
+  }
+
+  const {
+    //start All completed variables
+    listenedMySwapAllCompletedDataByNonEvent,
+    setListenedMySwapAllCompletedDataByNonEvent,
+    refreshMySwapAllCompletedListKey,
+    setRefreshMySwapAllCompletedListKey,
+    setMySwapAllCompletedLoadingText,
+    mySwapAllCompletedLoadingText,
+    isMoreMySwapAllCompletedTableDataLoading,
+    mySwapAllCompletedfromOfferId,
+    setMySwapAllCompletedfromOfferId,
+    //end All completed variables
+    account,
+    selectedToken,
+    getSelectedTokenContractInstance,
+  } = context;
+
   const { mobileView } = useWindowDimensions();
+
+  const HistoryTableData2 = listenedMySwapAllCompletedDataByNonEvent.map(
+    (value, key) => {
+      // let fulfillmentBy: string = value?.offerDetailsInJson.fulfillmentBy;
+      let planningToSell = Number(
+        tofixedEther(
+          Number(
+            ethers.utils.formatEther(value.offerDetailsInJson.offerQuantity)
+          )
+        )
+      );
+      let planningToBuyAmount = Number(
+        tofixedBTC(
+          Number(
+            SatoshiToBtcConverter(value.offerDetailsInJson.satoshisToReceive)
+          )
+        )
+      );
+      let rateInBTC = Number(tofixedBTC(planningToBuyAmount / planningToSell));
+      let offerType = value.offerDetailsInJson.offerType;
+
+      let OrderSellAmount;
+      OrderSellAmount = planningToSell;
+
+      let orderBuyAmount;
+      orderBuyAmount = planningToBuyAmount;
+      let row = {
+        orderNumber: value.offerDetailsInJson.offerId.toString(),
+        planningToSell: {
+          amount: OrderSellAmount,
+          type: CurrencyEnum.ETH,
+        },
+        planningToBuy: {
+          amount: orderBuyAmount,
+          type: CurrencyEnum.BTC,
+        },
+        rateInBTC: rateInBTC,
+
+        date: TimeToDateFormat(value.offerDetailsInJson.orderedTime),
+        status: StatusEnum.Completed,
+      };
+      return row;
+    }
+  );
+
   const [isMoreSwapsLoading, setMoreSwapsLoading] = useState(false);
-  const [swapData, setSwapData] = useState(HistoryTableData);
-  const loadMoreSwaps = () => {
+  // const [swapData, setSwapData] = useState(HistoryTableData2);
+
+  const callMySwapsCompleted = async () => {
+    let mySwapsAllCompletedList: IListInitiatedFullfillmentDataByNonEvent[] =
+      [];
+    let contract = getSelectedTokenContractInstance();
+    if (contract) {
+      mySwapsAllCompletedList =
+        await listInitializeFullfillmentCompletedByNonEvent(
+          contract,
+          account,
+          mySwapAllCompletedfromOfferId
+        );
+    }
+    return mySwapsAllCompletedList;
+  };
+
+  // const loadMoreSwaps = () => {
+  //   setMoreSwapsLoading(true);
+  //   setTimeout(() => {
+  //     // setSwapData([...swapData, ...HistoryTableData2]);
+  //     setMoreSwapsLoading(false);
+  //   }, 2000);
+  // };
+
+  const loadMoreSwaps = async () => {
     setMoreSwapsLoading(true);
-    setTimeout(() => {
-      setSwapData([...swapData, ...HistoryTableData]);
-      setMoreSwapsLoading(false);
-    }, 2000);
+    setMySwapAllCompletedLoadingText("Loading List");
+    callMySwapsCompleted()
+      .then((mySwapsOngoingList) => {
+        const newOngoingData =
+          listenedMySwapAllCompletedDataByNonEvent.concat(mySwapsOngoingList);
+        setListenedMySwapAllCompletedDataByNonEvent(newOngoingData);
+        setMoreSwapsLoading(false);
+        setMySwapAllCompletedLoadingText("");
+
+        let mySwapCompletedfromOfferId_ =
+          mySwapAllCompletedfromOfferId - PAGE_SIZE > 0
+            ? mySwapAllCompletedfromOfferId - PAGE_SIZE
+            : 0;
+        setMySwapAllCompletedfromOfferId(mySwapCompletedfromOfferId_);
+        // console.log(mySwapsOngoingList);
+      })
+      .catch((err) => {
+        console.log(err);
+        setMoreSwapsLoading(false);
+        setMySwapAllCompletedLoadingText("");
+      });
+  };
+
+  const showLoadMoreMySwapOngoingButton = () => {
+    if (
+      mySwapAllCompletedfromOfferId > 0 &&
+      mySwapAllCompletedLoadingText == ""
+    ) {
+      return true;
+    } else {
+      return false;
+    }
   };
   return (
     <GradientBackgroundContainer colorLeft="#FFD57243">
       <Box p={"lg"} className={styles.box}>
         <AllSwapTable
-          data={swapData}
+          data={HistoryTableData2}
           cols={
             mobileView
               ? ["# of order", "Date", "More Details"]
@@ -551,13 +687,27 @@ function AllSwaps() {
         />
         <br />
         <Center>
-          <ActionButton
-            variant={"transparent"}
-            loading={isMoreSwapsLoading}
-            onClick={loadMoreSwaps}
-          >
-            Load more
-          </ActionButton>{" "}
+          {mySwapAllCompletedLoadingText != "" ? (
+            <ActionButton
+              variant={"transparent"}
+              loading={isMoreMySwapAllCompletedTableDataLoading}
+            >
+              {mySwapAllCompletedLoadingText}
+            </ActionButton>
+          ) : (
+            ""
+          )}
+          {showLoadMoreMySwapOngoingButton() == true ? (
+            <ActionButton
+              variant={"transparent"}
+              loading={isMoreSwapsLoading}
+              onClick={loadMoreSwaps}
+            >
+              Load more
+            </ActionButton>
+          ) : (
+            ""
+          )}
         </Center>
       </Box>
     </GradientBackgroundContainer>

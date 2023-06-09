@@ -1,7 +1,7 @@
 import ImageIcon from "~/components/ImageIcon/ImageIcon";
 // SPVC ABI
 import erc20ContractABI from "~/files/erc20Contract.json";
-import OrderBookETHABI from "~/files/contract.json";
+import OrderBookETHABI from "~/files/orderBookETHContract.json";
 import OrderBookTOKENABI from "~/files/contract.json";
 
 export const PRODUCTION_MODE: boolean = false;
@@ -42,7 +42,7 @@ export const currencyObjects: {
     label: "ETH", // Please always keep the label  in upper case
     value: "Ethereum",
     icon: <ImageIcon image={"/icons/ethereum-2.svg"} />,
-    orderBookContractAddreess: "0x7169B041F4e6E51B10e59Dc8b03F029C7fa658b7",
+    orderBookContractAddreess: "0x23d2cc58Fd6F782D4912865167b114f4d819Bc5a",
     orderBookContractABI: OrderBookETHABI.abi,
     decimalPlace: 18,
   },
@@ -56,7 +56,7 @@ export const currencyObjects: {
     label: ERC20TokenLabel,
     value: ERC20TokenValue,
     icon: <ImageIcon image={"/icons/bitcoin.svg"} />,
-    orderBookContractAddreess: "0x5df66269f4ddaBcB7fc044AAd00363E8753a8fD4",
+    orderBookContractAddreess: "0xF6c57257c672ECeb42E77bDb77c7b2c0f7b4130A",
     orderBookContractABI: OrderBookTOKENABI.abi,
     ERC20Address: "0xa89315E69a8eE3EFbE835736B35aaf265c84B3e1",
     ERC20ABI: erc20ContractABI.abi,

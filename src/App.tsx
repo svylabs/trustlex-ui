@@ -36,14 +36,20 @@ import {
   IListInitiatedFullfillmentDataByNonEvent,
 } from "./interfaces/IOfferdata";
 import { ethers } from "ethers";
-import { ContractMap, NetworkInfo } from "./Context/AppConfig";
+import { ContractMap } from "./Context/AppConfig";
 import useLocalstorage from "./hooks/useLocalstorage";
-import { PAGE_SIZE, activeExchange } from "~/Context/Constants";
+import {
+  PAGE_SIZE,
+  activeExchange,
+  currencyObjects,
+  DEFAULT_NETWORK,
+  NetworkInfo,
+  DEFAULT_TOKEN,
+} from "~/Context/Constants";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { number } from "bitcoinjs-lib/src/script";
 import Alert from "./components/Alerts/Alert";
-import { currencyObjects } from "~/Context/Constants";
 
 export default function App() {
   const { get, set, remove } = useLocalstorage();
@@ -54,8 +60,9 @@ export default function App() {
   const [contract, setContract] = useState<ethers.Contract>();
   const tokenData = get("selectedToken", false);
   const [selectedToken, setSelectedToken] = useState(
-    tokenData ? tokenData.toUpperCase() : "ETH"
+    tokenData ? tokenData.toUpperCase() : DEFAULT_TOKEN
   );
+
   const [erc20balance, setERC20balance] = useState("");
   const [erc20TokenContract, setERC20TokenContract] =
     useState<ethers.Contract>();
@@ -140,6 +147,7 @@ export default function App() {
   ] = useState<number>(1);
   //End My Swap completed variable all account
 
+  //variable for current network in metamask
   const [netWorkInfoData, setNetWorkInfoData] = useState<INetworkInfo>({
     name: "",
     chainId: 0,
@@ -151,17 +159,24 @@ export default function App() {
       : {
           setLimit: true,
           limit: "",
-          activeExchange: activeExchange,
+          activeExchange: filteredActiveExchange(DEFAULT_NETWORK),
+          selectedNetwork: DEFAULT_NETWORK,
         }
   );
-
+  const [selectedNetwork, setSelectedNetwork] = useState<string>(
+    userData.selectedNetwork !== undefined
+      ? userData?.selectedNetwork
+      : DEFAULT_NETWORK
+  );
   const [alertMessage, setAlertMessage] = useState<string | JSX.Element>("");
   const [alertOpen, setAlertOpen] = useState<number>(0);
 
   useEffect(() => {
+    // on network change update below
     set("userInputData", userInputData);
-    // console.log(userInputData);
-  }, [userInputData]);
+    const userData = get("userInputData", true);
+    // console.log(userInputData, userData);
+  }, [userInputData.selectedNetwork]);
 
   // useEffect(() => {
   //   let setSelectedToken_ =
@@ -186,26 +201,28 @@ export default function App() {
     }, 800);
   }, [selectedToken]);
 
+  //Account change event
+  const { ethereum } = window;
+  (ethereum as any).on("accountsChanged", async function (accounts: any) {
+    setAccount(accounts[0]);
+  });
+  //  Network changed event
+  (ethereum as any).on("networkChanged", async function (networkId: number) {
+    console.log(networkId);
+    let provider = new ethers.providers.Web3Provider(ethereum);
+    let network = await provider.getNetwork();
+    setNetWorkInfoData(network as INetworkInfo);
+    checkNetwork();
+  });
+
   useEffect(() => {
     (async () => {
       const { ethereum } = window;
       if (ethereum) {
         let provider = new ethers.providers.Web3Provider(ethereum);
         let network = await provider.getNetwork();
-        setNetWorkInfoData(network as INetworkInfo);
-        checkNetwork(network.chainId);
-
-        (ethereum as any).on("accountsChanged", async function (accounts: any) {
-          setAccount(accounts[0]);
-        });
-        (ethereum as any).on(
-          "networkChanged",
-          async function (networkId: number) {
-            console.log(networkId);
-            setNetWorkInfoData(network as INetworkInfo);
-            checkNetwork(networkId);
-          }
-        );
+        // setNetWorkInfoData(network as INetworkInfo);
+        // checkNetwork();
       } else {
         setExchangeLoadingText("");
         setMySwapOngoingLoadingText("");
@@ -214,19 +231,36 @@ export default function App() {
     })();
   }, []);
 
-  async function checkNetwork(networkId: number) {
+  function filteredActiveExchange(defultNetwork: string = "") {
+    let filteredActiveExchange = activeExchange.filter((value) => {
+      let networkKey = defultNetwork != "" ? defultNetwork : selectedNetwork;
+      if (value.networkKey == networkKey || value.currency == "btc") {
+        return true;
+      }
+    });
+    return filteredActiveExchange;
+  }
+
+  // The function to check whether selected network and metamask network are equal or not
+  async function checkNetwork() {
+    const { ethereum } = window;
+    let networkId: number;
+    let provider = new ethers.providers.Web3Provider(ethereum);
+    let network = await provider.getNetwork();
+    networkId = network.chainId;
+
+    // let networkRPCurls = network
+
+    let selectedNetworkChainID: number;
+    selectedNetworkChainID = NetworkInfo[selectedNetwork].ChainID;
+    let selectedNetworkName = NetworkInfo[selectedNetwork].NetworkName;
+
+    console.log(networkId, selectedNetworkChainID);
     networkId = typeof networkId === "string" ? parseInt(networkId) : networkId;
-    let NetworkInfoChainID =
-      typeof NetworkInfo.ChainID === "string"
-        ? parseInt(NetworkInfo.ChainID)
-        : NetworkInfo.ChainID;
 
-    if (networkId !== NetworkInfo.ChainID) {
-      let messge = `You have selected the wrong network. Kindly select the ${NetworkInfo.NetworkName} .`;
-      const { ethereum } = window;
-      let provider = new ethers.providers.Web3Provider(ethereum);
-      let network = await provider.getNetwork();
-
+    if (networkId !== selectedNetworkChainID) {
+      let messge = `You have selected the wrong network. Kindly select the ${selectedNetworkName} .`;
+      console.log("ok1");
       setAlertMessage(messge);
       setAlertOpen(alertOpen + 1);
       // update offers list parameters
@@ -234,6 +268,7 @@ export default function App() {
         setRefreshOffersListKey(refreshOffersListKey + 1);
       }, 500);
     } else {
+      console.log("ok2");
       setAlertMessage("");
       setAlertOpen(0);
       // update offers list parameters
@@ -291,12 +326,8 @@ export default function App() {
         let networkId = network.chainId;
         networkId =
           typeof networkId === "string" ? parseInt(networkId) : networkId;
-        let NetworkInfoChainID =
-          typeof NetworkInfo.ChainID === "string"
-            ? parseInt(NetworkInfo.ChainID)
-            : NetworkInfo.ChainID;
 
-        if (networkId !== NetworkInfo.ChainID) {
+        if (networkId !== NetworkInfo[selectedNetwork].ChainID) {
           return;
         }
         // console.log("ok");
@@ -307,10 +338,13 @@ export default function App() {
         let account = await findMetaMaskAccount();
         updateAccountBalance(account);
         // console.log(ContractMap);
-        let trustlex = await connect(
-          provider,
-          ContractMap[selectedToken].address
-        );
+        // let trustlex = await connect(
+        //   provider,
+        //   // ContractMap[selectedToken].address
+        //   currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+        //     .orderBookContractAddreess as string
+        // );
+        let trustlex = await getSelectedTokenContractInstance();
 
         if (trustlex) {
           setContract(trustlex as ethers.Contract);
@@ -344,7 +378,19 @@ export default function App() {
           // setlistenedOngoinMySwapData(InitializeFullfillmentData);
         }
         // update the token balance
-        updateTokenBalance(account);
+        let isNativeToken =
+          currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+            .isNativeToken;
+        // update the token balance
+        if (isNativeToken == false) {
+          let ERC20Address = currencyObjects[selectedNetwork][
+            selectedToken.toLowerCase()
+          ].ERC20Address as string;
+          let ERC20ABI =
+            currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+              .ERC20ABI;
+          updateTokenBalance(account, ERC20Address, ERC20ABI);
+        }
       } else {
         showErrorMessage("Metamask is not found ! kindly install the Metamask");
         setExchangeLoadingText("");
@@ -370,14 +416,27 @@ export default function App() {
           let account = await findMetaMaskAccount();
           updateAccountBalance(account);
 
-          if (chainId == NetworkInfo.ChainID) {
+          if (chainId == NetworkInfo[selectedNetwork].ChainID) {
+            let isNativeToken =
+              currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+                .isNativeToken;
             // update the token balance
-            updateTokenBalance(account);
+            if (isNativeToken == false) {
+              let ERC20Address = currencyObjects[selectedNetwork][
+                selectedToken.toLowerCase()
+              ].ERC20Address as string;
+              let ERC20ABI =
+                currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+                  .ERC20ABI;
+              updateTokenBalance(account, ERC20Address, ERC20ABI);
+            }
 
             // update the total offers for echange page and recent my swap page
             let trustlex = await connect(
               provider,
-              ContractMap[selectedToken].address
+              // ContractMap[selectedToken].address
+              currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+                .orderBookContractAddreess as string
             );
             if (trustlex) {
               let totalOffers = await getTotalOffers(
@@ -407,8 +466,16 @@ export default function App() {
     }
   }
   // update the token balance
-  async function updateTokenBalance(account: string) {
-    let tokenBalance_ = await getERC20TokenBalance(account);
+  async function updateTokenBalance(
+    account: string,
+    contractAddress: string,
+    contractABI: string
+  ) {
+    let tokenBalance_ = await getERC20TokenBalance(
+      account,
+      contractAddress,
+      contractABI
+    );
     let tokenBalance = formatERC20Tokens(tokenBalance_);
     setERC20balance(tokenBalance);
   }
@@ -437,12 +504,8 @@ export default function App() {
       let networkId = network.chainId;
       networkId =
         typeof networkId === "string" ? parseInt(networkId) : networkId;
-      let NetworkInfoChainID =
-        typeof NetworkInfo.ChainID === "string"
-          ? parseInt(NetworkInfo.ChainID)
-          : NetworkInfo.ChainID;
 
-      if (networkId !== NetworkInfo.ChainID) {
+      if (networkId !== NetworkInfo[selectedNetwork].ChainID) {
         return;
       }
       // create the contract instance
@@ -560,9 +623,11 @@ export default function App() {
   async function getSelectedTokenContractInstance() {
     // create the contract instance
     let contractAddress =
-      currencyObjects[selectedToken.toLowerCase()].orderBookContractAddreess;
+      currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+        .orderBookContractAddreess;
     let contractABI =
-      currencyObjects[selectedToken.toLowerCase()].orderBookContractABI;
+      currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+        .orderBookContractABI;
     let contract = await createContractInstance(
       contractAddress as string,
       contractABI
@@ -576,40 +641,56 @@ export default function App() {
       let provider = new ethers.providers.Web3Provider(ethereum);
       let network = await provider.getNetwork();
       let chainId = network.chainId;
-      if (chainId == NetworkInfo.ChainID) {
-        let message = `${NetworkInfo.NetworkName} is already current network`;
+      if (chainId == NetworkInfo[selectedNetwork].ChainID) {
+        let message = `${NetworkInfo[selectedNetwork].NetworkName} is already current network`;
         showErrorMessage(message);
         return false;
       } else {
-        let params = [
-          {
-            chainId: NetworkInfo.ChainIDHexaDecimal,
-            chainName: NetworkInfo.NetworkName,
-            nativeCurrency: {
-              name: NetworkInfo.CurrencySymbol,
-              symbol: NetworkInfo.CurrencySymbol,
-              decimals: 18,
-            },
-            rpcUrls: [NetworkInfo.RPC_URL],
-            blockExplorerUrls: [NetworkInfo.ExplorerUrl],
-          },
-        ];
-        const { ethereum } = window;
-
-        (ethereum as any)
-          .request({
-            method: "wallet_addEthereumChain",
-            params,
-          })
-          .then(() => {
-            console.log("Success");
-            showSuccessMessage("Network successfully changed");
-            setRefreshOffersListKey(refreshOffersListKey + 1);
-          })
-          .catch((error: any) => {
-            console.log("Error", error.message);
-            showErrorMessage(error.message);
+        try {
+          await (ethereum as any).request({
+            method: "wallet_switchEthereumChain",
+            params: [
+              { chainId: NetworkInfo[selectedNetwork].ChainIDHexaDecimal },
+            ],
           });
+        } catch (err: any) {
+          // This error code indicates that the chain has not been added to MetaMask
+          if (err.code === 4902) {
+            let rpcUrls = [NetworkInfo[selectedNetwork].RPC_URL];
+            let params = [
+              {
+                chainId: NetworkInfo[selectedNetwork].ChainIDHexaDecimal,
+                chainName: NetworkInfo[selectedNetwork].NetworkName,
+                nativeCurrency: {
+                  name: NetworkInfo[selectedNetwork].NetworkName,
+                  symbol: NetworkInfo[selectedNetwork].CurrencySymbol,
+                  decimals: 18,
+                },
+                rpcUrls: rpcUrls,
+                blockExplorerUrls: NetworkInfo[selectedNetwork].ExplorerUrl
+                  ? [NetworkInfo[selectedNetwork].ExplorerUrl]
+                  : null,
+              },
+            ];
+            // const { ethereum } = window;
+            (ethereum as any)
+              .request({
+                method: "wallet_addEthereumChain",
+                params,
+              })
+              .then(() => {
+                console.log("Success");
+                showSuccessMessage("Network successfully changed");
+                setRefreshOffersListKey(refreshOffersListKey + 1);
+                setAlertMessage("");
+                setAlertOpen(0);
+              })
+              .catch((error: any) => {
+                console.log("Error", error.message);
+                showErrorMessage(error.message);
+              });
+          }
+        }
       }
     } else {
       showErrorMessage("Unable to locate a compatible web3 browser!");
@@ -691,6 +772,9 @@ export default function App() {
             setRefreshMySwapAllCompletedListKey,
             getSelectedTokenContractInstance,
             // end my swap completed variables
+            selectedNetwork,
+            setSelectedNetwork,
+            checkNetwork,
           }}
         >
           <Layout>

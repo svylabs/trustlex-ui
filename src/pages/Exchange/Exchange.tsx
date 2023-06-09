@@ -135,6 +135,7 @@ const Exchange = (props: Props) => {
     account,
     contract,
     selectedToken,
+    selectedNetwork,
   } = context;
 
   const [exchangeData, setExchangeData] = useState({
@@ -205,7 +206,11 @@ const Exchange = (props: Props) => {
       };
       setListenedOfferDataByNonEvent(listenedOffersByNonEvent);
       setTableData(
-        getTableData(listenedOffersByNonEvent.offers, selectedToken)
+        getTableData(
+          listenedOffersByNonEvent.offers,
+          selectedToken,
+          selectedNetwork
+        )
       );
       setMoreTableDataLoading(false);
 
@@ -293,7 +298,12 @@ const Exchange = (props: Props) => {
           offerValidTill: TimeToNumber(exchangeData.valid),
           account: account,
         };
-        addedOffer = await addOfferWithToken(data, sellCurrecny, inputEther);
+        addedOffer = await addOfferWithToken(
+          data,
+          sellCurrecny,
+          inputEther,
+          selectedNetwork
+        );
       } else {
       }
 
@@ -431,7 +441,8 @@ const Exchange = (props: Props) => {
     if (listenedOfferDataByNonEvent?.offers) {
       const result = getTableData(
         listenedOfferDataByNonEvent?.offers,
-        selectedToken
+        selectedToken,
+        selectedNetwork
       );
       setTableData(result);
     }
@@ -719,6 +730,7 @@ const Exchange = (props: Props) => {
           setFullFillmentPaymentProofSubmitted
         }
         selectedToken={selectedToken}
+        selectedNetwork={selectedNetwork}
       />
 
       <div className={styles.overlay}>

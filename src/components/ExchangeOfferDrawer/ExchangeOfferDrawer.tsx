@@ -77,6 +77,7 @@ type Props = {
     fullFillmentPaymentProofSubmitted: boolean | undefined
   ) => void;
   selectedToken: string;
+  selectedNetwork: string;
 };
 
 const ExchangeOfferDrawer = ({
@@ -93,7 +94,8 @@ const ExchangeOfferDrawer = ({
   rowFullFillmentQuantityRequested,
   fullFillmentPaymentProofSubmitted,
   setFullFillmentPaymentProofSubmitted,
-  selectedToken = "ETH",
+  selectedToken,
+  selectedNetwork,
 }: Props) => {
   // console.log(data);
   const { mobileView } = useWindowDimensions();
@@ -125,8 +127,9 @@ const ExchangeOfferDrawer = ({
     useState<boolean>(false);
   const [isColletaralNeeded, setIsColletaralNeeded] = useState<boolean>(false);
   const { scrollDirection } = useDetectScrollUpDown();
-
-  let selectedCurrencyIcon = currencyObjects[selectedToken.toLowerCase()].icon;
+  // console.log(selectedNetwork, selectedToken);
+  let selectedCurrencyIcon =
+    currencyObjects[selectedNetwork][selectedToken.toLowerCase()]?.icon;
 
   useEffect(() => {
     if (rowOfferId === null) {

@@ -13,6 +13,14 @@ import SendBtcDrawer from "~/components/SendBtc/SendBtcDrawer/SendBtcDrawer";
 import SendBtcBox from "~/components/SendBtc/SendBtcBox/SendBtcBox";
 import OfferCurrencyDropdown from "~/components/OfferCurrencyDropdown/OfferCurrencyDropdown";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
+import NetworkMenu from "./NetworkMenu";
+import {
+  networks,
+  activeExchange,
+  currencyObjects,
+  NetworkInfo,
+} from "~/Context/Constants";
+import { ethers } from "ethers";
 type Props = {
   toggleSidebar: () => void;
 };
@@ -30,6 +38,9 @@ const Navbar = (props: Props) => {
     setSelectedToken,
     userInputData,
     setUserInputData,
+    selectedNetwork,
+    setSelectedNetwork,
+    checkNetwork,
   } = context;
 
   const handleConnect = async () => {
@@ -65,7 +76,16 @@ const Navbar = (props: Props) => {
     setShowSendBtcBox((prev) => !prev);
   };
   const { mobileView } = useWindowDimensions();
-
+  // console.log(selectedNetwork);
+  let networkName = NetworkInfo[selectedNetwork].NetworkName;
+  let contractAddress =
+    currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+      ?.orderBookContractAddreess;
+  // console.log(
+  //   selectedNetwork,
+  //   selectedToken,
+  //   currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+  // );
   return (
     <nav className={styles.navbar}>
       <div className={styles.left}>
@@ -82,6 +102,9 @@ const Navbar = (props: Props) => {
           <>
             <div>
               Connected To: {account} ({balance} ETH)
+              <br />
+              on network {networkName}
+              <br /> with contract {contractAddress}
             </div>
           </>
         ) : (
@@ -89,12 +112,23 @@ const Navbar = (props: Props) => {
         )}
       </div>
       <div className={styles.left}>
-        <strong>Offer Currency : &nbsp;&nbsp;</strong>
-        <OfferCurrencyDropdown
+        {/* <strong>Offer Currency : &nbsp;&nbsp;</strong> */}
+        {/* <OfferCurrencyDropdown
           selectedToken={selectedToken}
           setSelectedToken={setSelectedToken}
           userInputData={userInputData}
           setUserInputData={setUserInputData}
+          selectedNetwork={selectedNetwork}
+          setSelectedNetwork={setSelectedNetwork}
+        /> */}
+        <NetworkMenu
+          selectedToken={selectedToken}
+          setSelectedToken={setSelectedToken}
+          userInputData={userInputData}
+          setUserInputData={setUserInputData}
+          selectedNetwork={selectedNetwork}
+          setSelectedNetwork={setSelectedNetwork}
+          checkNetwork={checkNetwork}
         />
       </div>
       <div className={styles.right}>

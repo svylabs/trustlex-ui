@@ -12,12 +12,16 @@ interface props {
   setSelectedToken: (selectedToken: string) => void;
   userInputData: IUserInputData;
   setUserInputData: (userInputData: IUserInputData) => void;
+  selectedNetwork: string;
+  setSelectedNetwork: (selectedNetwork: string) => void;
 }
 const OfferCurrencyDropdown = ({
   selectedToken,
   setSelectedToken,
   userInputData,
   setUserInputData,
+  selectedNetwork,
+  setSelectedNetwork,
 }: props) => {
   const filteredCurrencies = userInputData.activeExchange
     .filter((item, index) => {
@@ -25,7 +29,7 @@ const OfferCurrencyDropdown = ({
         return item;
       }
     })
-    .map((item) => currencyObjects[item.currency]);
+    .map((item) => currencyObjects[selectedNetwork][item.currency]);
 
   const [selectedCurrency, setSelectedCurrency] = useState<string>();
   const [selectedCurrencyIcon, setSelectedCurrencyIcon] = useState<
@@ -34,13 +38,16 @@ const OfferCurrencyDropdown = ({
 
   useEffect(() => {
     setSelectedCurrency(selectedToken);
-    setSelectedCurrencyIcon(currencyObjects[selectedToken.toLowerCase()].icon);
+    setSelectedCurrencyIcon(
+      currencyObjects[selectedNetwork][selectedToken.toLowerCase()].icon
+    );
   }, [selectedToken]);
 
   const handleOfferCurrencyChange = (
     currency: string,
     icon: string | JSX.Element
   ) => {
+    console.log(currency);
     setSelectedCurrency(currency);
     setSelectedCurrencyIcon(icon);
     setSelectedToken(currency);

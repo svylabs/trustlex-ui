@@ -153,18 +153,20 @@ export const createContractInstance = async (
 
 export const getERC20TokenBalance = async (
   address: string,
-  contractAddress: string = "",
-  contractABI: string = ""
+  contractAddress: string,
+  contractABI: string
 ): Promise<number> => {
   try {
-    if (typeof window.ethereum !== undefined) {
+    if (typeof window.ethereum !== undefined && contractAddress != "") {
       const { ethereum } = window;
       const provider = new ethers.providers.Web3Provider(ethereum);
 
       const signer = provider.getSigner();
       const erc20TokenContract = new ethers.Contract(
-        ERC20.address,
-        erc20ContractABI.abi,
+        // ERC20.address,
+        // erc20ContractABI.abi,
+        contractAddress,
+        contractABI,
         signer
       );
 
@@ -345,7 +347,8 @@ export const AddOfferWithEth = async (
 export const addOfferWithToken = async (
   data: IAddOfferWithToken,
   sellCurrecny: string,
-  inputTokens: string
+  inputTokens: string,
+  selectedNetwork: string
 ) => {
   // first approve contract to spend the tokens
   try {
@@ -363,9 +366,11 @@ export const addOfferWithToken = async (
       sellCurrecny;
       // To do Add the balance validation check
       let contractAddress =
-        currencyObjects[sellCurrecny.toLowerCase()].ERC20Address;
+        currencyObjects[selectedNetwork][sellCurrecny.toLowerCase()]
+          .ERC20Address;
 
-      let contractABI = currencyObjects[sellCurrecny.toLowerCase()].ERC20ABI;
+      let contractABI =
+        currencyObjects[selectedNetwork][sellCurrecny.toLowerCase()].ERC20ABI;
       let accountOwnerBal: number = await getERC20TokenBalance(
         accounts[0],
         contractAddress,
@@ -415,7 +420,8 @@ export const addOfferWithToken = async (
 
 export const increaseContractAllownace = async (
   selectedToken: string,
-  tokenAmount: string // in SPVC
+  tokenAmount: string, // in SPVC
+  selectedNetwork: string
 ) => {
   // first approve contract to spend the tokens
   try {
@@ -426,9 +432,11 @@ export const increaseContractAllownace = async (
       const signer = provider.getSigner();
 
       let contractAddress =
-        currencyObjects[selectedToken.toLowerCase()].ERC20Address;
+        currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+          .ERC20Address;
 
-      let contractABI = currencyObjects[selectedToken.toLowerCase()].ERC20ABI;
+      let contractABI =
+        currencyObjects[selectedNetwork][selectedToken.toLowerCase()].ERC20ABI;
       let spender =
         currencyObjects[selectedToken.toLowerCase()].orderBookContractAddreess;
       if (!(contractAddress && contractABI && spender)) return false;

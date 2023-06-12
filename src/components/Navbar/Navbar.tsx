@@ -94,7 +94,7 @@ const Navbar = (props: Props) => {
           variant={"subtle"}
           color="gray"
           className={styles.menuBtn}
-          onClick={props.toggleSidebar}
+          onClick={() => props.toggleSidebar}
         >
           <Icon icon="material-symbols:menu-rounded" className={styles.icon} />
         </Button>

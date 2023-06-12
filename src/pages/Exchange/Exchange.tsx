@@ -271,22 +271,28 @@ const Exchange = (props: Props) => {
 
       let addedOffer;
       let sellCurrecny = userInputData?.activeExchange[1]?.currency;
+      let isNativeToken = userInputData?.activeExchange[1].isNativeToken;
 
-      if (sellCurrecny === "eth") {
+      if (isNativeToken == true) {
         const data = {
           weieth: EthtoWei(inputEther),
           satoshis: BtcToSatoshiConverter(
             userInputData.activeExchange[0].value
           ),
-          bitcoinAddress: generatedBitcoinData?.pubkeyHash.toString("hex"),
+          bitcoinAddress: bitcoinAddress,
           offerValidTill: TimeToNumber(exchangeData.valid),
           account: account,
         };
 
-        addedOffer = await AddOfferWithEth(context.contract, data);
-      } else if (sellCurrecny === ERC20TokenKey) {
+        addedOffer = await AddOfferWithEth(
+          context.contract,
+          data,
+          sellCurrecny
+        );
+      } else {
         let decimalPlace = Number(
-          currencyObjects[sellCurrecny.toLowerCase()].decimalPlace
+          currencyObjects[selectedNetwork][sellCurrecny.toLowerCase()]
+            .decimalPlace
         );
 
         const data = {
@@ -294,17 +300,17 @@ const Exchange = (props: Props) => {
           satoshis: BtcToSatoshiConverter(
             userInputData.activeExchange[0].value
           ),
-          bitcoinAddress: generatedBitcoinData?.pubkeyHash?.toString("hex"),
+          bitcoinAddress: bitcoinAddress,
           offerValidTill: TimeToNumber(exchangeData.valid),
           account: account,
         };
+
         addedOffer = await addOfferWithToken(
           data,
           sellCurrecny,
           inputEther,
           selectedNetwork
         );
-      } else {
       }
 
       let addedOfferHash = addedOffer?.hash;

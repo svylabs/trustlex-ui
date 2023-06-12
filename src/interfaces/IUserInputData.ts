@@ -3,6 +3,7 @@ interface IActiveExchange {
   value: string;
   networkName: string;
   networkKey: string;
+  isNativeToken: boolean;
 }
 
 export default interface IUserInputData {

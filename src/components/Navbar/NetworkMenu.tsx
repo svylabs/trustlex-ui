@@ -52,12 +52,16 @@ function NetworkMenu({
     networkKey: string,
     currency: string //it should be in upper case
   ) => {
-    console.log(networkKey);
+    // console.log(networkKey);
     //update the selected network, selected tokens , active exchange
     setSelectedToken(currency);
     setSelectedNetwork(networkKey);
-    let filteredActiveExchangeData = filteredActiveExchange(networkKey);
-
+    let includeNonEthereumToken = true;
+    let filteredActiveExchangeData = filteredActiveExchange(
+      networkKey,
+      includeNonEthereumToken
+    );
+    // console.log(filteredActiveExchangeData);
     let userInputData_: IUserInputData = userInputData;
     userInputData_.activeExchange = filteredActiveExchangeData;
     userInputData_.selectedNetwork = networkKey;
@@ -67,9 +71,9 @@ function NetworkMenu({
     let selectedNetworkChainID: number = Number(
       NetworkInfo[networkKey].ChainID
     );
-    console.log(networkKey, selectedNetworkChainID);
+    // console.log(networkKey, selectedNetworkChainID);
 
-    let selectedNetworkName: string = NetworkInfo[networkKey].NetworkName;
+    // let selectedNetworkName: string = NetworkInfo[networkKey].NetworkName;
     // setTimeout(() => {
     //   checkNetwork(
     //     metamaskNetworkChainId,
@@ -83,12 +87,20 @@ function NetworkMenu({
     checkNetwork();
   }, [selectedNetwork]);
 
-  function filteredActiveExchange(selectedNetwork: string) {
-    let filteredActiveExchange = activeExchange.filter((value: any) => {
-      if (value.networkKey == selectedNetwork) {
+  function filteredActiveExchange(
+    selectedNetwork: string,
+    includeNonEthereumToken = false
+  ) {
+    // console.log(activeExchange);
+    let filteredActiveExchange: any = activeExchange.filter((value: any) => {
+      if (
+        value.networkKey == selectedNetwork ||
+        (includeNonEthereumToken == true && value.isEthereumCahin == false)
+      ) {
         return true;
       }
     });
+    // console.log(filteredActiveExchange);
     return filteredActiveExchange;
   }
 
@@ -111,25 +123,27 @@ function NetworkMenu({
             <div key={index}>
               {/* <Dropdown.Item key={index}>{value.networkName}</Dropdown.Item> */}
               <Dropdown.Menu key={index} title={networkName}>
-                {filteredActiveExchangeData.map((value2, index2) => {
-                  let currency = value2.currency.toUpperCase();
-                  let icon: JSX.Element | string =
-                    currencyObjects[networkKey][value2.currency]?.icon;
+                {filteredActiveExchangeData.map(
+                  (value2: any, index2: number) => {
+                    let currency = value2.currency.toUpperCase();
+                    let icon: JSX.Element | string =
+                      currencyObjects[networkKey][value2.currency]?.icon;
 
-                  return (
-                    <div key={index + index2}>
-                      <Dropdown.Item
-                        onClick={(event) =>
-                          handleNetworkChange(event, networkKey, currency)
-                        }
-                        icon={icon}
-                      >
-                        {" "}
-                        {currency}
-                      </Dropdown.Item>
-                    </div>
-                  );
-                })}
+                    return (
+                      <div key={index + index2}>
+                        <Dropdown.Item
+                          onClick={(event) =>
+                            handleNetworkChange(event, networkKey, currency)
+                          }
+                          icon={icon}
+                        >
+                          {" "}
+                          {currency}
+                        </Dropdown.Item>
+                      </div>
+                    );
+                  }
+                )}
               </Dropdown.Menu>
             </div>
           );

@@ -30,7 +30,8 @@ export const networks = [
 
 // Default Network
 export const DEFAULT_NETWORK = "polygon_matic";
-export const DEFAULT_TOKEN = "ETH"; // It should be in upper case
+export const DEFAULT_TOKEN = "matic".toUpperCase(); // It should be in upper case
+export const DEFAULT_IS_NATIVE_TOKEN = true;
 
 // Networks details Object
 export const NetworkInfo: {
@@ -78,7 +79,14 @@ export const NetworkInfo: {
 };
 
 export const activeExchange = [
-  { currency: "btc", value: "", networkName: "", networkKey: "" },
+  {
+    currency: "btc",
+    value: "",
+    networkName: "",
+    networkKey: "",
+    isEthereumCahin: false,
+    isNativeToken: true,
+  },
 
   /* Start Currencies for Polygon Testnet Matic */
   {
@@ -86,12 +94,16 @@ export const activeExchange = [
     value: "",
     networkName: "Polygon Testnet Matic",
     networkKey: "polygon_matic",
+    isEthereumCahin: true,
+    isNativeToken: true,
   },
   {
     currency: ERC20TokenKey,
     value: "",
     networkName: "Polygon Testnet Matic",
     networkKey: "polygon_matic",
+    isEthereumCahin: true,
+    isNativeToken: false,
   },
   /* End Currencies for Polygon Testnet Matic */
   /* Start Currencies for Trustlex Testnet */
@@ -100,12 +112,16 @@ export const activeExchange = [
     value: "",
     networkName: "Trustlex Testnet",
     networkKey: "trustlex_testnet",
+    isEthereumCahin: true,
+    isNativeToken: true,
   },
   {
     currency: ERC20TokenKey,
     value: "",
     networkName: "Trustlex Testnet",
     networkKey: "trustlex_testnet",
+    isEthereumCahin: true,
+    isNativeToken: false,
   },
   /* End Currencies for Trustlex Testnet */
   /* Start Currencies for Ganache Testnet */
@@ -114,12 +130,16 @@ export const activeExchange = [
     value: "",
     networkName: "Ganache Testnet",
     networkKey: "ganache_testnet",
+    isEthereumCahin: true,
+    isNativeToken: true,
   },
   {
     currency: ERC20TokenKey,
     value: "",
     networkName: "Ganache Testnet",
     networkKey: "ganache_testnet",
+    isEthereumCahin: true,
+    isNativeToken: false,
   },
   /* End Currencies for Ganache Testnet */
   /* Start Currencies for Ganache Testnet */
@@ -128,12 +148,17 @@ export const activeExchange = [
     value: "",
     networkName: "BNB Testnet",
     networkKey: "bnb_testnet",
+    isEthereumCahin: true,
+    isNativeToken: true,
   },
   // {
   //   currency: ERC20TokenKey,
   //   value: "",
   //   networkName: "BNB Testnet",
   //   networkKey: "bnb_testnet",
+
+  // isEthereumCahin: true,
+  // isNativeToken:false,
   // },
   /* End Currencies for Ganache Testnet */
 ];

@@ -89,7 +89,7 @@ const ExchangeSwapGroup = (props: Props) => {
             userInputData.activeExchange[0].currency
           ],
         ];
-  console.log(userInputData.activeExchange, filteredForLeft, leftItems);
+  // console.log(userInputData.activeExchange, filteredForLeft, leftItems);
   const filteredForRight = userInputData.activeExchange
     .filter((item, index) => {
       if (index !== 0 && item.currency !== "btc") {
@@ -136,11 +136,11 @@ const ExchangeSwapGroup = (props: Props) => {
       let activeExchange = prev.activeExchange;
 
       activeExchange[1].value = e.target.value;
-      console.log(e.target.value);
+      // console.log(e.target.value);
       return { ...prev, activeExchange: activeExchange };
     });
   };
-  console.log(leftItems);
+  // console.log(leftItems);
   return (
     <>
       <ExchangeGridLayout
@@ -155,14 +155,16 @@ const ExchangeSwapGroup = (props: Props) => {
           />
         }
         middle={
-          <Button
+          <>
+            {/* <Button
             variant={VariantsEnum.default}
             onClick={() => {
               swapChange();
             }}
           >
             <ImageIcon image="/icons/swap.svg" />
-          </Button>
+          </Button> */}
+          </>
         }
         right={
           <InputWithSelect

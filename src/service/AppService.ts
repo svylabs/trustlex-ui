@@ -307,7 +307,8 @@ export const getOffer = async (
 
 export const AddOfferWithEth = async (
   trustLex: ethers.Contract | undefined,
-  data: IAddOfferWithEth
+  data: IAddOfferWithEth,
+  sellCurrecny: string
 ) => {
   const { weieth, satoshis, bitcoinAddress, offerValidTill, account } = data;
 
@@ -325,7 +326,7 @@ export const AddOfferWithEth = async (
     const userInputEth = WeitoEth(weieth);
 
     if (userInputEth > EthBalance) {
-      let message = "Your ETH balance is low !";
+      let message = `Your ${sellCurrecny.toUpperCase()} balance is low !`;
       showErrorMessage(message);
       throw new Error(message);
     }
@@ -377,7 +378,9 @@ export const addOfferWithToken = async (
         contractABI
       );
       if (accountOwnerBal < Number(inputTokens)) {
-        showErrorMessage("Your token balance is low.");
+        showErrorMessage(
+          `Your token ${sellCurrecny.toUpperCase()} balance is low.`
+        );
         return false;
       }
 
@@ -570,6 +573,7 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
     return MyoffersList;
   }
   let offersData = await trustLex.getOffers(fromOfferId);
+
   let totalFetchedRecords = offersData.total;
   let offers = offersData.result;
   let MyOngoingOrdersPromises = [];
@@ -599,7 +603,12 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
     };
     let satoshisToReceive = offer.satoshisToReceive;
     let satoshisReceived = offer.satoshisReceived;
-
+    console.log(
+      offer.offeredBy.toLowerCase(),
+      account.toLowerCase(),
+      satoshisReceived.toString(),
+      satoshisToReceive.toString()
+    );
     if (
       offer.offeredBy.toLowerCase() === account.toLowerCase() &&
       satoshisReceived.toString() != satoshisToReceive.toString()

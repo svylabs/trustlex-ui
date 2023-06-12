@@ -43,6 +43,7 @@ import {
   activeExchange,
   currencyObjects,
   DEFAULT_NETWORK,
+  DEFAULT_IS_NATIVE_TOKEN,
   NetworkInfo,
   DEFAULT_TOKEN,
 } from "~/Context/Constants";
@@ -161,6 +162,7 @@ export default function App() {
           limit: "",
           activeExchange: filteredActiveExchange(DEFAULT_NETWORK),
           selectedNetwork: DEFAULT_NETWORK,
+          isNativeToken: DEFAULT_IS_NATIVE_TOKEN,
         }
   );
   const [selectedNetwork, setSelectedNetwork] = useState<string>(
@@ -208,7 +210,7 @@ export default function App() {
   });
   //  Network changed event
   (ethereum as any).on("networkChanged", async function (networkId: number) {
-    console.log(networkId);
+    // console.log(networkId);
     let provider = new ethers.providers.Web3Provider(ethereum);
     let network = await provider.getNetwork();
     setNetWorkInfoData(network as INetworkInfo);
@@ -255,12 +257,12 @@ export default function App() {
     selectedNetworkChainID = NetworkInfo[selectedNetwork].ChainID;
     let selectedNetworkName = NetworkInfo[selectedNetwork].NetworkName;
 
-    console.log(networkId, selectedNetworkChainID);
+    // console.log(networkId, selectedNetworkChainID);
     networkId = typeof networkId === "string" ? parseInt(networkId) : networkId;
 
     if (networkId !== selectedNetworkChainID) {
       let messge = `You have selected the wrong network. Kindly select the ${selectedNetworkName} .`;
-      console.log("ok1");
+      // console.log("ok1");
       setAlertMessage(messge);
       setAlertOpen(alertOpen + 1);
       // update offers list parameters
@@ -268,7 +270,7 @@ export default function App() {
         setRefreshOffersListKey(refreshOffersListKey + 1);
       }, 500);
     } else {
-      console.log("ok2");
+      // console.log("ok2");
       setAlertMessage("");
       setAlertOpen(0);
       // update offers list parameters
@@ -508,6 +510,7 @@ export default function App() {
       if (networkId !== NetworkInfo[selectedNetwork].ChainID) {
         return;
       }
+
       // create the contract instance
       let contract = await getSelectedTokenContractInstance();
       if (!contract) return false;
@@ -518,7 +521,6 @@ export default function App() {
       // fetch the recent orders my swaps ongoing by non event
       let totalOffers = await getTotalOffers(contract as ethers.Contract);
       setTotalOffers(totalOffers);
-
       let fromOfferMySwapOngoingId = totalOffers;
       const InitializeFullfillmentDataByNonEvent =
         await listInitializeFullfillmentOnGoingByNonEvent(
@@ -526,6 +528,7 @@ export default function App() {
           account,
           fromOfferMySwapOngoingId
         );
+
       setlistenedOngoinMySwapOnGoingDataByNonEvent(
         InitializeFullfillmentDataByNonEvent
       );
@@ -622,6 +625,11 @@ export default function App() {
   }
   async function getSelectedTokenContractInstance() {
     // create the contract instance
+    // console.log(
+    //   selectedNetwork,
+    //   selectedToken,
+    //   currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+    // );
     let contractAddress =
       currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
         .orderBookContractAddreess;
@@ -632,6 +640,7 @@ export default function App() {
       contractAddress as string,
       contractABI
     );
+
     return contract;
   }
   async function addNetwork() {

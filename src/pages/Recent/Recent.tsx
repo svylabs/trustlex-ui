@@ -95,6 +95,7 @@ function MySwaps() {
     account,
     contract,
     selectedToken,
+    selectedNetwork,
   } = context;
 
   const [isMoreOngoingLoading, setMoreOngoingDataLoading] = useState(false);
@@ -154,12 +155,6 @@ function MySwaps() {
         setMySwapOngoingLoadingText("");
       });
   };
-  const loadMorHeistory2 = () => {
-    setMoreHistoryLoading(true);
-    setTimeout(() => {
-      setMoreHistoryLoading(false);
-    }, 2000);
-  };
 
   const callMySwapsCompleted = async () => {
     const mySwapsCompletedList =
@@ -218,6 +213,7 @@ function MySwaps() {
       return false;
     }
   };
+  console.log(listenedOngoinMySwapOnGoingDataByNonEvent);
   const OngoingTableData2 = listenedOngoinMySwapOnGoingDataByNonEvent
     ?.filter(function (
       value: IListInitiatedFullfillmentDataByNonEvent,
@@ -416,6 +412,7 @@ function MySwaps() {
               mySwapOngoingLoadingText={mySwapOngoingLoadingText}
               contract={contract}
               selectedToken={selectedToken}
+              selectedNetwork={selectedNetwork}
             />
           </div>
           <div className={styles.recentMobileTable}>
@@ -428,6 +425,7 @@ function MySwaps() {
               mySwapOngoingLoadingText={mySwapCompletedLoadingText}
               contract={contract}
               selectedToken={selectedToken}
+              selectedNetwork={selectedNetwork}
             />
           </div>
           <br />
@@ -475,6 +473,7 @@ function MySwaps() {
             setFullFillmentPaymentProofSubmitted
           }
           selectedToken={selectedToken}
+          selectedNetwork={selectedNetwork}
         />
       </GradientBackgroundContainer>
       {/* Star My Swap completed History */}
@@ -493,6 +492,7 @@ function MySwaps() {
               ]}
               data={HistoryTableData2}
               selectedToken={selectedToken}
+              selectedNetwork={selectedNetwork}
             />
           </div>
           <div className={styles.mobileHistoryTable}>
@@ -502,6 +502,7 @@ function MySwaps() {
               mobile={true}
               data={HistoryTableData}
               selectedToken={selectedToken}
+              selectedNetwork={selectedNetwork}
             />
           </div>
           <br />
@@ -560,7 +561,7 @@ function AllSwaps() {
   } = context;
 
   const { mobileView } = useWindowDimensions();
-
+  // console.log(listenedMySwapAllCompletedDataByNonEvent);
   const HistoryTableData2 = listenedMySwapAllCompletedDataByNonEvent.map(
     (value, key) => {
       // let fulfillmentBy: string = value?.offerDetailsInJson.fulfillmentBy;

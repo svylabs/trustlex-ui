@@ -136,6 +136,10 @@ const Exchange = (props: Props) => {
     contract,
     selectedToken,
     selectedNetwork,
+    refreshMySwapOngoingListKey,
+    setRefreshMySwapOngoingListKey,
+    refreshMySwapCompletedListKey,
+    setRefreshMySwapCompletedListKey,
   } = context;
 
   const [exchangeData, setExchangeData] = useState({
@@ -737,6 +741,10 @@ const Exchange = (props: Props) => {
         }
         selectedToken={selectedToken}
         selectedNetwork={selectedNetwork}
+        refreshMySwapOngoingListKey={refreshMySwapOngoingListKey}
+        setRefreshMySwapOngoingListKey={setRefreshMySwapOngoingListKey}
+        refreshMySwapCompletedListKey={refreshMySwapCompletedListKey}
+        setRefreshMySwapCompletedListKey={setRefreshMySwapCompletedListKey}
       />
 
       <div className={styles.overlay}>

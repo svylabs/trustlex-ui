@@ -34,6 +34,7 @@ import { PAGE_SIZE } from "~/Context/Constants";
 import { TimeToDateFormat } from "~/utils/TimeConverter";
 import { tofixedEther } from "~/utils/Ether.utills";
 import { tofixedBTC } from "~/utils/BitcoinUtils";
+import { currencyObjects } from "~/Context/Constants";
 type Props = {};
 
 const Recent = (props: Props) => {
@@ -83,8 +84,7 @@ function MySwaps() {
     //start ongoing variables
     listenedMySwapCompletedDataByNonEvent,
     setListenedMySwapCompletedDataByNonEvent,
-    refreshMySwapCompletedListKey,
-    setRefreshMySwapCompletedListKey,
+
     setMySwapCompletedLoadingText,
     mySwapCompletedLoadingText,
     isMoreMySwapCompletedTableDataLoading,
@@ -96,6 +96,9 @@ function MySwaps() {
     contract,
     selectedToken,
     selectedNetwork,
+
+    refreshMySwapCompletedListKey,
+    setRefreshMySwapCompletedListKey,
   } = context;
 
   const [isMoreOngoingLoading, setMoreOngoingDataLoading] = useState(false);
@@ -118,6 +121,15 @@ function MySwaps() {
   ] = useState<string | undefined>();
   const [exchangeOfferDrawerKey, setExchangeOfferDrawerKey] =
     useState<number>(0);
+
+  const [selectedCurrencyIcon, setSelectedCurrencyIcon] = useState<
+    JSX.Element | string
+  >(currencyObjects[selectedNetwork][selectedToken.toLowerCase()].icon);
+  useEffect(() => {
+    setSelectedCurrencyIcon(
+      currencyObjects[selectedNetwork][selectedToken.toLowerCase()].icon
+    );
+  }, [selectedToken]);
 
   const callMySwapsOngoing = async () => {
     const mySwapsOngoingList =
@@ -213,7 +225,6 @@ function MySwaps() {
       return false;
     }
   };
-  console.log(listenedOngoinMySwapOnGoingDataByNonEvent);
   const OngoingTableData2 = listenedOngoinMySwapOnGoingDataByNonEvent
     ?.filter(function (
       value: IListInitiatedFullfillmentDataByNonEvent,
@@ -289,7 +300,7 @@ function MySwaps() {
         orderNumber: value.offerDetailsInJson.offerId.toString(),
         planningToSell: {
           amount: OrderSellAmount,
-          type: CurrencyEnum.ETH,
+          type: selectedCurrencyIcon,
         },
         planningToBuy: {
           amount: orderBuyAmount,
@@ -474,6 +485,10 @@ function MySwaps() {
           }
           selectedToken={selectedToken}
           selectedNetwork={selectedNetwork}
+          refreshMySwapOngoingListKey={refreshMySwapOngoingListKey}
+          setRefreshMySwapOngoingListKey={setRefreshMySwapOngoingListKey}
+          refreshMySwapCompletedListKey={refreshMySwapCompletedListKey}
+          setRefreshMySwapCompletedListKey={setRefreshMySwapCompletedListKey}
         />
       </GradientBackgroundContainer>
       {/* Star My Swap completed History */}
@@ -557,11 +572,21 @@ function AllSwaps() {
     //end All completed variables
     account,
     selectedToken,
+    selectedNetwork,
     getSelectedTokenContractInstance,
   } = context;
 
   const { mobileView } = useWindowDimensions();
-  // console.log(listenedMySwapAllCompletedDataByNonEvent);
+
+  const [selectedCurrencyIcon, setSelectedCurrencyIcon] = useState<
+    JSX.Element | string
+  >(currencyObjects[selectedNetwork][selectedToken.toLowerCase()].icon);
+  useEffect(() => {
+    setSelectedCurrencyIcon(
+      currencyObjects[selectedNetwork][selectedToken.toLowerCase()].icon
+    );
+  }, [selectedToken]);
+
   const HistoryTableData2 = listenedMySwapAllCompletedDataByNonEvent.map(
     (value, key) => {
       // let fulfillmentBy: string = value?.offerDetailsInJson.fulfillmentBy;
@@ -591,7 +616,7 @@ function AllSwaps() {
         orderNumber: value.offerDetailsInJson.offerId.toString(),
         planningToSell: {
           amount: OrderSellAmount,
-          type: CurrencyEnum.ETH,
+          type: selectedCurrencyIcon,
         },
         planningToBuy: {
           amount: orderBuyAmount,

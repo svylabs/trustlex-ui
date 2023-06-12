@@ -78,6 +78,12 @@ type Props = {
   ) => void;
   selectedToken: string;
   selectedNetwork: string;
+  refreshMySwapOngoingListKey: number;
+  setRefreshMySwapOngoingListKey: (refreshMySwapOngoingListKey: number) => void;
+  refreshMySwapCompletedListKey: number;
+  setRefreshMySwapCompletedListKey: (
+    refreshMySwapCompletedListKey: number
+  ) => void;
 };
 
 const ExchangeOfferDrawer = ({
@@ -96,6 +102,10 @@ const ExchangeOfferDrawer = ({
   setFullFillmentPaymentProofSubmitted,
   selectedToken,
   selectedNetwork,
+  refreshMySwapOngoingListKey,
+  setRefreshMySwapOngoingListKey,
+  refreshMySwapCompletedListKey,
+  setRefreshMySwapCompletedListKey,
 }: Props) => {
   // console.log(data);
   const { mobileView } = useWindowDimensions();
@@ -435,6 +445,8 @@ const ExchangeOfferDrawer = ({
       setFullFillmentPaymentProofSubmitted(false);
       // setRefreshOffersListKey(refreshOffersListKey + 1);
       setClickedOnInitiateButton(true);
+      setRefreshMySwapOngoingListKey(refreshMySwapOngoingListKey + 1);
+      setRefreshMySwapCompletedListKey(refreshMySwapCompletedListKey + 1);
     } else {
       return false;
     }

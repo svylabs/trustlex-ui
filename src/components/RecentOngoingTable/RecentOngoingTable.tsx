@@ -110,7 +110,7 @@ const RecentOngoingTable = ({
             {/* <ImageIcon
               image={getIconFromCurrencyType(row.planningToSell.type)}
             />{" "} */}
-            {selectedCurrencyIcon}
+            {row.planningToSell.type}
             {/* {row.planningToSell.type} */}
             {selectedToken}
           </div>,

@@ -262,15 +262,15 @@ export default function App() {
 
     if (networkId !== selectedNetworkChainID) {
       let messge = `You have selected the wrong network. Kindly select the ${selectedNetworkName} .`;
-      // console.log("ok1");
+
       setAlertMessage(messge);
       setAlertOpen(alertOpen + 1);
       // update offers list parameters
-      setTimeout(() => {
-        setRefreshOffersListKey(refreshOffersListKey + 1);
-      }, 500);
+
+      // setTimeout(() => {
+      //   setRefreshOffersListKey(refreshOffersListKey + 1);
+      // }, 500);
     } else {
-      // console.log("ok2");
       setAlertMessage("");
       setAlertOpen(0);
       // update offers list parameters
@@ -413,6 +413,17 @@ export default function App() {
         const { ethereum } = window;
         if (ethereum) {
           const provider = new ethers.providers.Web3Provider(ethereum);
+
+          //checking the network
+          let network = await provider.getNetwork();
+          let networkId = network.chainId;
+          networkId =
+            typeof networkId === "string" ? parseInt(networkId) : networkId;
+
+          if (networkId !== NetworkInfo[selectedNetwork].ChainID) {
+            return;
+          }
+
           let chainId = netWorkInfoData.chainId;
           // update the eth balance
           let account = await findMetaMaskAccount();
@@ -557,71 +568,96 @@ export default function App() {
   ]);
 
   async function prepareMySwapCompletedData(trustlex: ethers.Contract) {
-    setIsMoreMySwapCompletedTableDataLoading(true);
-    setMySwapCompletedLoadingText("Loading List");
-    setListenedMySwapCompletedDataByNonEvent([]);
+    const { ethereum } = window;
+    if (ethereum) {
+      const provider = new ethers.providers.Web3Provider(ethereum);
+      let network = await provider.getNetwork();
+      let networkId = network.chainId;
+      networkId =
+        typeof networkId === "string" ? parseInt(networkId) : networkId;
 
-    // create the contract instance
-    let contract = await getSelectedTokenContractInstance();
-    if (!contract) return false;
-    setContract(contract);
-    // fetch the recent orders my swaps ongoing by non event
-    let totalOffers = await getTotalOffers(contract as ethers.Contract);
-    setTotalOffers(totalOffers);
+      if (networkId !== NetworkInfo[selectedNetwork].ChainID) {
+        return;
+      }
 
-    // fetch the recent orders my swaps ongoing by non event
-    let fromOfferMySwapCompetedId = totalOffers;
-    const InitializeFullfillmentDataByNonEvent =
-      await listInitializeFullfillmentCompletedByNonEvent(
-        contract,
-        account,
-        fromOfferMySwapCompetedId
+      setIsMoreMySwapCompletedTableDataLoading(true);
+      setMySwapCompletedLoadingText("Loading List");
+      setListenedMySwapCompletedDataByNonEvent([]);
+
+      // create the contract instance
+      let contract = await getSelectedTokenContractInstance();
+      if (!contract) return false;
+      setContract(contract);
+      // fetch the recent orders my swaps ongoing by non event
+      let totalOffers = await getTotalOffers(contract as ethers.Contract);
+      setTotalOffers(totalOffers);
+
+      // fetch the recent orders my swaps ongoing by non event
+      let fromOfferMySwapCompetedId = totalOffers;
+      const InitializeFullfillmentDataByNonEvent =
+        await listInitializeFullfillmentCompletedByNonEvent(
+          contract,
+          account,
+          fromOfferMySwapCompetedId
+        );
+      setListenedMySwapCompletedDataByNonEvent(
+        InitializeFullfillmentDataByNonEvent
       );
-    setListenedMySwapCompletedDataByNonEvent(
-      InitializeFullfillmentDataByNonEvent
-    );
-    let mySwapCompletedfromOfferId_ =
-      mySwapCompletedfromOfferId - PAGE_SIZE > 0
-        ? mySwapCompletedfromOfferId - PAGE_SIZE
-        : 0;
-    setMySwapCompletedfromOfferId(mySwapCompletedfromOfferId_);
+      let mySwapCompletedfromOfferId_ =
+        mySwapCompletedfromOfferId - PAGE_SIZE > 0
+          ? mySwapCompletedfromOfferId - PAGE_SIZE
+          : 0;
+      setMySwapCompletedfromOfferId(mySwapCompletedfromOfferId_);
 
-    setMySwapCompletedLoadingText("");
-    setIsMoreMySwapCompletedTableDataLoading(false);
+      setMySwapCompletedLoadingText("");
+      setIsMoreMySwapCompletedTableDataLoading(false);
+    }
   }
 
   async function prepareMySwapCompletedDataForAll(trustlex: ethers.Contract) {
-    setIsMoreMySwapAllCompletedTableDataLoading(true);
-    setMySwapAllCompletedLoadingText("Loading List");
-    setListenedMySwapAllCompletedDataByNonEvent([]);
+    const { ethereum } = window;
+    if (ethereum) {
+      const provider = new ethers.providers.Web3Provider(ethereum);
+      let network = await provider.getNetwork();
+      let networkId = network.chainId;
+      networkId =
+        typeof networkId === "string" ? parseInt(networkId) : networkId;
 
-    // create the contract instance
-    let contract = await getSelectedTokenContractInstance();
-    if (!contract) return false;
-    setContract(contract);
-    // fetch the recent orders my swaps ongoing by non event
-    let totalOffers = await getTotalOffers(contract as ethers.Contract);
-    setTotalOffers(totalOffers);
+      if (networkId !== NetworkInfo[selectedNetwork].ChainID) {
+        return;
+      }
+      setIsMoreMySwapAllCompletedTableDataLoading(true);
+      setMySwapAllCompletedLoadingText("Loading List");
+      setListenedMySwapAllCompletedDataByNonEvent([]);
 
-    // fetch the recent orders my swaps ongoing by non event
-    let fromOfferMySwapCompetedId = totalOffers;
-    const InitializeFullfillmentDataByNonEvent =
-      await listInitializeFullfillmentCompletedByNonEvent(
-        contract,
-        "",
-        fromOfferMySwapCompetedId
+      // create the contract instance
+      let contract = await getSelectedTokenContractInstance();
+      if (!contract) return false;
+      setContract(contract);
+      // fetch the recent orders my swaps ongoing by non event
+      let totalOffers = await getTotalOffers(contract as ethers.Contract);
+      setTotalOffers(totalOffers);
+
+      // fetch the recent orders my swaps ongoing by non event
+      let fromOfferMySwapCompetedId = totalOffers;
+      const InitializeFullfillmentDataByNonEvent =
+        await listInitializeFullfillmentCompletedByNonEvent(
+          contract,
+          "",
+          fromOfferMySwapCompetedId
+        );
+      setListenedMySwapAllCompletedDataByNonEvent(
+        InitializeFullfillmentDataByNonEvent
       );
-    setListenedMySwapAllCompletedDataByNonEvent(
-      InitializeFullfillmentDataByNonEvent
-    );
-    let mySwapCompletedfromOfferId_ =
-      mySwapCompletedfromOfferId - PAGE_SIZE > 0
-        ? mySwapCompletedfromOfferId - PAGE_SIZE
-        : 0;
-    setMySwapAllCompletedfromOfferId(mySwapCompletedfromOfferId_);
+      let mySwapCompletedfromOfferId_ =
+        mySwapCompletedfromOfferId - PAGE_SIZE > 0
+          ? mySwapCompletedfromOfferId - PAGE_SIZE
+          : 0;
+      setMySwapAllCompletedfromOfferId(mySwapCompletedfromOfferId_);
 
-    setMySwapAllCompletedLoadingText("");
-    setIsMoreMySwapAllCompletedTableDataLoading(false);
+      setMySwapAllCompletedLoadingText("");
+      setIsMoreMySwapAllCompletedTableDataLoading(false);
+    }
   }
   async function getSelectedTokenContractInstance() {
     // create the contract instance
@@ -691,8 +727,12 @@ export default function App() {
                 console.log("Success");
                 showSuccessMessage("Network successfully changed");
                 setRefreshOffersListKey(refreshOffersListKey + 1);
-                setAlertMessage("");
-                setAlertOpen(0);
+                setRefreshMySwapOngoingListKey(refreshMySwapOngoingListKey + 1);
+                setRefreshMySwapCompletedListKey(
+                  refreshMySwapCompletedListKey + 1
+                );
+                // setAlertMessage("");
+                // setAlertOpen(0);
               })
               .catch((error: any) => {
                 console.log("Error", error.message);
@@ -788,14 +828,20 @@ export default function App() {
         >
           <Layout>
             <ToastContainer />
+            {alertMessage != "" ? (
+              <>
+                <Alert
+                  message={alertMessage}
+                  setAlertMessage={setAlertMessage}
+                  isOpened={alertOpen}
+                  setAlertOpen={setAlertOpen}
+                  addNetwork={addNetwork}
+                />
+              </>
+            ) : (
+              ""
+            )}
 
-            <Alert
-              message={alertMessage}
-              setAlertMessage={setAlertMessage}
-              isOpened={alertOpen}
-              setAlertOpen={setAlertOpen}
-              addNetwork={addNetwork}
-            />
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/exchange" element={<Exchange />} />

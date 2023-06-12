@@ -98,7 +98,7 @@ export const AppContext = createContext<null | {
   setRefreshMySwapAllCompletedListKey: React.Dispatch<
     React.SetStateAction<number>
   >;
-  getSelectedTokenContractInstance: () => ethers.Contract;
+  getSelectedTokenContractInstance: () => Promise<ethers.Contract | false>;
   selectedNetwork: string;
   setSelectedNetwork: (selectedNetwork: string) => void;
   checkNetwork: () => void;

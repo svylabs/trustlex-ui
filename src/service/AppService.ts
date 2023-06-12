@@ -620,6 +620,41 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
       offerDetailsInJson.offerType = "my_offer";
       MyOffersPromises.push({ offerDetailsInJson });
     }
+    // get the fullfillment list
+    let FullfillmentResults: IFullfillmentResult[] =
+      await getInitializedFulfillmentsByOfferId(trustLex, value.offerId);
+
+    let fullfillmentRequestId = undefined;
+    let fullfillmentResult =
+      FullfillmentResults &&
+      FullfillmentResults.find((fullfillmentResult, index) => {
+        if (
+          fullfillmentResult.fulfillmentRequest.fulfillmentBy.toLowerCase() ===
+            account.toLowerCase() &&
+          fullfillmentResult.fulfillmentRequest.paymentProofSubmitted == false
+        ) {
+          fullfillmentRequestId = offer.fulfillmentRequests[index];
+          return true;
+        } else {
+          return false;
+        }
+      });
+    if (fullfillmentResult) {
+      offerDetailsInJson.offerType = "my_order";
+      offerDetailsInJson.progress =
+        TimestampTotoNow(fullfillmentResult.fulfillmentRequest.expiryTime) +
+        " and " +
+        TimestampfromNow(fullfillmentResult.fulfillmentRequest.expiryTime);
+      offerDetailsInJson.fullfillmentRequestId = fullfillmentRequestId;
+      offerDetailsInJson.fulfillmentRequestExpiryTime =
+        fullfillmentResult.fulfillmentRequest.expiryTime;
+      offerDetailsInJson.fulfillmentRequestQuantityRequested =
+        fullfillmentResult.fulfillmentRequest.quantityRequested.toString();
+      offerDetailsInJson.fulfillmentRequestPaymentProofSubmitted =
+        fullfillmentResult.fulfillmentRequest.paymentProofSubmitted;
+    }
+    fullfillmentResult &&
+      MyOffersPromises.push({ offerDetailsInJson: offerDetailsInJson });
   }
   MyoffersList = await Promise.all(MyOffersPromises);
   return MyoffersList;

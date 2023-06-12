@@ -603,12 +603,7 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
     };
     let satoshisToReceive = offer.satoshisToReceive;
     let satoshisReceived = offer.satoshisReceived;
-    console.log(
-      offer.offeredBy.toLowerCase(),
-      account.toLowerCase(),
-      satoshisReceived.toString(),
-      satoshisToReceive.toString()
-    );
+    // my offer data
     if (
       offer.offeredBy.toLowerCase() === account.toLowerCase() &&
       satoshisReceived.toString() != satoshisToReceive.toString()

@@ -40,6 +40,7 @@ export function InputWithSelect({
 
   const { setUserInputData, dropDownChange } = context;
   React.useEffect(() => {
+    // console.log(options);
     setSelectedOptionValue(options[0]);
   }, [options]);
   const itemDisabled = options.length < 2;

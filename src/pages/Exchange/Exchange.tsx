@@ -135,6 +135,11 @@ const Exchange = (props: Props) => {
     account,
     contract,
     selectedToken,
+    selectedNetwork,
+    refreshMySwapOngoingListKey,
+    setRefreshMySwapOngoingListKey,
+    refreshMySwapCompletedListKey,
+    setRefreshMySwapCompletedListKey,
   } = context;
 
   const [exchangeData, setExchangeData] = useState({
@@ -205,7 +210,11 @@ const Exchange = (props: Props) => {
       };
       setListenedOfferDataByNonEvent(listenedOffersByNonEvent);
       setTableData(
-        getTableData(listenedOffersByNonEvent.offers, selectedToken)
+        getTableData(
+          listenedOffersByNonEvent.offers,
+          selectedToken,
+          selectedNetwork
+        )
       );
       setMoreTableDataLoading(false);
 
@@ -266,22 +275,28 @@ const Exchange = (props: Props) => {
 
       let addedOffer;
       let sellCurrecny = userInputData?.activeExchange[1]?.currency;
+      let isNativeToken = userInputData?.activeExchange[1].isNativeToken;
 
-      if (sellCurrecny === "eth") {
+      if (isNativeToken == true) {
         const data = {
           weieth: EthtoWei(inputEther),
           satoshis: BtcToSatoshiConverter(
             userInputData.activeExchange[0].value
           ),
-          bitcoinAddress: generatedBitcoinData?.pubkeyHash.toString("hex"),
+          bitcoinAddress: bitcoinAddress,
           offerValidTill: TimeToNumber(exchangeData.valid),
           account: account,
         };
 
-        addedOffer = await AddOfferWithEth(context.contract, data);
-      } else if (sellCurrecny === ERC20TokenKey) {
+        addedOffer = await AddOfferWithEth(
+          context.contract,
+          data,
+          sellCurrecny
+        );
+      } else {
         let decimalPlace = Number(
-          currencyObjects[sellCurrecny.toLowerCase()].decimalPlace
+          currencyObjects[selectedNetwork][sellCurrecny.toLowerCase()]
+            .decimalPlace
         );
 
         const data = {
@@ -289,12 +304,17 @@ const Exchange = (props: Props) => {
           satoshis: BtcToSatoshiConverter(
             userInputData.activeExchange[0].value
           ),
-          bitcoinAddress: generatedBitcoinData?.pubkeyHash?.toString("hex"),
+          bitcoinAddress: bitcoinAddress,
           offerValidTill: TimeToNumber(exchangeData.valid),
           account: account,
         };
-        addedOffer = await addOfferWithToken(data, sellCurrecny, inputEther);
-      } else {
+
+        addedOffer = await addOfferWithToken(
+          data,
+          sellCurrecny,
+          inputEther,
+          selectedNetwork
+        );
       }
 
       let addedOfferHash = addedOffer?.hash;
@@ -431,7 +451,8 @@ const Exchange = (props: Props) => {
     if (listenedOfferDataByNonEvent?.offers) {
       const result = getTableData(
         listenedOfferDataByNonEvent?.offers,
-        selectedToken
+        selectedToken,
+        selectedNetwork
       );
       setTableData(result);
     }
@@ -719,6 +740,11 @@ const Exchange = (props: Props) => {
           setFullFillmentPaymentProofSubmitted
         }
         selectedToken={selectedToken}
+        selectedNetwork={selectedNetwork}
+        refreshMySwapOngoingListKey={refreshMySwapOngoingListKey}
+        setRefreshMySwapOngoingListKey={setRefreshMySwapOngoingListKey}
+        refreshMySwapCompletedListKey={refreshMySwapCompletedListKey}
+        setRefreshMySwapCompletedListKey={setRefreshMySwapCompletedListKey}
       />
 
       <div className={styles.overlay}>

@@ -25,6 +25,7 @@ interface Props extends TableProps {
   data: ITableRow[];
   mobile?: boolean;
   selectedToken: string;
+  selectedNetwork: string;
 }
 
 const RecentHistoryTable = ({
@@ -33,13 +34,14 @@ const RecentHistoryTable = ({
   data,
   mobile,
   selectedToken,
+  selectedNetwork,
 }: Props) => {
   const [selectedCurrencyIcon, setSelectedCurrencyIcon] = useState<
     JSX.Element | string
-  >(currencyObjects[selectedToken?.toLowerCase()]?.icon);
+  >(currencyObjects[selectedNetwork][selectedToken?.toLowerCase()]?.icon);
   useEffect(() => {
     setSelectedCurrencyIcon(
-      currencyObjects[selectedToken?.toLowerCase()]?.icon
+      currencyObjects[selectedNetwork][selectedToken?.toLowerCase()]?.icon
     );
   }, [selectedToken]);
 

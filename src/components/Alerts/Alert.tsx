@@ -15,15 +15,15 @@ interface props {
 function Alert({
   message,
   isOpened,
-  setAlertMessage,
   setAlertOpen,
+  setAlertMessage,
   addNetwork,
 }: props) {
   const [opened, { open, close }] = useDisclosure(false);
   const theme = useMantineTheme();
 
   useEffect(() => {
-    if (isOpened != 0) {
+    if (isOpened !== 0) {
       open();
     } else {
       close();
@@ -34,7 +34,6 @@ function Alert({
     open();
   };
   const handleClose = () => {
-    close();
     setAlertOpen(0);
     setAlertMessage("");
     addNetwork();
@@ -43,9 +42,9 @@ function Alert({
   return (
     <>
       <Modal
-        withCloseButton={false}
+        withCloseButton={false} // to show the close option make it withCloseButton =  true
         opened={opened}
-        onClose={close}
+        onClose={handleClose}
         title={"Alert"}
         centered
         overlayColor={

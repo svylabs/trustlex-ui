@@ -10,7 +10,9 @@ import {
   ERC20TokenLabel,
   ERC20TokenValue,
   currencyObjects,
+  activeExchange,
 } from "~/Context/Constants";
+import IActiveExchange from "~/interfaces/IUserInputData";
 
 // const currencyObjects: {
 //   [key: string]: {
@@ -45,8 +47,14 @@ const ExchangeSwapGroup = (props: Props) => {
     return <>Loading...</>;
   }
 
-  const { balance, userInputData, setUserInputData, swapChange, erc20balance } =
-    context;
+  const {
+    balance,
+    userInputData,
+    setUserInputData,
+    swapChange,
+    erc20balance,
+    selectedNetwork,
+  } = context;
   const [sellBalance, setSellBalnce] = useState<string>("0");
 
   useEffect(() => {
@@ -59,40 +67,45 @@ const ExchangeSwapGroup = (props: Props) => {
       setSellBalnce("10");
     }
   }, [userInputData?.activeExchange[1]?.currency, balance, erc20balance]);
-
+  // let activeExchanges = [activeExchange[0]];
+  // console.log(activeExchange[0]);
   const filteredForLeft = userInputData.activeExchange
     .filter((item, index) => {
-      if (index !== 1 && item.currency !== "btc") {
+      // if (index !== 1 && item.currency !== "btc") {
+      //   return item;
+      // }
+      if (item.currency !== "btc") {
         return item;
       }
     })
-    .map((item) => currencyObjects[item.currency]);
+    .map((item) => currencyObjects[selectedNetwork][item.currency]);
 
   const leftItems =
-    userInputData.activeExchange[0].currency !== "btc"
+    // userInputData.activeExchange[0].currency !== "btc"
+    activeExchange[0].currency !== "btc"
       ? filteredForLeft
-      : [currencyObjects[userInputData.activeExchange[0].currency]];
-
+      : [
+          currencyObjects[selectedNetwork][
+            userInputData.activeExchange[0].currency
+          ],
+        ];
+  // console.log(userInputData.activeExchange, filteredForLeft, leftItems);
   const filteredForRight = userInputData.activeExchange
     .filter((item, index) => {
       if (index !== 0 && item.currency !== "btc") {
         return item;
       }
     })
-    .map((item) => currencyObjects[item.currency]);
+    .map((item) => currencyObjects[selectedNetwork][item.currency]);
 
   const rightItems =
     userInputData.activeExchange[1].currency !== "btc"
       ? filteredForRight
-      : [currencyObjects[userInputData?.activeExchange[1]?.currency]];
-
-  // console.log(
-  //   userInputData.activeExchange,
-  //   filteredForLeft,
-  //   leftItems,
-  //   filteredForRight,
-  //   rightItems
-  // );
+      : [
+          currencyObjects[selectedNetwork][
+            userInputData?.activeExchange[1]?.currency
+          ],
+        ];
 
   const handleLeftDataChange = async (
     e: React.ChangeEvent<HTMLInputElement>
@@ -123,11 +136,11 @@ const ExchangeSwapGroup = (props: Props) => {
       let activeExchange = prev.activeExchange;
 
       activeExchange[1].value = e.target.value;
-      console.log(e.target.value);
+      // console.log(e.target.value);
       return { ...prev, activeExchange: activeExchange };
     });
   };
-
+  // console.log(leftItems);
   return (
     <>
       <ExchangeGridLayout
@@ -142,14 +155,16 @@ const ExchangeSwapGroup = (props: Props) => {
           />
         }
         middle={
-          <Button
+          <>
+            {/* <Button
             variant={VariantsEnum.default}
             onClick={() => {
               swapChange();
             }}
           >
             <ImageIcon image="/icons/swap.svg" />
-          </Button>
+          </Button> */}
+          </>
         }
         right={
           <InputWithSelect

@@ -2,7 +2,6 @@ import { Icon } from "@iconify/react";
 import { Menu } from "@mantine/core";
 import styles from "./NavDropdownButton.module.scss";
 import navDropdownStyles from "./NavDropdownStyles.module.scss";
-
 interface INavDropdown {
   icon?: string;
   title: string;
@@ -38,7 +37,13 @@ const NavDropdownButton = ({
         {dropdownItems && dropdownItems.length > 0 && (
           <Menu.Dropdown>
             {dropdownItems.map((item, index) => (
-              <Menu.Item key={index} onClick={item.onClick}>
+              <Menu.Item
+                key={index}
+                onClick={() => {
+                  item.onClick;
+                }}
+                rightSection={<></>}
+              >
                 {item.title}
                 {item.inputField && item.inputField}
               </Menu.Item>

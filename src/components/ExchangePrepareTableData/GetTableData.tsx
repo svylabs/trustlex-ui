@@ -20,9 +20,11 @@ import { currencyObjects } from "~/Context/Constants";
 
 const getTableData = (
   offers: IListenedOfferData[],
-  selectedToken: string = "ETH"
+  selectedToken: string = "ETH",
+  selectedNetwork: string
 ) => {
-  let selectedCurrencyIcon = currencyObjects[selectedToken.toLowerCase()].icon;
+  let selectedCurrencyIcon =
+    currencyObjects[selectedNetwork][selectedToken.toLowerCase()]?.icon;
   return offers
     .filter(function (offer: IListenedOfferData) {
       let satoshisToReceive = +offer.offerDetailsInJson.satoshisToReceive;

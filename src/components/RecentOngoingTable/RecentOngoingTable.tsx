@@ -43,6 +43,7 @@ interface Props extends TableProps {
   mySwapOngoingLoadingText: string;
   contract: ethers.Contract | undefined;
   selectedToken: string;
+  selectedNetwork: string;
 }
 export const GetProgressText = ({ progress }: { progress: string }) => {
   const progressArr = progress.split(" ");
@@ -81,6 +82,7 @@ const RecentOngoingTable = ({
   mySwapOngoingLoadingText,
   contract,
   selectedToken,
+  selectedNetwork,
 }: Props) => {
   // let selectedCurrencyIcon = currencyObjects[selectedToken.toLowerCase()].icon;
   // console.log(selectedToken, selectedCurrencyIcon);
@@ -91,9 +93,11 @@ const RecentOngoingTable = ({
 
   const [selectedCurrencyIcon, setSelectedCurrencyIcon] = useState<
     JSX.Element | string
-  >(currencyObjects[selectedToken.toLowerCase()].icon);
+  >(currencyObjects[selectedNetwork][selectedToken.toLowerCase()].icon);
   useEffect(() => {
-    setSelectedCurrencyIcon(currencyObjects[selectedToken.toLowerCase()].icon);
+    setSelectedCurrencyIcon(
+      currencyObjects[selectedNetwork][selectedToken.toLowerCase()].icon
+    );
   }, [selectedToken]);
 
   const tableData = !mobile
@@ -106,7 +110,7 @@ const RecentOngoingTable = ({
             {/* <ImageIcon
               image={getIconFromCurrencyType(row.planningToSell.type)}
             />{" "} */}
-            {selectedCurrencyIcon}
+            {row.planningToSell.type}
             {/* {row.planningToSell.type} */}
             {selectedToken}
           </div>,

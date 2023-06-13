@@ -153,18 +153,20 @@ export const createContractInstance = async (
 
 export const getERC20TokenBalance = async (
   address: string,
-  contractAddress: string = "",
-  contractABI: string = ""
+  contractAddress: string,
+  contractABI: string
 ): Promise<number> => {
   try {
-    if (typeof window.ethereum !== undefined) {
+    if (typeof window.ethereum !== undefined && contractAddress != "") {
       const { ethereum } = window;
       const provider = new ethers.providers.Web3Provider(ethereum);
 
       const signer = provider.getSigner();
       const erc20TokenContract = new ethers.Contract(
-        ERC20.address,
-        erc20ContractABI.abi,
+        // ERC20.address,
+        // erc20ContractABI.abi,
+        contractAddress,
+        contractABI,
         signer
       );
 
@@ -305,7 +307,8 @@ export const getOffer = async (
 
 export const AddOfferWithEth = async (
   trustLex: ethers.Contract | undefined,
-  data: IAddOfferWithEth
+  data: IAddOfferWithEth,
+  sellCurrecny: string
 ) => {
   const { weieth, satoshis, bitcoinAddress, offerValidTill, account } = data;
 
@@ -323,7 +326,7 @@ export const AddOfferWithEth = async (
     const userInputEth = WeitoEth(weieth);
 
     if (userInputEth > EthBalance) {
-      let message = "Your ETH balance is low !";
+      let message = `Your ${sellCurrecny.toUpperCase()} balance is low !`;
       showErrorMessage(message);
       throw new Error(message);
     }
@@ -345,7 +348,8 @@ export const AddOfferWithEth = async (
 export const addOfferWithToken = async (
   data: IAddOfferWithToken,
   sellCurrecny: string,
-  inputTokens: string
+  inputTokens: string,
+  selectedNetwork: string
 ) => {
   // first approve contract to spend the tokens
   try {
@@ -363,16 +367,20 @@ export const addOfferWithToken = async (
       sellCurrecny;
       // To do Add the balance validation check
       let contractAddress =
-        currencyObjects[sellCurrecny.toLowerCase()].ERC20Address;
+        currencyObjects[selectedNetwork][sellCurrecny.toLowerCase()]
+          .ERC20Address;
 
-      let contractABI = currencyObjects[sellCurrecny.toLowerCase()].ERC20ABI;
+      let contractABI =
+        currencyObjects[selectedNetwork][sellCurrecny.toLowerCase()].ERC20ABI;
       let accountOwnerBal: number = await getERC20TokenBalance(
         accounts[0],
         contractAddress,
         contractABI
       );
       if (accountOwnerBal < Number(inputTokens)) {
-        showErrorMessage("Your token balance is low.");
+        showErrorMessage(
+          `Your token ${sellCurrecny.toUpperCase()} balance is low.`
+        );
         return false;
       }
 
@@ -415,7 +423,8 @@ export const addOfferWithToken = async (
 
 export const increaseContractAllownace = async (
   selectedToken: string,
-  tokenAmount: string // in SPVC
+  tokenAmount: string, // in SPVC
+  selectedNetwork: string
 ) => {
   // first approve contract to spend the tokens
   try {
@@ -426,9 +435,11 @@ export const increaseContractAllownace = async (
       const signer = provider.getSigner();
 
       let contractAddress =
-        currencyObjects[selectedToken.toLowerCase()].ERC20Address;
+        currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+          .ERC20Address;
 
-      let contractABI = currencyObjects[selectedToken.toLowerCase()].ERC20ABI;
+      let contractABI =
+        currencyObjects[selectedNetwork][selectedToken.toLowerCase()].ERC20ABI;
       let spender =
         currencyObjects[selectedToken.toLowerCase()].orderBookContractAddreess;
       if (!(contractAddress && contractABI && spender)) return false;
@@ -562,6 +573,7 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
     return MyoffersList;
   }
   let offersData = await trustLex.getOffers(fromOfferId);
+
   let totalFetchedRecords = offersData.total;
   let offers = offersData.result;
   let MyOngoingOrdersPromises = [];
@@ -591,7 +603,7 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
     };
     let satoshisToReceive = offer.satoshisToReceive;
     let satoshisReceived = offer.satoshisReceived;
-
+    // my offer data
     if (
       offer.offeredBy.toLowerCase() === account.toLowerCase() &&
       satoshisReceived.toString() != satoshisToReceive.toString()
@@ -608,6 +620,41 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
       offerDetailsInJson.offerType = "my_offer";
       MyOffersPromises.push({ offerDetailsInJson });
     }
+    // get the fullfillment list
+    let FullfillmentResults: IFullfillmentResult[] =
+      await getInitializedFulfillmentsByOfferId(trustLex, value.offerId);
+
+    let fullfillmentRequestId = undefined;
+    let fullfillmentResult =
+      FullfillmentResults &&
+      FullfillmentResults.find((fullfillmentResult, index) => {
+        if (
+          fullfillmentResult.fulfillmentRequest.fulfillmentBy.toLowerCase() ===
+            account.toLowerCase() &&
+          fullfillmentResult.fulfillmentRequest.paymentProofSubmitted == false
+        ) {
+          fullfillmentRequestId = offer.fulfillmentRequests[index];
+          return true;
+        } else {
+          return false;
+        }
+      });
+    if (fullfillmentResult) {
+      offerDetailsInJson.offerType = "my_order";
+      offerDetailsInJson.progress =
+        TimestampTotoNow(fullfillmentResult.fulfillmentRequest.expiryTime) +
+        " and " +
+        TimestampfromNow(fullfillmentResult.fulfillmentRequest.expiryTime);
+      offerDetailsInJson.fullfillmentRequestId = fullfillmentRequestId;
+      offerDetailsInJson.fulfillmentRequestExpiryTime =
+        fullfillmentResult.fulfillmentRequest.expiryTime;
+      offerDetailsInJson.fulfillmentRequestQuantityRequested =
+        fullfillmentResult.fulfillmentRequest.quantityRequested.toString();
+      offerDetailsInJson.fulfillmentRequestPaymentProofSubmitted =
+        fullfillmentResult.fulfillmentRequest.paymentProofSubmitted;
+    }
+    fullfillmentResult &&
+      MyOffersPromises.push({ offerDetailsInJson: offerDetailsInJson });
   }
   MyoffersList = await Promise.all(MyOffersPromises);
   return MyoffersList;

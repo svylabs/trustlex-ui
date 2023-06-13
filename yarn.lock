@@ -780,7 +780,7 @@
   "resolved" "https://registry.npmjs.org/@juggle/resize-observer/-/resize-observer-3.4.0.tgz"
   "version" "3.4.0"
 
-"@mantine/core@^5.10.0":
+"@mantine/core@^5.10.5":
   "integrity" "sha512-F4tqHSEVM9D6/iSqHfPda+Xl5XgSEPHAAkT01Zwzj4Jnbd10qGrlqr/SFUop2CIcuKYnmra9XltUahUPXBC2BQ=="
   "resolved" "https://registry.npmjs.org/@mantine/core/-/core-5.10.5.tgz"
   "version" "5.10.5"
@@ -1104,6 +1104,16 @@
   "version" "0.4.14"
   dependencies:
     "tslib" "^2.4.0"
+
+"@sweetalert2/theme-dark@^5.0.15":
+  "integrity" "sha512-g1QCwQVOkiAz5hIEBOIvvu0580lubu4KuQlod+48QetYzGIEXNlHEH36QihCDnGVgE6vx48iO48w9q0WrZWyHQ=="
+  "resolved" "https://registry.npmjs.org/@sweetalert2/theme-dark/-/theme-dark-5.0.15.tgz"
+  "version" "5.0.15"
+
+"@sweetalert2/themes@^5.0.15":
+  "integrity" "sha512-uGU7CynpjRc3cllTqZEvXiZTpfQ6MN4faG+Tf0VFW81bLysCQm00iHS3NJLZx5STRfxpM5SzqeVXpAzJyTG/WA=="
+  "resolved" "https://registry.npmjs.org/@sweetalert2/themes/-/themes-5.0.15.tgz"
+  "version" "5.0.15"
 
 "@tabler/icons-react@^2.17.0":
   "integrity" "sha512-kuEW+qNwRqcK5iMl7qTapzX2NiMOwPg4Az01d+IZ1DIMwaZ7iKPJaIor2ihKFLPYrT9D5BZHXB8R5mSkw0FETg=="
@@ -3610,6 +3620,11 @@
   "integrity" "sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w=="
   "resolved" "https://registry.npmjs.org/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz"
   "version" "1.0.0"
+
+"sweetalert2@^11.0.0", "sweetalert2@^11.7.12":
+  "integrity" "sha512-TQJy8mQymJLzqWPQOMQErd81Zd/rSYr0UL4pEc7bqEihtjS+zt7LWJXLhfPp93e+Hf3Z2FHMB6QGNskAMCsdTg=="
+  "resolved" "https://registry.npmjs.org/sweetalert2/-/sweetalert2-11.7.12.tgz"
+  "version" "11.7.12"
 
 "tabbable@^6.0.1":
   "integrity" "sha512-SYJSIgeyXW7EuX1ytdneO5e8jip42oHWg9xl/o3oTYhmXusZVgiA+VlPvjIN+kHii9v90AmzTZEBcsEvuAY+TA=="

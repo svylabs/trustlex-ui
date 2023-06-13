@@ -22,6 +22,9 @@ import {
   getInitializedFulfillmentsByOfferId,
   extendOffer,
   getOffer,
+  cancelOfferService,
+  showErrorMessage,
+  showSuccessMessage,
 } from "~/service/AppService";
 import { EthtoWei, WeitoEth, tofixedEther } from "~/utils/Ether.utills";
 import { TimestampTotoNow, TimestampfromNow } from "~/utils/TimeConverter";
@@ -30,6 +33,10 @@ import ExtendOffer from "~/components/ExtendOffer/ExtendOffer";
 import { TimeToNumber } from "~/utils/TimeConverter";
 import { AppContext } from "~/Context/AppContext";
 import { IOfferdata } from "~/interfaces/IOfferdata";
+// ES6 Modules or TypeScript
+import Swal from "sweetalert2";
+// import "sweetalert2/src/sweetalert2.scss";
+import "@sweetalert2/themes/dark/dark.scss";
 
 type Props = {
   isOpened: boolean;
@@ -38,6 +45,14 @@ type Props = {
   contract: ethers.Contract | undefined;
   GetProgressText: ({ progress }: { progress: string }) => void;
   selectedCurrencyIcon: JSX.Element | string;
+  refreshOffersListKey: number;
+  setRefreshOffersListKey: (refreshOffersListKey: number) => void;
+  refreshMySwapOngoingListKey: number;
+  setRefreshMySwapOngoingListKey: (refreshMySwapOngoingListKey: number) => void;
+  refreshMySwapCompletedListKey: number;
+  setRefreshMySwapCompletedListKey: (
+    refreshMySwapCompletedListKey: number
+  ) => void;
 };
 
 const ViewOrderDrawer = ({
@@ -47,6 +62,12 @@ const ViewOrderDrawer = ({
   contract,
   GetProgressText,
   selectedCurrencyIcon,
+  refreshOffersListKey,
+  setRefreshOffersListKey,
+  refreshMySwapOngoingListKey,
+  setRefreshMySwapOngoingListKey,
+  refreshMySwapCompletedListKey,
+  setRefreshMySwapCompletedListKey,
 }: Props) => {
   const context = React.useContext(AppContext);
   if (context === null) {
@@ -71,8 +92,11 @@ const ViewOrderDrawer = ({
   ] = useState<any[]>();
 
   const [confirmExtendOffer, setConfirmExtendOffer] = useState("none");
+  const [cancelOffer, setCancelOffer] = useState("none");
   const [openExtendOferSection, setOpenExtendOferSection] =
     useState<boolean>(false);
+
+  const [enableoutSideClick, setEnableoutSideClick] = useState<boolean>(true);
   useAutoHideScrollbar(rootRef);
 
   useEffect(() => {
@@ -100,6 +124,11 @@ const ViewOrderDrawer = ({
         ).toString()
       );
       setOfferExpiry(offerExpiry);
+      let isCanceled = offerData?.offerDetailsInJson.isCanceled;
+
+      if (isCanceled == true) {
+        setCancelOffer("Cancelled");
+      }
 
       if (offerData?.offerDetailsInJson) {
         let toAddress = Buffer.from(
@@ -184,7 +213,9 @@ const ViewOrderDrawer = ({
     return tofixedBTC((buyAmount / planningToSell) * planningToBuy);
   };
   const handleOnClose = () => {
-    onClose();
+    if (enableoutSideClick == true) {
+      onClose();
+    }
   };
   const handleExtendOffer = async () => {
     setOpenExtendOferSection(!openExtendOferSection);
@@ -231,6 +262,74 @@ const ViewOrderDrawer = ({
     } catch (err) {
       console.log(err);
     }
+  };
+
+  const handleCancelOfferInDrawer = async () => {
+    try {
+      let offerId_: number | string | undefined =
+        offerData?.offerDetailsInJson.offerId;
+
+      let isConfirmed = await SwalConfirm();
+      if (isConfirmed == true) {
+        setCancelOffer("loading");
+        setEnableoutSideClick(false);
+        let contractInstance = await getSelectedTokenContractInstance();
+        if (contractInstance == false) {
+          return;
+        }
+        console.log(offerId_);
+        let result = await cancelOfferService(
+          contractInstance,
+          offerId_ as string
+        );
+        if (result) {
+          setCancelOffer("Cancelled");
+          showSuccessMessage("Offer has been camcelled successfully!");
+          setRefreshOffersListKey(refreshOffersListKey + 1);
+          setRefreshMySwapOngoingListKey(refreshMySwapOngoingListKey + 1);
+          setRefreshMySwapCompletedListKey(refreshMySwapCompletedListKey + 1);
+          setTimeout(() => {
+            setCancelOffer("none");
+            onClose();
+          }, 5000);
+        } else {
+          setCancelOffer("none");
+        }
+
+        setEnableoutSideClick(true);
+      }
+    } catch (err) {
+      console.log(err);
+      return;
+    }
+  };
+  const SwalConfirm = () => {
+    return new Promise((resolve, reject) => {
+      Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, do it!",
+        backdrop: false,
+        width: "auto",
+        background: "#242528",
+      })
+        .then((result) => {
+          if (result.isConfirmed) {
+            // Swal.fire("Deleted!", "Your file has been deleted.  ", "success");
+            return resolve(true);
+          } else {
+            return reject(false);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          return reject(false);
+        });
+    });
   };
 
   return (
@@ -353,14 +452,53 @@ const ViewOrderDrawer = ({
             </GradientBackgroundContainer>
           </Box>
           <div className={styles.buttonContainer}>
-            <Button
-              variant={VariantsEnum.primary}
+            {cancelOffer !== "Cancelled" ? (
+              <>
+                <Button
+                  radius={10}
+                  style={{ height: "4.5rem" }}
+                  variant={
+                    cancelOffer === "loading"
+                      ? VariantsEnum.outline
+                      : VariantsEnum.outlinePrimary
+                  }
+                  loading={cancelOffer === "loading" ? true : false}
+                  onClick={() => {
+                    handleCancelOfferInDrawer();
+                  }}
+                >
+                  {confirmExtendOffer === "loading"
+                    ? "Cancelled"
+                    : "Cancel Order"}
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant={VariantsEnum.outline}
+                  radius={10}
+                  style={{
+                    borderColor: "#53C07F",
+                    background: "unset",
+                    color: "#53C07F",
+                  }}
+                  leftIcon={<Icon icon={"charm:circle-tick"} color="#53C07F" />}
+                >
+                  Cancelled
+                </Button>
+              </>
+            )}
+            {/* <Button
+              variant={VariantsEnum.outlinePrimary}
               fullWidth={mobileView ? true : false}
               radius={10}
-              onClick={onClose}
+              onClick={handleCancelOfferInDrawer}
+              style={{
+                height: openExtendOferSection == false ? "" : "36px",
+              }}
             >
-              Cancel order
-            </Button>
+              Cancel offer
+            </Button> */}
           </div>
         </div>
       </GradientBackgroundContainer>

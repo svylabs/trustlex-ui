@@ -19,6 +19,7 @@ export interface IOfferdata {
   fulfillmentRequestPaymentProofSubmitted?: boolean;
   fulfillmentRequestfulfilledTime?: any;
   fullfillmentResults?: IFullfillmentResult;
+  isCanceled: boolean;
 }
 
 export interface INewOfferEvent {

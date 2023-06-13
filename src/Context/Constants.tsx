@@ -192,7 +192,7 @@ export const currencyObjects: {
       label: "Matic", // Please always keep the label  in upper case
       value: "Matic",
       icon: <ImageIcon image={"/icons/matic-token.png"} />,
-      orderBookContractAddreess: "0x432d85454a618C4Bd7b6AC084C316007C155480A",
+      orderBookContractAddreess: "0xC9c8Fa857CCD5C019eC0016880b8BeC5AC593fee",
       orderBookContractABI: OrderBookETHABI.abi,
       decimalPlace: 18,
       isNativeToken: true,
@@ -222,7 +222,7 @@ export const currencyObjects: {
       label: "ETH", // Please always keep the label  in upper case
       value: "Ethereum",
       icon: <ImageIcon image={"/icons/ethereum-2.svg"} />,
-      orderBookContractAddreess: "0x18A8eD2D06bE9c01c8C7bbd35e3a2F339006328f",
+      orderBookContractAddreess: "0x38BEe8dBa11d43BCEA9ed10650d2F370F4ff5890",
       orderBookContractABI: OrderBookETHABI.abi,
       decimalPlace: 18,
       isNativeToken: true,

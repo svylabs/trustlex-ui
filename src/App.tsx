@@ -824,6 +824,12 @@ export default function App() {
             selectedNetwork,
             setSelectedNetwork,
             checkNetwork,
+
+            //alert variables
+            alertOpen,
+            setAlertOpen,
+            alertMessage,
+            setAlertMessage,
           }}
         >
           <Layout>

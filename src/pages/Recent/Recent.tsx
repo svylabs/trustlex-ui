@@ -1,4 +1,5 @@
 import React, { ReactNode, useEffect, useState } from "react";
+
 import { Box, Center } from "@mantine/core";
 import ActionButton from "~/components/ActionButton/ActionButton";
 import Button from "~/components/Button/Button";
@@ -35,6 +36,7 @@ import { TimeToDateFormat } from "~/utils/TimeConverter";
 import { tofixedEther } from "~/utils/Ether.utills";
 import { tofixedBTC } from "~/utils/BitcoinUtils";
 import { currencyObjects } from "~/Context/Constants";
+
 type Props = {};
 
 const Recent = (props: Props) => {
@@ -99,6 +101,10 @@ function MySwaps() {
 
     refreshMySwapCompletedListKey,
     setRefreshMySwapCompletedListKey,
+    alertOpen,
+    setAlertOpen,
+    setAlertMessage,
+    getSelectedTokenContractInstance,
   } = context;
 
   const [isMoreOngoingLoading, setMoreOngoingDataLoading] = useState(false);
@@ -318,6 +324,7 @@ function MySwaps() {
         paymentProofSubmitted:
           value.offerDetailsInJson?.fulfillmentRequestPaymentProofSubmitted,
         offerData: value,
+        isCanceled: value.offerDetailsInJson?.isCanceled,
       };
       return row;
     });
@@ -424,6 +431,11 @@ function MySwaps() {
               contract={contract}
               selectedToken={selectedToken}
               selectedNetwork={selectedNetwork}
+              getSelectedTokenContractInstance={
+                getSelectedTokenContractInstance
+              }
+              refreshMySwapCompletedListKey={refreshMySwapCompletedListKey}
+              setRefreshMySwapCompletedListKey={refreshMySwapCompletedListKey}
             />
           </div>
           <div className={styles.recentMobileTable}>
@@ -437,6 +449,15 @@ function MySwaps() {
               contract={contract}
               selectedToken={selectedToken}
               selectedNetwork={selectedNetwork}
+              getSelectedTokenContractInstance={
+                getSelectedTokenContractInstance
+              }
+              refreshOffersListKey={refreshMySwapOngoingListKey}
+              setRefreshOffersListKey={setRefreshMySwapOngoingListKey}
+              refreshMySwapOngoingListKey={refreshMySwapOngoingListKey}
+              setRefreshMySwapOngoingListKey={setRefreshMySwapOngoingListKey}
+              refreshMySwapCompletedListKey={refreshMySwapCompletedListKey}
+              setRefreshMySwapCompletedListKey={refreshMySwapCompletedListKey}
             />
           </div>
           <br />

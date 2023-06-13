@@ -12,6 +12,7 @@ import SeeMoreButton from "../SeeMoreButton/SeeMoreButton";
 import { IListInitiatedFullfillmentDataByNonEvent } from "~/interfaces/IOfferdata";
 import { ethers } from "ethers";
 import { currencyObjects } from "~/Context/Constants";
+import { isCancel } from "axios";
 
 export interface ITableRow {
   orderNumber: string | number;
@@ -26,6 +27,7 @@ export interface ITableRow {
   quantityRequested: string | undefined;
   offerData: IListInitiatedFullfillmentDataByNonEvent;
   paymentProofSubmitted: boolean | undefined;
+  isCanceled: boolean;
 }
 
 interface Props extends TableProps {
@@ -44,34 +46,16 @@ interface Props extends TableProps {
   contract: ethers.Contract | undefined;
   selectedToken: string;
   selectedNetwork: string;
+  getSelectedTokenContractInstance: () => Promise<ethers.Contract | false>;
+  refreshOffersListKey: number;
+  setRefreshOffersListKey: (refreshOffersListKey: number) => void;
+  refreshMySwapOngoingListKey: number;
+  setRefreshMySwapOngoingListKey: (refreshMySwapOngoingListKey: number) => void;
+  refreshMySwapCompletedListKey: number;
+  setRefreshMySwapCompletedListKey: (
+    refreshMySwapCompletedListKey: number
+  ) => void;
 }
-export const GetProgressText = ({ progress }: { progress: string }) => {
-  const progressArr = progress.split(" ");
-  let progressArrLen = progressArr.length;
-  const progresText = [];
-  for (let i = 0; i < progressArrLen; i = i + 2) {
-    progresText.push(
-      progressArr[i] +
-        " " +
-        (typeof progressArr[i + 1] !== "undefined"
-          ? progressArr[i + 1] + " "
-          : "")
-    );
-  }
-
-  return (
-    <>
-      {progresText.map((value, index) => {
-        return (
-          <div key={index}>
-            {value}
-            <br />
-          </div>
-        );
-      })}
-    </>
-  );
-};
 
 const RecentOngoingTable = ({
   tableCaption,
@@ -83,6 +67,12 @@ const RecentOngoingTable = ({
   contract,
   selectedToken,
   selectedNetwork,
+  refreshOffersListKey,
+  setRefreshOffersListKey,
+  refreshMySwapOngoingListKey,
+  setRefreshMySwapOngoingListKey,
+  refreshMySwapCompletedListKey,
+  setRefreshMySwapCompletedListKey,
 }: Props) => {
   // let selectedCurrencyIcon = currencyObjects[selectedToken.toLowerCase()].icon;
   // console.log(selectedToken, selectedCurrencyIcon);
@@ -103,6 +93,7 @@ const RecentOngoingTable = ({
   const tableData = !mobile
     ? data.map((row) => {
         let progress = row.progress;
+        let isCanceled = row.isCanceled;
         return [
           row.orderNumber,
           <div className={styles.planningCell}>
@@ -150,18 +141,31 @@ const RecentOngoingTable = ({
               </>
             ) : (
               <>
-                <ActionButton
-                  size="compact"
-                  variant={"default"}
-                  onClick={() => {}}
-                >
-                  Cancel
-                </ActionButton>
+                {isCanceled == true ? (
+                  <>
+                    <>
+                      <ActionButton size="compact" variant={"default"}>
+                        Cancelled
+                      </ActionButton>
+                    </>
+                  </>
+                ) : (
+                  <>
+                    <ActionButton
+                      size="compact"
+                      variant={"default"}
+                      onClick={() => {
+                        handleCancelOffer(row.offerData);
+                      }}
+                    >
+                      Cancel
+                    </ActionButton>
+                  </>
+                )}
                 <ActionButton
                   size="compact"
                   variant={"primary"}
                   onClick={() => {
-                    console.log("ok");
                     handleViewClick(row.offerData);
                     // console.log(row.offerData);
                   }}
@@ -203,7 +207,6 @@ const RecentOngoingTable = ({
               onClick={(e) => {
                 // setViewOrderDrawerOpen(true);
                 handleViewClick(row.offerData);
-                console.log("ok2");
               }}
             />
           </div>,
@@ -213,15 +216,23 @@ const RecentOngoingTable = ({
   const handleViewClick = (
     offerData: IListInitiatedFullfillmentDataByNonEvent
   ) => {
-    setViewOrderDrawerKey(viewOrderDrawerKey + 1);
-
     console.log(offerData);
+    setViewOrderDrawerKey(viewOrderDrawerKey + 1);
     setOfferData(offerData);
     setViewOrderDrawerOpen(true);
   };
   useEffect(() => {
     setViewOrderDrawerKey(viewOrderDrawerKey + 1);
   }, []);
+
+  const handleCancelOffer = async (
+    offerData: IListInitiatedFullfillmentDataByNonEvent
+  ) => {
+    console.log(offerData);
+    setViewOrderDrawerKey(viewOrderDrawerKey + 1);
+    setOfferData(offerData);
+    setViewOrderDrawerOpen(true);
+  };
   return (
     <>
       <ViewOrderDrawer
@@ -232,6 +243,12 @@ const RecentOngoingTable = ({
         key={viewOrderDrawerKey}
         GetProgressText={GetProgressText}
         selectedCurrencyIcon={selectedCurrencyIcon}
+        refreshOffersListKey={refreshOffersListKey}
+        setRefreshOffersListKey={setRefreshOffersListKey}
+        refreshMySwapOngoingListKey={refreshMySwapOngoingListKey}
+        setRefreshMySwapOngoingListKey={setRefreshMySwapOngoingListKey}
+        refreshMySwapCompletedListKey={refreshMySwapCompletedListKey}
+        setRefreshMySwapCompletedListKey={setRefreshMySwapCompletedListKey}
       />
 
       <Table
@@ -243,6 +260,34 @@ const RecentOngoingTable = ({
         data={tableData}
         loadingText={mySwapOngoingLoadingText}
       />
+    </>
+  );
+};
+
+export const GetProgressText = ({ progress }: { progress: string }) => {
+  const progressArr = progress.split(" ");
+  let progressArrLen = progressArr.length;
+  const progresText = [];
+  for (let i = 0; i < progressArrLen; i = i + 2) {
+    progresText.push(
+      progressArr[i] +
+        " " +
+        (typeof progressArr[i + 1] !== "undefined"
+          ? progressArr[i + 1] + " "
+          : "")
+    );
+  }
+
+  return (
+    <>
+      {progresText.map((value, index) => {
+        return (
+          <div key={index}>
+            {value}
+            <br />
+          </div>
+        );
+      })}
     </>
   );
 };

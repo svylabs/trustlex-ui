@@ -236,6 +236,7 @@ export const getOffer = async (
       progress: "",
       offerType: "",
       fullfillmentRequestId: undefined,
+      isCanceled: offer.isCanceled,
     };
     let satoshisToReceive = offer.satoshisToReceive;
     let satoshisReceived = offer.satoshisReceived;
@@ -600,6 +601,7 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
       progress: "",
       offerType: "",
       fullfillmentRequestId: undefined,
+      isCanceled: offer.isCanceled,
     };
     let satoshisToReceive = offer.satoshisToReceive;
     let satoshisReceived = offer.satoshisReceived;
@@ -697,6 +699,7 @@ export const listInitializeFullfillmentCompletedByNonEvent = async (
       progress: "",
       offerType: "",
       fullfillmentRequestId: undefined,
+      isCanceled: offer.isCanceled,
     };
     let satoshisReserved = offer.satoshisReserved;
     let satoshisToReceive = offer.satoshisToReceive;
@@ -898,6 +901,23 @@ export const extendOffer = async (
   try {
     if (!trustLex) return false;
     const transaction = await trustLex.extendOffer(offerId, offerValidTill);
+
+    let tx = await transaction.wait();
+    return tx;
+  } catch (error: any) {
+    console.log(error?.message);
+    console.log(error);
+    return false;
+  }
+};
+
+export const cancelOfferService = async (
+  trustLex: ethers.Contract | undefined,
+  offerId: string
+) => {
+  try {
+    if (!trustLex) return false;
+    const transaction = await trustLex.cancelOffer(offerId);
 
     let tx = await transaction.wait();
     return tx;

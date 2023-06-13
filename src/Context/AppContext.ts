@@ -102,4 +102,8 @@ export const AppContext = createContext<null | {
   selectedNetwork: string;
   setSelectedNetwork: (selectedNetwork: string) => void;
   checkNetwork: () => void;
+  alertOpen: number;
+  setAlertOpen: (alertOpen: number) => void;
+  alertMessage: string | JSX.Element;
+  setAlertMessage: (alertMessage: string) => void;
 }>(null);

@@ -42,7 +42,7 @@ function Alert({
   return (
     <>
       <Modal
-        withCloseButton={false} // to show the close option make it withCloseButton =  true
+        withCloseButton={true} // to show the close option make it withCloseButton =  true
         opened={opened}
         onClose={handleClose}
         title={"Alert"}

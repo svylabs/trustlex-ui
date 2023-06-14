@@ -222,7 +222,7 @@ export const currencyObjects: {
       label: "ETH", // Please always keep the label  in upper case
       value: "Ethereum",
       icon: <ImageIcon image={"/icons/ethereum-2.svg"} />,
-      orderBookContractAddreess: "0x38BEe8dBa11d43BCEA9ed10650d2F370F4ff5890",
+      orderBookContractAddreess: "0x3aC8Ab756B22390fDeF920a585dCB949ae8a5173",
       orderBookContractABI: OrderBookETHABI.abi,
       decimalPlace: 18,
       isNativeToken: true,

@@ -102,6 +102,13 @@
             "type": "function"
         },
         {
+            "inputs": [],
+            "name": "liquidateCollateral",
+            "outputs": [],
+            "stateMutability": "payable",
+            "type": "function"
+        },
+        {
             "inputs": [
                 {
                     "internalType": "address",
@@ -111,6 +118,32 @@
             ],
             "stateMutability": "nonpayable",
             "type": "constructor"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint64",
+                    "name": "satoshisToReceive",
+                    "type": "uint64"
+                },
+                {
+                    "internalType": "uint64",
+                    "name": "satoshisReserved",
+                    "type": "uint64"
+                },
+                {
+                    "internalType": "uint64",
+                    "name": "satoshisReceived",
+                    "type": "uint64"
+                },
+                {
+                    "internalType": "uint64",
+                    "name": "quantityRequested",
+                    "type": "uint64"
+                }
+            ],
+            "name": "ValidateOfferQuantity",
+            "type": "error"
         },
         {
             "anonymous": false,
@@ -203,13 +236,6 @@
                 }
             ],
             "name": "initiateFulfillment",
-            "outputs": [],
-            "stateMutability": "payable",
-            "type": "function"
-        },
-        {
-            "inputs": [],
-            "name": "liquidateCollateral",
             "outputs": [],
             "stateMutability": "payable",
             "type": "function"

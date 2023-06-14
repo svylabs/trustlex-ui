@@ -45,14 +45,6 @@ type Props = {
   contract: ethers.Contract | undefined;
   GetProgressText: ({ progress }: { progress: string }) => void;
   selectedCurrencyIcon: JSX.Element | string;
-  refreshOffersListKey: number;
-  setRefreshOffersListKey: (refreshOffersListKey: number) => void;
-  refreshMySwapOngoingListKey: number;
-  setRefreshMySwapOngoingListKey: (refreshMySwapOngoingListKey: number) => void;
-  refreshMySwapCompletedListKey: number;
-  setRefreshMySwapCompletedListKey: (
-    refreshMySwapCompletedListKey: number
-  ) => void;
 };
 
 const ViewOrderDrawer = ({
@@ -62,18 +54,21 @@ const ViewOrderDrawer = ({
   contract,
   GetProgressText,
   selectedCurrencyIcon,
-  refreshOffersListKey,
-  setRefreshOffersListKey,
-  refreshMySwapOngoingListKey,
-  setRefreshMySwapOngoingListKey,
-  refreshMySwapCompletedListKey,
-  setRefreshMySwapCompletedListKey,
 }: Props) => {
   const context = React.useContext(AppContext);
   if (context === null) {
     return <>Loading...</>;
   }
-  const { getSelectedTokenContractInstance, account } = context;
+  const {
+    getSelectedTokenContractInstance,
+    account,
+    refreshOffersListKey,
+    setRefreshOffersListKey,
+    refreshMySwapOngoingListKey,
+    setRefreshMySwapOngoingListKey,
+    refreshMySwapCompletedListKey,
+    setRefreshMySwapCompletedListKey,
+  } = context;
 
   const { width } = useWindowDimensions();
   let mobileView: boolean = width !== null && width < 500 ? true : false;
@@ -331,7 +326,9 @@ const ViewOrderDrawer = ({
         });
     });
   };
-
+  let progress: number = offerData?.offerDetailsInJson?.progress
+    ? Number(offerData.offerDetailsInJson.progress)
+    : 0;
   return (
     <Drawer
       opened={isOpened}
@@ -397,7 +394,7 @@ const ViewOrderDrawer = ({
           <Box>
             <Text className={styles.label}>Order status</Text>
             <Text className={styles.value}>
-              {offerData?.offerDetailsInJson?.progress}
+              {offerData?.offerDetailsInJson?.progress} % filled
             </Text>
           </Box>
           <Grid className={styles.offerExpire}>
@@ -452,40 +449,46 @@ const ViewOrderDrawer = ({
             </GradientBackgroundContainer>
           </Box>
           <div className={styles.buttonContainer}>
-            {cancelOffer !== "Cancelled" ? (
+            {progress != 100 && (
               <>
-                <Button
-                  radius={10}
-                  style={{ height: "4.5rem" }}
-                  variant={
-                    cancelOffer === "loading"
-                      ? VariantsEnum.outline
-                      : VariantsEnum.outlinePrimary
-                  }
-                  loading={cancelOffer === "loading" ? true : false}
-                  onClick={() => {
-                    handleCancelOfferInDrawer();
-                  }}
-                >
-                  {confirmExtendOffer === "loading"
-                    ? "Cancelled"
-                    : "Cancel Order"}
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  variant={VariantsEnum.outline}
-                  radius={10}
-                  style={{
-                    borderColor: "#53C07F",
-                    background: "unset",
-                    color: "#53C07F",
-                  }}
-                  leftIcon={<Icon icon={"charm:circle-tick"} color="#53C07F" />}
-                >
-                  Cancelled
-                </Button>
+                {cancelOffer !== "Cancelled" ? (
+                  <>
+                    <Button
+                      radius={10}
+                      style={{ height: "4.5rem" }}
+                      variant={
+                        cancelOffer === "loading"
+                          ? VariantsEnum.outline
+                          : VariantsEnum.outlinePrimary
+                      }
+                      loading={cancelOffer === "loading" ? true : false}
+                      onClick={() => {
+                        handleCancelOfferInDrawer();
+                      }}
+                    >
+                      {confirmExtendOffer === "loading"
+                        ? "Cancelled"
+                        : "Cancel Order"}
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant={VariantsEnum.outline}
+                      radius={10}
+                      style={{
+                        borderColor: "#53C07F",
+                        background: "unset",
+                        color: "#53C07F",
+                      }}
+                      leftIcon={
+                        <Icon icon={"charm:circle-tick"} color="#53C07F" />
+                      }
+                    >
+                      Cancelled
+                    </Button>
+                  </>
+                )}
               </>
             )}
             {/* <Button

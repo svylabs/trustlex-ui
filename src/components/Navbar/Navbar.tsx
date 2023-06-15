@@ -1,5 +1,6 @@
 import styles from "./Navbar.module.scss";
 import NavDropdownButton from "../NavDropdownButton/NavDropdownButton";
+import DropdownSubmenu from "../NavDropdownButton/DropdownSubmenu";
 import { Icon } from "@iconify/react";
 import { Button } from "@mantine/core";
 import { useContext, useState } from "react";
@@ -121,7 +122,7 @@ const Navbar = (props: Props) => {
           selectedNetwork={selectedNetwork}
           setSelectedNetwork={setSelectedNetwork}
         /> */}
-        <NetworkMenu
+        {/* <NetworkMenu
           selectedToken={selectedToken}
           setSelectedToken={setSelectedToken}
           userInputData={userInputData}
@@ -129,7 +130,7 @@ const Navbar = (props: Props) => {
           selectedNetwork={selectedNetwork}
           setSelectedNetwork={setSelectedNetwork}
           checkNetwork={checkNetwork}
-        />
+        /> */}
       </div>
       <div className={styles.right}>
         <div className={styles.btcNavbutton}>
@@ -156,10 +157,19 @@ const Navbar = (props: Props) => {
             { title: " RPC Username", href: "" },
           ]}
         />
-        <NavDropdownButton
+        {/* <NavDropdownButton
           title={mobileView ? "" : "Ethereum"}
           icon="/icons/etherium.svg"
           dropdownItems={ethDropdownItems}
+        /> */}
+        <DropdownSubmenu
+          selectedToken={selectedToken}
+          setSelectedToken={setSelectedToken}
+          userInputData={userInputData}
+          setUserInputData={setUserInputData}
+          selectedNetwork={selectedNetwork}
+          setSelectedNetwork={setSelectedNetwork}
+          checkNetwork={checkNetwork}
         />
       </div>
     </nav>

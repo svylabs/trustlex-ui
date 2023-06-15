@@ -833,7 +833,10 @@ export const InitializeFullfillment = async (
     const initializeFullfillment = await trustLex.initiateFulfillment(
       offerId,
       _fulfillment,
-      { value: colletarealValue }
+      {
+        value: colletarealValue,
+        gasLimit: 800000,
+      }
     );
 
     await initializeFullfillment.wait();

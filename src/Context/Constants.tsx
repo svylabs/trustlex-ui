@@ -20,6 +20,10 @@ export const ERC20TokenKey = "spvc"; // it should be in lower case
 export const ERC20TokenLabel = "SPVC"; // To show in the dropdown
 export const ERC20TokenValue = "SPVC";
 
+export const TrustlexBitcoinNodeApiKey = "d924a382-ab7c-4649-b4eb-0f731b9a100e";
+export const BITCOIN_MAINNET_API_URL = "https://btc.getblock.io/mainnet/";
+export const BITCOIN_TESTNET_API_URL = "https://btc.getblock.io/testnet/";
+
 // Networks List
 export const networks = [
   { networkKey: "polygon_matic" },

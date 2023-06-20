@@ -1,6 +1,7 @@
 import styles from "./Navbar.module.scss";
 import NavDropdownButton from "../NavDropdownButton/NavDropdownButton";
 import DropdownSubmenu from "../NavDropdownButton/DropdownSubmenu";
+import BitcoinNodeSelectionMenu from "../BitcoinNodeSelectionMenu/BitcoinNodeSelectionMenu";
 import { Icon } from "@iconify/react";
 import { Button } from "@mantine/core";
 import { useContext, useState } from "react";
@@ -145,7 +146,7 @@ const Navbar = (props: Props) => {
           {/* Variant2 */}
           {/* <SendBtcDrawer open={showSendBtcBox} onClose={handleShowSendBtc} /> */}
         </div>
-        <NavDropdownButton
+        {/* <NavDropdownButton
           title={mobileView ? "" : "Bitcoin"}
           icon="/icons/bitcoin.svg"
           dropdownItems={[
@@ -156,7 +157,8 @@ const Navbar = (props: Props) => {
             { title: " RPC Password", href: "" },
             { title: " RPC Username", href: "" },
           ]}
-        />
+        /> */}
+        <BitcoinNodeSelectionMenu />
         {/* <NavDropdownButton
           title={mobileView ? "" : "Ethereum"}
           icon="/icons/etherium.svg"

@@ -302,6 +302,7 @@ function MySwaps() {
           )
         );
       }
+
       let row = {
         orderNumber: value.offerDetailsInJson.offerId.toString(),
         planningToSell: {
@@ -326,6 +327,7 @@ function MySwaps() {
         offerData: value,
         isCanceled: value.offerDetailsInJson?.isCanceled,
       };
+      console.log(row.offerData);
       return row;
     });
 
@@ -434,8 +436,6 @@ function MySwaps() {
               getSelectedTokenContractInstance={
                 getSelectedTokenContractInstance
               }
-              refreshMySwapCompletedListKey={refreshMySwapCompletedListKey}
-              setRefreshMySwapCompletedListKey={refreshMySwapCompletedListKey}
             />
           </div>
           <div className={styles.recentMobileTable}>
@@ -452,12 +452,6 @@ function MySwaps() {
               getSelectedTokenContractInstance={
                 getSelectedTokenContractInstance
               }
-              refreshOffersListKey={refreshMySwapOngoingListKey}
-              setRefreshOffersListKey={setRefreshMySwapOngoingListKey}
-              refreshMySwapOngoingListKey={refreshMySwapOngoingListKey}
-              setRefreshMySwapOngoingListKey={setRefreshMySwapOngoingListKey}
-              refreshMySwapCompletedListKey={refreshMySwapCompletedListKey}
-              setRefreshMySwapCompletedListKey={refreshMySwapCompletedListKey}
             />
           </div>
           <br />

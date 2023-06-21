@@ -179,7 +179,7 @@ const ExchangeOfferDrawer = ({
         contract,
         rowOfferId
       );
-
+      console.log(fullfillmentResults);
       if (!foundOffer || foundOffer === undefined) return;
 
       let countdowntimerTime_ = rowFullFillmentExpiryTime
@@ -217,11 +217,32 @@ const ExchangeOfferDrawer = ({
       // const satoshisReceived = Number(
       //   offer.offerDetailsInJson.satoshisReceived
       // );
-      const satoshisToReceive = Number(offerDetails.satoshisToReceive);
+      console.log(offerDetails);
+      let satoshisToReceive = Number(offerDetails.satoshisToReceive);
       let satoshisReserved = Number(offerDetails.satoshisReserved);
 
-      const satoshisReceived = Number(offerDetails.satoshisReceived);
+      let satoshisReceived = Number(offerDetails.satoshisReceived);
+      const offerQuantity = Number(offerDetails.offerQuantity);
+      fullfillmentResults &&
+        fullfillmentResults?.map(
+          (value: IFullfillmentResult, index: number) => {
+            let expiryTime = Number(value.fulfillmentRequest.expiryTime) * 1000;
+            let isExpired = value.fulfillmentRequest.isExpired;
+            let paymentProofSubmitted =
+              value.fulfillmentRequest.paymentProofSubmitted;
+            if (
+              expiryTime < Date.now() &&
+              isExpired == false &&
+              paymentProofSubmitted == false
+            ) {
+              satoshisReserved -= Number(
+                value.fulfillmentRequest.quantityRequested
+              );
+            }
+          }
+        );
 
+      console.log(satoshisReserved);
       let left_to_buy =
         Number(
           SatoshiToBtcConverter(
@@ -230,15 +251,7 @@ const ExchangeOfferDrawer = ({
         ) / price_per_ETH_in_BTC;
 
       setPlanningToBuy(
-        Number(
-          tofixedBTC(
-            Number(
-              SatoshiToBtcConverter(
-                foundOffer.offerDetailsInJson.satoshisToReceive
-              )
-            )
-          )
-        )
+        Number(tofixedBTC(Number(SatoshiToBtcConverter(satoshisToReceive))))
       );
 
       setIsInitating("");
@@ -270,17 +283,13 @@ const ExchangeOfferDrawer = ({
         let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
         setTo(`${hashAdress}`);
         setActiveStep(2);
-
+        console.log(rowFullFillmentQuantityRequested);
         left_to_buy =
           Number(
             SatoshiToBtcConverter(rowFullFillmentQuantityRequested as string)
           ) *
-          (Number(
-            ethers.utils.formatEther(offer.offerDetailsInJson.offerQuantity)
-          ) /
-            Number(
-              SatoshiToBtcConverter(offer.offerDetailsInJson.satoshisToReceive)
-            ));
+          (Number(ethers.utils.formatEther(offerQuantity)) /
+            Number(SatoshiToBtcConverter(satoshisToReceive)));
       }
       left_to_buy = tofixedEther(left_to_buy);
       // console.log(left_to_buy);
@@ -291,24 +300,7 @@ const ExchangeOfferDrawer = ({
       // if (satoshisToReceive == satoshisReserved + satoshisReceived) {
       // let fullfillmentResults = offer.offerDetailsInJson.fullfillmentResults;
       let isColletaralNeeded = false;
-      fullfillmentResults &&
-        fullfillmentResults?.map(
-          (value: IFullfillmentResult, index: number) => {
-            let expiryTime = Number(value.fulfillmentRequest.expiryTime) * 1000;
-            let isExpired = value.fulfillmentRequest.isExpired;
-            let paymentProofSubmitted =
-              value.fulfillmentRequest.paymentProofSubmitted;
-            if (
-              expiryTime < Date.now() &&
-              isExpired == false &&
-              paymentProofSubmitted == false
-            ) {
-              satoshisReserved -= Number(
-                value.fulfillmentRequest.quantityRequested
-              );
-            }
-          }
-        );
+
       // }
       if (satoshisReserved > 0 && isInitating == false) {
         setIsColletaralNeeded(true);
@@ -394,7 +386,7 @@ const ExchangeOfferDrawer = ({
       isExpired: false,
     };
 
-    // console.log(foundOffer, _fulfillment);
+    console.log(_fulfillment);
 
     const data = await InitializeFullfillment(
       context.contract,

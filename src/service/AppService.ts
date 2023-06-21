@@ -262,7 +262,7 @@ export const getOffer = async (
         ((Number(satoshisReserved) + Number(satoshisReceived)) /
           Number(satoshisToReceive)) *
         100;
-      offerDetailsInJson.progress = filled + "% filled";
+      offerDetailsInJson.progress = filled.toString();
       offerDetailsInJson.offerType = "my_offer";
     }
     // get the fullfillment list
@@ -534,6 +534,7 @@ export const getOffersList = async (
         collateralPer3Hours: offer.collateralPer3Hours.toString(),
         fulfillmentRequests: offer.fulfillmentRequests,
         fullfillmentResults: undefined,
+        isCanceled: offer.isCanceled,
       };
 
       // if (
@@ -618,7 +619,7 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
         ((Number(satoshisReserved) + Number(satoshisReceived)) /
           satoshisToReceive) *
         100;
-      offerDetailsInJson.progress = filled + "% filled";
+      offerDetailsInJson.progress = filled.toString();
       offerDetailsInJson.offerType = "my_offer";
       MyOffersPromises.push({ offerDetailsInJson });
     }
@@ -832,7 +833,10 @@ export const InitializeFullfillment = async (
     const initializeFullfillment = await trustLex.initiateFulfillment(
       offerId,
       _fulfillment,
-      { value: colletarealValue }
+      {
+        value: colletarealValue,
+        gasLimit: 800000,
+      }
     );
 
     await initializeFullfillment.wait();

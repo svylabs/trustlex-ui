@@ -47,14 +47,6 @@ interface Props extends TableProps {
   selectedToken: string;
   selectedNetwork: string;
   getSelectedTokenContractInstance: () => Promise<ethers.Contract | false>;
-  refreshOffersListKey: number;
-  setRefreshOffersListKey: (refreshOffersListKey: number) => void;
-  refreshMySwapOngoingListKey: number;
-  setRefreshMySwapOngoingListKey: (refreshMySwapOngoingListKey: number) => void;
-  refreshMySwapCompletedListKey: number;
-  setRefreshMySwapCompletedListKey: (
-    refreshMySwapCompletedListKey: number
-  ) => void;
 }
 
 const RecentOngoingTable = ({
@@ -67,12 +59,6 @@ const RecentOngoingTable = ({
   contract,
   selectedToken,
   selectedNetwork,
-  refreshOffersListKey,
-  setRefreshOffersListKey,
-  refreshMySwapOngoingListKey,
-  setRefreshMySwapOngoingListKey,
-  refreshMySwapCompletedListKey,
-  setRefreshMySwapCompletedListKey,
 }: Props) => {
   // let selectedCurrencyIcon = currencyObjects[selectedToken.toLowerCase()].icon;
   // console.log(selectedToken, selectedCurrencyIcon);
@@ -94,6 +80,7 @@ const RecentOngoingTable = ({
     ? data.map((row) => {
         let progress = row.progress;
         let isCanceled = row.isCanceled;
+
         return [
           row.orderNumber,
           <div className={styles.planningCell}>
@@ -118,7 +105,11 @@ const RecentOngoingTable = ({
             {CurrencyEnum.BTC}
           </div>,
           <>
-            <GetProgressText progress={progress} />
+            {row.offerType == "my_order" ? (
+              <GetProgressText progress={progress} />
+            ) : (
+              <GetProgressText progress={progress + "% filled"} />
+            )}
           </>,
           <div className={styles.actionsCell}>
             {row.offerType == "my_order" ? (
@@ -141,25 +132,29 @@ const RecentOngoingTable = ({
               </>
             ) : (
               <>
-                {isCanceled == true ? (
+                {Number(progress) !== 100 && (
                   <>
-                    <>
-                      <ActionButton size="compact" variant={"default"}>
-                        Cancelled
-                      </ActionButton>
-                    </>
-                  </>
-                ) : (
-                  <>
-                    <ActionButton
-                      size="compact"
-                      variant={"default"}
-                      onClick={() => {
-                        handleCancelOffer(row.offerData);
-                      }}
-                    >
-                      Cancel
-                    </ActionButton>
+                    {isCanceled == true ? (
+                      <>
+                        <>
+                          <ActionButton size="compact" variant={"default"}>
+                            Cancelled
+                          </ActionButton>
+                        </>
+                      </>
+                    ) : (
+                      <>
+                        <ActionButton
+                          size="compact"
+                          variant={"default"}
+                          onClick={() => {
+                            handleCancelOffer(row.offerData);
+                          }}
+                        >
+                          Cancel
+                        </ActionButton>
+                      </>
+                    )}
                   </>
                 )}
                 <ActionButton
@@ -167,7 +162,8 @@ const RecentOngoingTable = ({
                   variant={"primary"}
                   onClick={() => {
                     handleViewClick(row.offerData);
-                    // console.log(row.offerData);
+                    console.log(row.offerData);
+                    console.log(row.progress);
                   }}
                 >
                   View
@@ -243,12 +239,6 @@ const RecentOngoingTable = ({
         key={viewOrderDrawerKey}
         GetProgressText={GetProgressText}
         selectedCurrencyIcon={selectedCurrencyIcon}
-        refreshOffersListKey={refreshOffersListKey}
-        setRefreshOffersListKey={setRefreshOffersListKey}
-        refreshMySwapOngoingListKey={refreshMySwapOngoingListKey}
-        setRefreshMySwapOngoingListKey={setRefreshMySwapOngoingListKey}
-        refreshMySwapCompletedListKey={refreshMySwapCompletedListKey}
-        setRefreshMySwapCompletedListKey={setRefreshMySwapCompletedListKey}
       />
 
       <Table
@@ -263,7 +253,7 @@ const RecentOngoingTable = ({
     </>
   );
 };
-
+// function is used to make text wrap.
 export const GetProgressText = ({ progress }: { progress: string }) => {
   const progressArr = progress.split(" ");
   let progressArrLen = progressArr.length;

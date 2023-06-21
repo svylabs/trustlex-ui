@@ -10,7 +10,7 @@ export const MAX_BLOCKS_TO_QUERY = 5000;
 export const MAX_ITERATIONS = 14;
 export const PAGE_SIZE = 50;
 export const TOKEN_DECIMAL_PLACE = 4;
-export const OFFER_ORDER_EXPIRY_DIRATION = 2 * 60; //3 * 60 * 60; // in seconds
+export const OFFER_ORDER_EXPIRY_DIRATION = 3 * 60 * 60; // in seconds
 // export const OFFER_ORDER_EXPIRY_DIRATION = 5 * 60; // in seconds
 export const BTC_DECIMAL_PLACE = 5;
 export const ETH_DECIMAL_PLACE = 5;
@@ -27,8 +27,8 @@ export const BITCOIN_TESTNET_API_URL = "https://btc.getblock.io/testnet/";
 // Networks List
 export const networks = [
   { networkKey: "polygon_matic" },
-  { networkKey: "trustlex_testnet" },
-  // { networkKey: "ganache_testnet" },
+  // { networkKey: "trustlex_testnet" },
+  { networkKey: "ganache_testnet" },
   { networkKey: "bnb_testnet" },
 ];
 
@@ -196,7 +196,7 @@ export const currencyObjects: {
       label: "Matic", // Please always keep the label  in upper case
       value: "Matic",
       icon: <ImageIcon image={"/icons/matic-token.png"} />,
-      orderBookContractAddreess: "0xC9c8Fa857CCD5C019eC0016880b8BeC5AC593fee",
+      orderBookContractAddreess: "0x691bF68c23bcae436f73157638E03577c7e9e99E",
       orderBookContractABI: OrderBookETHABI.abi,
       decimalPlace: 18,
       isNativeToken: true,

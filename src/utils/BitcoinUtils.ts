@@ -3,7 +3,7 @@ import * as bitcoin from "bitcoinjs-lib";
 import { ECPairFactory, ECPairAPI, networks } from "ecpair";
 import * as bip38 from "bip38";
 import { BTC_DECIMAL_PLACE, PRODUCTION_MODE } from "~/Context/Constants";
-
+console.log(networks);
 export const network =
   PRODUCTION_MODE === true ? networks.bitcoin : networks.testnet;
 

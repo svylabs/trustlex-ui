@@ -49,7 +49,7 @@ export function InputWithSelect({
       <Menu.Target>
         <TargetButton
           variant={VariantsEnum.default}
-          leftIcon={selectedOptionValue.icon}
+          leftIcon={selectedOptionValue?.icon}
           disabled={itemDisabled}
           rightIcon={
             !itemDisabled && (

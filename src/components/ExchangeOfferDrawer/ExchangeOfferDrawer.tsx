@@ -14,6 +14,8 @@ import useDetectScrollUpDown from "~/hooks/useDetectScrollUpDown";
 import Countdown from "~/utils/Countdown";
 import { tofixedEther, EthtoWei } from "~/utils/Ether.utills";
 import { AppContext } from "~/Context/AppContext";
+// import { TextInput, TextInputProps } from "@mantine/core";
+import Input from "../Input/Input";
 import {
   IFullfillmentEvent,
   IFullfillmentResult,
@@ -29,6 +31,7 @@ import {
   getInitializedFulfillments,
   increaseContractAllownace,
 } from "~/service/AppService";
+import { GetTransactionDetails } from "~/service/BitcoinService";
 import { QRCodeCanvas } from "qrcode.react";
 import { address } from "bitcoinjs-lib";
 import { generateTrustlexAddress, tofixedBTC } from "~/utils/BitcoinUtils";
@@ -84,6 +87,7 @@ type Props = {
   setRefreshMySwapCompletedListKey: (
     refreshMySwapCompletedListKey: number
   ) => void;
+  selectedBitcoinNode: string;
 };
 
 const ExchangeOfferDrawer = ({
@@ -106,6 +110,7 @@ const ExchangeOfferDrawer = ({
   setRefreshMySwapOngoingListKey,
   refreshMySwapCompletedListKey,
   setRefreshMySwapCompletedListKey,
+  selectedBitcoinNode,
 }: Props) => {
   // console.log(data);
   const { mobileView } = useWindowDimensions();
@@ -115,7 +120,12 @@ const ExchangeOfferDrawer = ({
 
   const [checked, setChecked] = useState("allow");
   const [activeStep, setActiveStep] = useState(1);
-  const [verified, setVerified] = useState(false);
+  const [verified, setVerified] = useState("");
+  // const [verified, setIsTxVerify] = useState("");
+  const [transactionHash, setTransactionHash] = useState(
+    "f4defa29eb33caaab3e5bb9c62fe659b3676da8a55c554984f766455a4e4c877"
+  );
+
   const [confirmed, setConfirmed] = useState("");
   const [initatedata, setInitatedata]: any = useState([]);
   const [to, setTo] = useState("");
@@ -257,7 +267,7 @@ const ExchangeOfferDrawer = ({
       setIsInitating("");
       setTo("");
       setActiveStep(1);
-      setVerified(false);
+      setVerified("");
       setConfirmed("");
 
       setPlanningToSell(planningToSell_);
@@ -517,7 +527,32 @@ const ExchangeOfferDrawer = ({
     );
     return colletaralValue;
   };
+  const handleTxVerification = async () => {
+    if (transactionHash == "") {
+      showErrorMessage("Please enter the transaction hash");
+      return;
+    }
+    setVerified("verifing");
+    // now validate the transaction
 
+    // let transactionHash =
+    //   "f4defa29eb33caaab3e5bb9c62fe659b3676da8a55c554984f766455a4e4c877.json";
+    let recieverAddress = "tb1qpad47g0nnswks2sr4zn2c987c8q9f7ykyh7d9j";
+    let paymentAmount = 0.01637724;
+    let result: any = await GetTransactionDetails(
+      selectedBitcoinNode,
+      transactionHash,
+      recieverAddress,
+      paymentAmount
+    );
+    if (result.status == false) {
+      showErrorMessage(result.message);
+      setVerified("");
+    } else {
+      setVerified("verified");
+      setActiveStep(activeStep + 1);
+    }
+  };
   return (
     <Drawer
       opened={isOpened}
@@ -894,6 +929,75 @@ const ExchangeOfferDrawer = ({
                           ) : (
                             <span className={styles.toAddress}>{to}</span>
                           )}
+                          {/* Input the transaction hash */}
+                          {/* <TextInput
+                            type={"text"}
+                            placeholder={"Enter the transaction hash"}
+                            label={"Transaction Hash"}
+                            value={""}
+                            className="TxHashInput"
+                          /> */}
+                          <Input
+                            type={"text"}
+                            placeholder={"Enter the transaction hash"}
+                            label={"Transaction Hash"}
+                            value={transactionHash}
+                            onChange={(e) => {
+                              setTransactionHash(e.target.value);
+                            }}
+                            className="TxHashInput"
+                          />
+                          <div className={styles.actionButton}>
+                            {verified === "verified" ? (
+                              <Button
+                                variant={VariantsEnum.outline}
+                                radius={10}
+                                style={{
+                                  borderColor: "#53C07F",
+                                  background: "unset",
+                                  color: "#53C07F",
+                                }}
+                                leftIcon={
+                                  <Icon
+                                    icon={"charm:circle-tick"}
+                                    color="#53C07F"
+                                  />
+                                }
+                              >
+                                Verified
+                              </Button>
+                            ) : (
+                              <Button
+                                variant={
+                                  verified === "verifing"
+                                    ? VariantsEnum.outline
+                                    : VariantsEnum.outlinePrimary
+                                }
+                                radius={10}
+                                style={{
+                                  backgroundColor:
+                                    verified === "verifing"
+                                      ? "unset"
+                                      : "transparent",
+                                }}
+                                loading={verified === "verifing" ? true : false}
+                                onClick={handleTxVerification}
+                              >
+                                {verified === "verifing" ? (
+                                  "Verifing"
+                                ) : (
+                                  <>Verify </>
+                                )}
+                              </Button>
+                            )}
+                            {verified === "verifing" ? (
+                              <span className={styles.timer}>
+                                <Countdown />
+                              </span>
+                            ) : (
+                              <></>
+                            )}
+                          </div>
                         </div>
                       </>
                     )}
@@ -932,24 +1036,24 @@ const ExchangeOfferDrawer = ({
                   <div className={styles.spacing} />
                   <div
                     className={`${styles.stepItem} ${styles.proofCheckbox} ${
-                      verified && styles.activeStepItem
+                      verified == "verified" && styles.activeStepItem
                     }`}
                     onClick={() => {
                       // setVerified(!verified);
-                      if (verified == false && activeStep == 2) {
-                        setActiveStep(activeStep + 1);
-                        setVerified(true);
-                      } else if (verified == true && activeStep == 3) {
-                        setActiveStep(activeStep - 1);
-                        setVerified(false);
-                      }
+                      // if (verified == false && activeStep == 2) {
+                      //   setActiveStep(activeStep + 1);
+                      //   setVerified(true);
+                      // } else if (verified == true && activeStep == 3) {
+                      //   setActiveStep(activeStep - 1);
+                      //   setVerified(false);
+                      // }
                     }}
                   >
                     <div className={styles.checkboxContainer}>
                       <input
                         type="radio"
                         className={styles.checkbox}
-                        checked={verified}
+                        checked={verified == "verified" ? true : false}
                         // onChange={() => {
                         //   setVerified(true);
                         // }}
@@ -979,7 +1083,7 @@ const ExchangeOfferDrawer = ({
                               : "linear-gradient(180deg, #ffd572 0%, #febd38 100%)",
                         }}
                         disabled={
-                          confirmed !== "loading" && verified === true
+                          confirmed !== "loading" && verified === "verified"
                             ? false
                             : true
                         }

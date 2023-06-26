@@ -106,4 +106,6 @@ export const AppContext = createContext<null | {
   setAlertOpen: (alertOpen: number) => void;
   alertMessage: string | JSX.Element;
   setAlertMessage: (alertMessage: string) => void;
+  selectedBitcoinNode: string;
+  setSelectedBitcoinNode: (selectedBitcoinNode: string) => void;
 }>(null);

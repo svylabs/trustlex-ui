@@ -27,6 +27,7 @@ import IUserInputData from "./interfaces/IUserInputData";
 import { INetworkInfo } from "./interfaces/INetworkInfo";
 import swapArrayElements from "./utils/swapArray";
 import { formatERC20Tokens } from "./utils/Ether.utills";
+import { BitcoinNodeEnum } from "./interfaces/IBitcoinNode";
 import {
   IListenedOfferData,
   IOffersResult,
@@ -63,7 +64,9 @@ export default function App() {
   const [selectedToken, setSelectedToken] = useState(
     tokenData ? tokenData.toUpperCase() : DEFAULT_TOKEN
   );
-
+  const [selectedBitcoinNode, setSelectedBitcoinNode] = useState(
+    BitcoinNodeEnum.TrustlexNode
+  );
   const [erc20balance, setERC20balance] = useState("");
   const [erc20TokenContract, setERC20TokenContract] =
     useState<ethers.Contract>();
@@ -830,6 +833,8 @@ export default function App() {
             setAlertOpen,
             alertMessage,
             setAlertMessage,
+            selectedBitcoinNode,
+            setSelectedBitcoinNode,
           }}
         >
           <Layout>

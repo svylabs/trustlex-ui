@@ -27,6 +27,7 @@ import SeeMoreButton from "~/components/SeeMoreButton/SeeMoreButton";
 import ExchangeOfferDrawer from "~/components/ExchangeOfferDrawer/ExchangeOfferDrawer";
 import getTableData from "~/components/ExchangePrepareTableData/GetTableData";
 import { AppContext } from "~/Context/AppContext";
+import { GetTransactionDetails } from "~/service/BitcoinService";
 import {
   AddOfferWithEth,
   InitializeFullfillment,
@@ -140,6 +141,7 @@ const Exchange = (props: Props) => {
     setRefreshMySwapOngoingListKey,
     refreshMySwapCompletedListKey,
     setRefreshMySwapCompletedListKey,
+    selectedBitcoinNode,
   } = context;
 
   const [exchangeData, setExchangeData] = useState({
@@ -483,7 +485,19 @@ const Exchange = (props: Props) => {
   //   }
   //   setGenerateWalletDrawerOpen(false);
   // };
-
+  const handleTxVerification = async () => {
+    let transactionHash =
+      "f4defa29eb33caaab3e5bb9c62fe659b3676da8a55c554984f766455a4e4c877";
+    let recieverAddress = "tb1qpad47g0nnswks2sr4zn2c987c8q9f7ykyh7d9j";
+    let paymentAmount = 0.01637724;
+    let result = await GetTransactionDetails(
+      selectedBitcoinNode,
+      transactionHash,
+      recieverAddress,
+      paymentAmount
+    );
+    console.log(result);
+  };
   const handleRowClick = async (data: string[7] | ReactNode[]) => {
     if (account == "") {
       showErrorMessage("Please wait ,your account is not connected !");
@@ -535,6 +549,9 @@ const Exchange = (props: Props) => {
           colorRight="#FEBD3863"
           colorLeft="#FEBD3833"
         >
+          <button type="button" onClick={handleTxVerification}>
+            Test Function
+          </button>
           <div className={styles.innerWrapper}>
             {addOffer && (
               <div className={styles.exchangeForm}>
@@ -745,6 +762,7 @@ const Exchange = (props: Props) => {
         setRefreshMySwapOngoingListKey={setRefreshMySwapOngoingListKey}
         refreshMySwapCompletedListKey={refreshMySwapCompletedListKey}
         setRefreshMySwapCompletedListKey={setRefreshMySwapCompletedListKey}
+        selectedBitcoinNode={selectedBitcoinNode}
       />
 
       <div className={styles.overlay}>

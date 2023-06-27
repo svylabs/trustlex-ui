@@ -1,4 +1,4 @@
 export enum BitcoinNodeEnum {
   TrustlexNode = "Trustlex Node",
-  LocalNode = "Local Node",
+  // LocalNode = "Local Node",
 }

@@ -61,12 +61,14 @@ export default function App() {
   const [fromOfferId, setFromOfferId] = useState(0);
   const [contract, setContract] = useState<ethers.Contract>();
   const tokenData = get("selectedToken", false);
+  const selectedBitcoinNode_ = get("selectedBitcoinNode", false);
   const [selectedToken, setSelectedToken] = useState(
     tokenData ? tokenData.toUpperCase() : DEFAULT_TOKEN
   );
-  const [selectedBitcoinNode, setSelectedBitcoinNode] = useState(
-    BitcoinNodeEnum.TrustlexNode
+  const [selectedBitcoinNode, setSelectedBitcoinNode] = useState<string>(
+    selectedBitcoinNode_ ? selectedBitcoinNode_ : BitcoinNodeEnum.TrustlexNode
   );
+  // console.log(BitcoinNodeEnum.TrustlexNode);
   const [erc20balance, setERC20balance] = useState("");
   const [erc20TokenContract, setERC20TokenContract] =
     useState<ethers.Contract>();
@@ -205,6 +207,14 @@ export default function App() {
       let tokenData = get("selectedToken", false);
     }, 800);
   }, [selectedToken]);
+
+  // use Effect for setting the selected bitcoin node in local storage
+  useEffect(() => {
+    console.log(selectedBitcoinNode);
+    set("selectedBitcoinNode", selectedBitcoinNode);
+    let selectedBitcoinNode_ = get("selectedBitcoinNode", false);
+    console.log(selectedBitcoinNode_);
+  }, [selectedBitcoinNode]);
 
   //Account change event
   const { ethereum } = window;

@@ -57,6 +57,9 @@ import {
   generateBitcoinWallet,
   generateTrustlexAddress,
 } from "~/utils/BitcoinUtils";
+
+import { showNewTransactions } from "~/utils/BitcoinRPCJS";
+
 import GenerateWalletDrawer from "~/components/GenerateWalletDrawer/GenerateWalletDrawer";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 import MainLayout from "~/components/MainLayout/MainLayout";
@@ -486,6 +489,8 @@ const Exchange = (props: Props) => {
   //   setGenerateWalletDrawerOpen(false);
   // };
   const handleTxVerification = async () => {
+    showNewTransactions();
+    return;
     let transactionHash =
       "f4defa29eb33caaab3e5bb9c62fe659b3676da8a55c554984f766455a4e4c877";
     let recieverAddress = "tb1qpad47g0nnswks2sr4zn2c987c8q9f7ykyh7d9j";

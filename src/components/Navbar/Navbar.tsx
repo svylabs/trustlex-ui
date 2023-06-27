@@ -16,6 +16,7 @@ import SendBtcBox from "~/components/SendBtc/SendBtcBox/SendBtcBox";
 import OfferCurrencyDropdown from "~/components/OfferCurrencyDropdown/OfferCurrencyDropdown";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 import NetworkMenu from "./NetworkMenu";
+
 import {
   networks,
   activeExchange,
@@ -43,6 +44,8 @@ const Navbar = (props: Props) => {
     selectedNetwork,
     setSelectedNetwork,
     checkNetwork,
+    setSelectedBitcoinNode,
+    selectedBitcoinNode,
   } = context;
 
   const handleConnect = async () => {
@@ -158,7 +161,10 @@ const Navbar = (props: Props) => {
             { title: " RPC Username", href: "" },
           ]}
         /> */}
-        <BitcoinNodeSelectionMenu />
+        <BitcoinNodeSelectionMenu
+          selectedBitcoinNode={selectedBitcoinNode}
+          setSelectedBitcoinNode={setSelectedBitcoinNode}
+        />
         {/* <NavDropdownButton
           title={mobileView ? "" : "Ethereum"}
           icon="/icons/etherium.svg"

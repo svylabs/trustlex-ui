@@ -27660,6 +27660,9 @@ var bip38_decrypt = bip38.decrypt;
 window.bip38_encrypt = bip38_encrypt;
 window.bip38_decrypt = bip38_decrypt;
 
+
+
+
 },{"bip38":199}],194:[function(require,module,exports){
 'use strict'
 // base-x encoding / decoding

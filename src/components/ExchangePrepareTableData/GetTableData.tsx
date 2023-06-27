@@ -27,7 +27,7 @@ const getTableData = (
     currencyObjects[selectedNetwork][selectedToken.toLowerCase()]?.icon;
   return offers
     .filter(function (offer: IListenedOfferData) {
-      console.log(offer.offerDetailsInJson);
+      // console.log(offer.offerDetailsInJson);
       let satoshisToReceive = +offer.offerDetailsInJson.satoshisToReceive;
       let satoshisReserved = +offer.offerDetailsInJson.satoshisReserved;
       let satoshisReceived = +offer.offerDetailsInJson.satoshisReceived;
@@ -35,7 +35,7 @@ const getTableData = (
 
       // let left_to_buy = satoshisToReceive - (satoshisReceived + satoshisReserved);
       let left_to_buy = satoshisToReceive - satoshisReceived;
-      console.log(left_to_buy);
+      // console.log(left_to_buy);
       // add OR condition in if , if any fullfillment of that offer is in progress
       if (left_to_buy === 0 || isCanceled == true) {
         return false; // skip

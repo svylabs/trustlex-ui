@@ -1558,6 +1558,12 @@
     "semver" "^5.1.0"
     "standard-error" "^1.1.0"
 
+"bitcoin-merkle-tree@github:svylabs/bitcoin-merkle-tree#main":
+  "resolved" "git+ssh://git@github.com/svylabs/bitcoin-merkle-tree.git#3daaaab50fee4dbd5a3f7704d760302e4e670d25"
+  "version" "1.0.0"
+  dependencies:
+    "@types/node" "^18.11.18"
+
 "bitcoind-rpc@^0.9.1":
   "integrity" "sha512-fWjepYe3I6W8pw8WiDUrHAMKZXyRqtm6HfcUaDeLAQLr1KoKcVzqR4xzdJFJgUMBShNmN4GRMg0rLFr6ZKGZ6A=="
   "resolved" "https://registry.npmjs.org/bitcoind-rpc/-/bitcoind-rpc-0.9.1.tgz"

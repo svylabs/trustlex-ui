@@ -27,7 +27,15 @@ import SeeMoreButton from "~/components/SeeMoreButton/SeeMoreButton";
 import ExchangeOfferDrawer from "~/components/ExchangeOfferDrawer/ExchangeOfferDrawer";
 import getTableData from "~/components/ExchangePrepareTableData/GetTableData";
 import { AppContext } from "~/Context/AppContext";
-import { GetTransactionDetails } from "~/service/BitcoinService";
+
+import { BitcoinMerkleTree } from "bitcoin-merkle-tree/dist/index";
+
+import {
+  GetTransactionDetails,
+  GetRawTransaction,
+  VerifyTransaction,
+  GetBlock,
+} from "~/service/BitcoinService";
 import {
   AddOfferWithEth,
   InitializeFullfillment,
@@ -489,19 +497,35 @@ const Exchange = (props: Props) => {
   //   setGenerateWalletDrawerOpen(false);
   // };
   const handleTxVerification = async () => {
-    showNewTransactions();
-    return;
+    // showNewTransactions();
+    // return;
     let transactionHash =
       "f4defa29eb33caaab3e5bb9c62fe659b3676da8a55c554984f766455a4e4c877";
+    let blockHash =
+      "0000000000005d2e2303e7a20ba2c844aaff6694501ee58d43d2d83e0a88373e";
     let recieverAddress = "tb1qpad47g0nnswks2sr4zn2c987c8q9f7ykyh7d9j";
     let paymentAmount = 0.01637724;
-    let result = await GetTransactionDetails(
-      selectedBitcoinNode,
-      transactionHash,
-      recieverAddress,
-      paymentAmount
-    );
-    console.log(result);
+    // let result = await GetTransactionDetails(
+    //   selectedBitcoinNode,
+    //   transactionHash,
+    //   recieverAddress,
+    //   paymentAmount
+    // );
+    // let result = await VerifyTransaction(
+    //   selectedBitcoinNode,
+    //   transactionHash,
+    //   recieverAddress,
+    //   paymentAmount
+    // );
+    // console.log(result);
+    // let blockresult = await GetBlock(selectedBitcoinNode, blockHash);
+    // console.log(blockresult);
+    let txs: string[] = [
+      "fe28050b93faea61fa88c4c630f0e1f0a1c24d0082dd0e10d369e13212128f33",
+    ];
+    const bitcoinMerkleTreeInstance = new BitcoinMerkleTree(txs);
+    const proof = bitcoinMerkleTreeInstance.getInclusionProof(txs[0]);
+    console.log(proof);
   };
   const handleRowClick = async (data: string[7] | ReactNode[]) => {
     if (account == "") {

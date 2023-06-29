@@ -12,7 +12,7 @@ export const PAGE_SIZE = 50;
 export const TOKEN_DECIMAL_PLACE = 4;
 export const OFFER_ORDER_EXPIRY_DIRATION = 3 * 60 * 60; // in seconds
 // export const OFFER_ORDER_EXPIRY_DIRATION = 5 * 60; // in seconds
-export const BTC_DECIMAL_PLACE = 5;
+export const BTC_DECIMAL_PLACE = 8;
 export const ETH_DECIMAL_PLACE = 5;
 export const DEFAULT_COLLETARAL_FEES = 10;
 
@@ -23,6 +23,9 @@ export const ERC20TokenValue = "SPVC";
 export const TrustlexBitcoinNodeApiKey = "d924a382-ab7c-4649-b4eb-0f731b9a100e";
 export const BITCOIN_MAINNET_API_URL = "https://btc.getblock.io/mainnet/";
 export const BITCOIN_TESTNET_API_URL = "https://btc.getblock.io/testnet/";
+
+export const BITCOIN_MAINNET_RPC_URL = `https://btc.getblock.io/${TrustlexBitcoinNodeApiKey}/mainnet/`;
+export const BITCOIN_TESTNET_RPC_URL = `https://btc.getblock.io/${TrustlexBitcoinNodeApiKey}/testnet/`;
 
 // Networks List
 export const networks = [

@@ -16,6 +16,9 @@ import { tofixedEther, EthtoWei } from "~/utils/Ether.utills";
 import { AppContext } from "~/Context/AppContext";
 // import { TextInput, TextInputProps } from "@mantine/core";
 import Input from "../Input/Input";
+// import { BitcoinMerkleTree } from "bitcoin-merkle-tree/dist/index";
+import { BitcoinMerkleTree } from "~/utils/bitcoinmerketree";
+import { IBitcoinPaymentProof } from "~/interfaces/IBitcoinNode";
 import {
   IFullfillmentEvent,
   IFullfillmentResult,
@@ -31,7 +34,11 @@ import {
   getInitializedFulfillments,
   increaseContractAllownace,
 } from "~/service/AppService";
-import { GetTransactionDetails } from "~/service/BitcoinService";
+import {
+  GetTransactionDetails,
+  VerifyTransaction,
+  GetBlock,
+} from "~/service/BitcoinService";
 import { QRCodeCanvas } from "qrcode.react";
 import { address } from "bitcoinjs-lib";
 import { generateTrustlexAddress, tofixedBTC } from "~/utils/BitcoinUtils";
@@ -122,9 +129,8 @@ const ExchangeOfferDrawer = ({
   const [activeStep, setActiveStep] = useState(1);
   const [verified, setVerified] = useState("");
   // const [verified, setIsTxVerify] = useState("");
-  const [transactionHash, setTransactionHash] = useState(
-    "f4defa29eb33caaab3e5bb9c62fe659b3676da8a55c554984f766455a4e4c877"
-  );
+  const [blockHash, setBlockHash] = useState("");
+  const [transactionHash, setTransactionHash] = useState("");
 
   const [confirmed, setConfirmed] = useState("");
   const [initatedata, setInitatedata]: any = useState([]);
@@ -150,7 +156,13 @@ const ExchangeOfferDrawer = ({
   // console.log(selectedNetwork, selectedToken);
   let selectedCurrencyIcon =
     currencyObjects[selectedNetwork][selectedToken.toLowerCase()]?.icon;
-
+  const [bitcoinPaymentProof, setBitcoinPaymentProof] =
+    useState<IBitcoinPaymentProof>({
+      transactionHex: "",
+      proof: "",
+      index: 0,
+      blockHeight: 0,
+    });
   useEffect(() => {
     if (rowOfferId === null) {
       onClose(false);
@@ -329,6 +341,11 @@ const ExchangeOfferDrawer = ({
       showErrorMessage(
         `Buy amount can not be greater that offer quanity ${leftToBuy} !`
       );
+      return false;
+    }
+    let btcAmount = getBTCAmount();
+    if (btcAmount == 0) {
+      showErrorMessage("BTC Amount should not be zero.");
       return false;
     }
 
@@ -528,18 +545,30 @@ const ExchangeOfferDrawer = ({
     return colletaralValue;
   };
   const handleTxVerification = async () => {
+    if (blockHash == "") {
+      showErrorMessage("Please enter the block hash");
+      return;
+    }
     if (transactionHash == "") {
       showErrorMessage("Please enter the transaction hash");
       return;
     }
     setVerified("verifing");
-    // now validate the transaction
+    // first verify the blockhash
+    let blockResult: any = await GetBlock(selectedBitcoinNode, blockHash);
+    if (blockResult.status == false) {
+      showErrorMessage(blockResult.message);
+      setVerified("");
+      return false;
+    }
+    let blockTxs = blockResult.result.tx;
+    let blockHeight = blockResult.result.height;
 
-    // let transactionHash =
-    //   "f4defa29eb33caaab3e5bb9c62fe659b3676da8a55c554984f766455a4e4c877.json";
-    let recieverAddress = "tb1qpad47g0nnswks2sr4zn2c987c8q9f7ykyh7d9j";
-    let paymentAmount = 0.01637724;
-    let result: any = await GetTransactionDetails(
+    console.log(blockTxs, blockHeight);
+    // now validate the transaction
+    let recieverAddress = to;
+    let paymentAmount = getBTCAmount();
+    let result: any = await VerifyTransaction(
       selectedBitcoinNode,
       transactionHash,
       recieverAddress,
@@ -548,11 +577,28 @@ const ExchangeOfferDrawer = ({
     if (result.status == false) {
       showErrorMessage(result.message);
       setVerified("");
+      return false;
     } else {
       setVerified("verified");
       setActiveStep(activeStep + 1);
+
+      const bitcoinMerkleTreeInstance = new BitcoinMerkleTree(blockTxs);
+      const proof =
+        bitcoinMerkleTreeInstance.getInclusionProof(transactionHash);
+      console.log(proof);
+      // create the submit payment proof
+      setBitcoinPaymentProof({
+        ...bitcoinPaymentProof,
+        transactionHex: result.result,
+        blockHeight: blockHeight,
+      });
+      // let transaction: string; //Hex of the transaction
+      // let proof: string; // concatnation of transactions of block but skip first transaction
+      // let index: Number; //
+      // let blockHeight: Number; //Height of the block
     }
   };
+
   return (
     <Drawer
       opened={isOpened}
@@ -939,7 +985,17 @@ const ExchangeOfferDrawer = ({
                           /> */}
                           <Input
                             type={"text"}
-                            placeholder={"Enter the transaction hash"}
+                            placeholder={"Enter the Block Hash"}
+                            label={"Block Hash"}
+                            value={blockHash}
+                            onChange={(e) => {
+                              setBlockHash(e.target.value);
+                            }}
+                            className="BlockHashInput"
+                          />
+                          <Input
+                            type={"text"}
+                            placeholder={"Enter the Transaction Hash"}
                             label={"Transaction Hash"}
                             value={transactionHash}
                             onChange={(e) => {

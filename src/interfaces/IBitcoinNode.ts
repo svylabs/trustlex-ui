@@ -4,7 +4,7 @@ export enum BitcoinNodeEnum {
 }
 
 export interface IBitcoinPaymentProof {
-  transactionHex: String; //Hex of the transaction
+  transaction: String; // transaction
   proof: String; // concatnation of transactions inside of block but skip first transaction
   index: Number; //
   blockHeight: Number; //Height of the block

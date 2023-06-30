@@ -581,7 +581,7 @@ const ExchangeOfferDrawer = ({
     } else {
       setVerified("verified");
       setActiveStep(activeStep + 1);
-
+      let rawTransaction = result.result;
       const bitcoinMerkleTreeInstance = new BitcoinMerkleTree(blockTxs);
       const proof =
         bitcoinMerkleTreeInstance.getInclusionProof(transactionHash);
@@ -589,8 +589,9 @@ const ExchangeOfferDrawer = ({
       // create the submit payment proof
       setBitcoinPaymentProof({
         ...bitcoinPaymentProof,
-        transactionHex: result.result,
+        transaction: result.result,
         blockHeight: blockHeight,
+        index: proof.index,
       });
       // let transaction: string; //Hex of the transaction
       // let proof: string; // concatnation of transactions of block but skip first transaction

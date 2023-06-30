@@ -17,7 +17,7 @@ import { AppContext } from "~/Context/AppContext";
 // import { TextInput, TextInputProps } from "@mantine/core";
 import Input from "../Input/Input";
 // import { BitcoinMerkleTree } from "bitcoin-merkle-tree/dist/index";
-import { BitcoinMerkleTree } from "~/utils/bitcoinmerketree";
+import { BitcoinMerkleTree, MerkleProof } from "~/utils/bitcoinmerketree";
 import { IBitcoinPaymentProof } from "~/interfaces/IBitcoinNode";
 import {
   IFullfillmentEvent,
@@ -119,7 +119,7 @@ const ExchangeOfferDrawer = ({
   setRefreshMySwapCompletedListKey,
   selectedBitcoinNode,
 }: Props) => {
-  // console.log(data);
+  const { cleanTx } = window;
   const { mobileView } = useWindowDimensions();
   const rootRef = useRef(null);
   const context = useContext(AppContext);
@@ -158,7 +158,7 @@ const ExchangeOfferDrawer = ({
     currencyObjects[selectedNetwork][selectedToken.toLowerCase()]?.icon;
   const [bitcoinPaymentProof, setBitcoinPaymentProof] =
     useState<IBitcoinPaymentProof>({
-      transactionHex: "",
+      transaction: "",
       proof: "",
       index: 0,
       blockHeight: 0,
@@ -201,7 +201,7 @@ const ExchangeOfferDrawer = ({
         contract,
         rowOfferId
       );
-      console.log(fullfillmentResults);
+      // console.log(fullfillmentResults);
       if (!foundOffer || foundOffer === undefined) return;
 
       let countdowntimerTime_ = rowFullFillmentExpiryTime
@@ -239,7 +239,7 @@ const ExchangeOfferDrawer = ({
       // const satoshisReceived = Number(
       //   offer.offerDetailsInJson.satoshisReceived
       // );
-      console.log(offerDetails);
+      // console.log(offerDetails);
       let satoshisToReceive = Number(offerDetails.satoshisToReceive);
       let satoshisReserved = Number(offerDetails.satoshisReserved);
 
@@ -264,7 +264,7 @@ const ExchangeOfferDrawer = ({
           }
         );
 
-      console.log(satoshisReserved);
+      // console.log(satoshisReserved);
       let left_to_buy =
         Number(
           SatoshiToBtcConverter(
@@ -305,7 +305,7 @@ const ExchangeOfferDrawer = ({
         let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
         setTo(`${hashAdress}`);
         setActiveStep(2);
-        console.log(rowFullFillmentQuantityRequested);
+        // console.log(rowFullFillmentQuantityRequested);
         left_to_buy =
           Number(
             SatoshiToBtcConverter(rowFullFillmentQuantityRequested as string)
@@ -493,13 +493,19 @@ const ExchangeOfferDrawer = ({
       setConfirmed("");
       return false;
     }
+    if (bitcoinPaymentProof.index == 0) {
+      showErrorMessage("Please very the transansaction again");
+      setConfirmed("");
+      return false;
+    }
 
     let result = await submitPaymentProof(
       contract,
       offerId,
-      offerFulfillmentId
+      offerFulfillmentId.toString(),
+      bitcoinPaymentProof
     );
-
+    console.log(bitcoinPaymentProof, result);
     if (result) {
       setSubmitPaymentProofTxHash(result.transactionHash);
       setConfirmed("confirmed");
@@ -564,7 +570,7 @@ const ExchangeOfferDrawer = ({
     let blockTxs = blockResult.result.tx;
     let blockHeight = blockResult.result.height;
 
-    console.log(blockTxs, blockHeight);
+    // console.log(blockTxs, blockHeight);
     // now validate the transaction
     let recieverAddress = to;
     let paymentAmount = getBTCAmount();
@@ -582,21 +588,29 @@ const ExchangeOfferDrawer = ({
       setVerified("verified");
       setActiveStep(activeStep + 1);
       let rawTransaction = result.result;
+      const cleanedTx = cleanTx(rawTransaction);
+
       const bitcoinMerkleTreeInstance = new BitcoinMerkleTree(blockTxs);
-      const proof =
+      const proofResult: MerkleProof | boolean | null =
         bitcoinMerkleTreeInstance.getInclusionProof(transactionHash);
-      console.log(proof);
+      if (proofResult == null || (proofResult as unknown) == false) {
+        return false;
+      }
+      let proof: any = proofResult.hashes;
+      proof.shift();
+      proof = proof.join("");
+      console.log(proofResult);
+
+      console.log(proofResult, proof);
+
       // create the submit payment proof
       setBitcoinPaymentProof({
         ...bitcoinPaymentProof,
-        transaction: result.result,
+        transaction: "0x" + cleanedTx,
         blockHeight: blockHeight,
-        index: proof.index,
+        index: proofResult.index,
+        proof: "0x" + proof,
       });
-      // let transaction: string; //Hex of the transaction
-      // let proof: string; // concatnation of transactions of block but skip first transaction
-      // let index: Number; //
-      // let blockHeight: Number; //Height of the block
     }
   };
 

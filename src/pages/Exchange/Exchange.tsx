@@ -276,6 +276,7 @@ const Exchange = (props: Props) => {
   const handleOfferConfirm = async () => {
     try {
       let bitcoinAddress = generatedBitcoinData?.pubkeyHash.toString("hex");
+      console.log(bitcoinAddress);
       if (bitcoinAddress === undefined) {
         showErrorMessage(
           "Address to receive Bitcoin is empty. Please click on Generate in Browser button."
@@ -473,7 +474,7 @@ const Exchange = (props: Props) => {
 
   const handleGenerateBitcoinWallet = async () => {
     const data = generateBitcoinWallet();
-    console.log(data.privateKey.toString("hex"));
+    console.log(data, data.privateKey.toString("hex"));
     setGeneratedBitcoinData(data);
     setPaperWalletDownloaded(PaperWalletDownloadedEnum.Generated);
   };

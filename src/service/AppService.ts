@@ -24,6 +24,7 @@ import { EthtoWei, WeitoEth } from "~/utils/Ether.utills";
 import { AppContext } from "~/Context/AppContext";
 import { ToastContainer, toast } from "react-toastify";
 import { TimestampTotoNow, TimestampfromNow } from "~/utils/TimeConverter";
+import { IBitcoinPaymentProof } from "~/interfaces/IBitcoinNode";
 
 const getEthereumObject = () => window.ethereum;
 
@@ -880,20 +881,32 @@ export const showErrorMessage = (message: string) => {
 export const submitPaymentProof = async (
   trustLex: ethers.Contract | undefined,
   offerId: string,
-  fulfillmentId: string
+  fulfillmentId: string,
+  bitcoinPaymentProof: IBitcoinPaymentProof
 ) => {
   try {
     if (!trustLex) return false;
+    console.log(offerId, fulfillmentId, bitcoinPaymentProof, [
+      bitcoinPaymentProof.transaction,
+      bitcoinPaymentProof.proof,
+      bitcoinPaymentProof.index,
+      bitcoinPaymentProof.blockHeight,
+    ]);
     const transaction = await trustLex.submitPaymentProof(
       offerId,
-      fulfillmentId
+      fulfillmentId,
+      [
+        bitcoinPaymentProof.transaction,
+        bitcoinPaymentProof.proof,
+        bitcoinPaymentProof.index,
+        bitcoinPaymentProof.blockHeight,
+      ]
     );
 
     let tx = await transaction.wait();
     return tx;
   } catch (error: any) {
-    console.log(error?.message);
-    console.log(error);
+    console.log(error?.message ? error.message : error);
   }
 };
 

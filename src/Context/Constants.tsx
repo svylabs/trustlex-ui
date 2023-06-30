@@ -199,7 +199,7 @@ export const currencyObjects: {
       label: "Matic", // Please always keep the label  in upper case
       value: "Matic",
       icon: <ImageIcon image={"/icons/matic-token.png"} />,
-      orderBookContractAddreess: "0x3c367F53f383B162844ADaeCd722131Ff7ab1553",
+      orderBookContractAddreess: "0xFE3dD492f8E449901f76a08F66eDB8744F941f14",
       orderBookContractABI: OrderBookETHABI.abi,
       decimalPlace: 18,
       isNativeToken: true,

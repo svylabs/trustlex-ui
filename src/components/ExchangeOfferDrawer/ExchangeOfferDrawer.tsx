@@ -597,7 +597,7 @@ const ExchangeOfferDrawer = ({
         return false;
       }
       let proof: any = proofResult.hashes;
-      proof.shift();
+      proof.shift(); // skip 0 index element
       proof = proof.join("");
       console.log(proofResult);
 

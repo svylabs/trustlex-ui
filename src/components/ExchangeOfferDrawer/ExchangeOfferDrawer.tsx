@@ -596,9 +596,11 @@ const ExchangeOfferDrawer = ({
       if (proofResult == null || (proofResult as unknown) == false) {
         return false;
       }
-      let proof: any = proofResult.hashes;
+      let proof = proofResult.hashes;
       proof.shift(); // skip 0 index element
-      proof = proof.join("");
+      const proof_bytes = proof.map((hash) => {
+        return Buffer.from(hash, "hex").reverse().toString("hex");
+      }).join("");
       console.log(proofResult);
 
       console.log(proofResult, proof);
@@ -609,7 +611,7 @@ const ExchangeOfferDrawer = ({
         transaction: "0x" + cleanedTx,
         blockHeight: blockHeight,
         index: proofResult.index,
-        proof: "0x" + proof,
+        proof: "0x" + proof_bytes,
       });
     }
   };

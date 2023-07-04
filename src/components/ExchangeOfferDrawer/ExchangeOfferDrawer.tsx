@@ -297,12 +297,37 @@ const ExchangeOfferDrawer = ({
           foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
           "hex"
         );
+        let pubKeyHash = toAddress;
+        console.log(foundOffer.offerDetailsInJson.bitcoinAddress);
         let fulfillmentId = rowFullFillmentId;
         setOfferFulfillmentId(fulfillmentId);
         if (fulfillmentId.length % 2 != 0) {
           fulfillmentId = "0" + fulfillmentId;
         }
-        let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
+        let contractAddress =
+          currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+            ?.orderBookContractAddreess;
+        let orderTimestamp = foundOffer.offerDetailsInJson.orderedTime;
+        console.log(orderTimestamp);
+        const orderId = ethers.utils.keccak256(
+          ethers.utils.solidityPack(
+            ["address", "uint256", "uint256", "bytes20", "uint256"],
+            // To be interpreted as: address of contract, orderId, fulfillmentId, pubKeyHash, orderTimestamp
+            // ["0xFD05beBFEa081f6902bf9ec57DCb50b40BA02510", 0, 0, '0x0000000000000000000000000000000000000000', 0]
+            [
+              contractAddress,
+              rowOfferId,
+              rowFullFillmentId,
+              foundOffer.offerDetailsInJson.bitcoinAddress,
+              orderTimestamp,
+            ]
+          )
+        );
+
+        const shortOrderId = orderId.slice(2, 10);
+        console.log(shortOrderId, orderId);
+        // let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
+        let hashAdress = generateTrustlexAddress(pubKeyHash, shortOrderId);
         setTo(`${hashAdress}`);
         setActiveStep(2);
         // console.log(rowFullFillmentQuantityRequested);
@@ -448,12 +473,36 @@ const ExchangeOfferDrawer = ({
         foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
         "hex"
       );
+      let pubKeyHash = toAddress;
       if (fulfillmentId.length % 2 != 0) {
         fulfillmentId = "0" + fulfillmentId;
       }
+      let contractAddress =
+        currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+          ?.orderBookContractAddreess;
+      let orderTimestamp = foundOffer.offerDetailsInJson.orderedTime;
 
-      // console.log(fulfillmentId);
-      let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
+      const orderId = ethers.utils.keccak256(
+        ethers.utils.solidityPack(
+          ["address", "uint256", "uint256", "bytes20", "uint256"],
+          // To be interpreted as: address of contract, orderId, fulfillmentId, pubKeyHash, orderTimestamp
+          // ["0xFD05beBFEa081f6902bf9ec57DCb50b40BA02510", 0, 0, '0x0000000000000000000000000000000000000000', 0]
+          [
+            contractAddress,
+            foundOffer.offerDetailsInJson.offerId,
+            fulfillmentId,
+            foundOffer.offerDetailsInJson.bitcoinAddress,
+            orderTimestamp,
+          ]
+        )
+      );
+
+      const shortOrderId = orderId.slice(2, 10);
+      console.log(shortOrderId, orderId);
+      // let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
+      let hashAdress = generateTrustlexAddress(pubKeyHash, shortOrderId);
+
+      // let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
       setTo(`${hashAdress}`);
       setInitatedata(data);
       setActiveStep(activeStep + 1);
@@ -598,9 +647,11 @@ const ExchangeOfferDrawer = ({
       }
       let proof = proofResult.hashes;
       proof.shift(); // skip 0 index element
-      const proof_bytes = proof.map((hash) => {
-        return Buffer.from(hash, "hex").reverse().toString("hex");
-      }).join("");
+      const proof_bytes = proof
+        .map((hash) => {
+          return Buffer.from(hash, "hex").reverse().toString("hex");
+        })
+        .join("");
       console.log(proofResult);
 
       console.log(proofResult, proof);

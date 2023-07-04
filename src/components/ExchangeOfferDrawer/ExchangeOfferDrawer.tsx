@@ -498,7 +498,7 @@ const ExchangeOfferDrawer = ({
       );
 
       const shortOrderId = orderId.slice(2, 10);
-      console.log(shortOrderId, orderId);
+      // console.log(shortOrderId, orderId);
       // let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
       let hashAdress = generateTrustlexAddress(pubKeyHash, shortOrderId);
 

@@ -3,7 +3,7 @@ import * as bitcoin from "bitcoinjs-lib";
 import { ECPairFactory, ECPairAPI, networks } from "ecpair";
 import * as bip38 from "bip38";
 import { BTC_DECIMAL_PLACE, PRODUCTION_MODE } from "~/Context/Constants";
-
+console.log(networks);
 export const network =
   PRODUCTION_MODE === true ? networks.bitcoin : networks.testnet;
 
@@ -63,11 +63,13 @@ export const decryptWallet = (walletJSON: string, password: string): Wallet => {
 
 export const generateTrustlexAddress = (
   pubkeyHash: Buffer,
-  fulfillmentId: string
+  // fulfillmentId: string
+  shortOrderId: string
 ): string | undefined => {
   if (pubkeyHash.length != 20) return undefined;
   const witnessScript = bitcoin.script.compile([
-    Buffer.from(fulfillmentId, "hex"),
+    // Buffer.from(fulfillmentId, "hex"),
+    Buffer.from(shortOrderId, "hex"),
     bitcoin.opcodes.OP_DROP,
     bitcoin.opcodes.OP_DUP,
     bitcoin.opcodes.OP_HASH160,

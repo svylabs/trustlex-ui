@@ -10,9 +10,9 @@ export const MAX_BLOCKS_TO_QUERY = 5000;
 export const MAX_ITERATIONS = 14;
 export const PAGE_SIZE = 50;
 export const TOKEN_DECIMAL_PLACE = 4;
-export const OFFER_ORDER_EXPIRY_DIRATION = 2 * 60; //3 * 60 * 60; // in seconds
+export const OFFER_ORDER_EXPIRY_DIRATION = 3 * 60 * 60; // in seconds
 // export const OFFER_ORDER_EXPIRY_DIRATION = 5 * 60; // in seconds
-export const BTC_DECIMAL_PLACE = 5;
+export const BTC_DECIMAL_PLACE = 8;
 export const ETH_DECIMAL_PLACE = 5;
 export const DEFAULT_COLLETARAL_FEES = 10;
 
@@ -20,11 +20,18 @@ export const ERC20TokenKey = "spvc"; // it should be in lower case
 export const ERC20TokenLabel = "SPVC"; // To show in the dropdown
 export const ERC20TokenValue = "SPVC";
 
+export const TrustlexBitcoinNodeApiKey = "d924a382-ab7c-4649-b4eb-0f731b9a100e";
+export const BITCOIN_MAINNET_API_URL = "https://btc.getblock.io/mainnet/";
+export const BITCOIN_TESTNET_API_URL = "https://btc.getblock.io/testnet/";
+
+export const BITCOIN_MAINNET_RPC_URL = `https://btc.getblock.io/${TrustlexBitcoinNodeApiKey}/mainnet/`;
+export const BITCOIN_TESTNET_RPC_URL = `https://btc.getblock.io/${TrustlexBitcoinNodeApiKey}/testnet/`;
+
 // Networks List
 export const networks = [
   { networkKey: "polygon_matic" },
-  { networkKey: "trustlex_testnet" },
-  // { networkKey: "ganache_testnet" },
+  // { networkKey: "trustlex_testnet" },
+  { networkKey: "ganache_testnet" },
   { networkKey: "bnb_testnet" },
 ];
 
@@ -192,7 +199,7 @@ export const currencyObjects: {
       label: "Matic", // Please always keep the label  in upper case
       value: "Matic",
       icon: <ImageIcon image={"/icons/matic-token.png"} />,
-      orderBookContractAddreess: "0xC9c8Fa857CCD5C019eC0016880b8BeC5AC593fee",
+      orderBookContractAddreess: "0x09009743af4821BEA9177e6253a75357B6D5E06E",
       orderBookContractABI: OrderBookETHABI.abi,
       decimalPlace: 18,
       isNativeToken: true,
@@ -252,7 +259,7 @@ export const currencyObjects: {
       label: "ETH", // Please always keep the label  in upper case
       value: "Ethereum",
       icon: <ImageIcon image={"/icons/ethereum-2.svg"} />,
-      orderBookContractAddreess: "0x432d85454a618C4Bd7b6AC084C316007C155480A",
+      orderBookContractAddreess: "0xb8f9355B70E4e388Da2b5e5d2B131905Ac61e3ba",
       orderBookContractABI: OrderBookETHABI.abi,
       decimalPlace: 18,
       isNativeToken: true,

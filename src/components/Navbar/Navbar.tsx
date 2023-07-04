@@ -1,6 +1,7 @@
 import styles from "./Navbar.module.scss";
 import NavDropdownButton from "../NavDropdownButton/NavDropdownButton";
 import DropdownSubmenu from "../NavDropdownButton/DropdownSubmenu";
+import BitcoinNodeSelectionMenu from "../BitcoinNodeSelectionMenu/BitcoinNodeSelectionMenu";
 import { Icon } from "@iconify/react";
 import { Button } from "@mantine/core";
 import { useContext, useState } from "react";
@@ -15,6 +16,7 @@ import SendBtcBox from "~/components/SendBtc/SendBtcBox/SendBtcBox";
 import OfferCurrencyDropdown from "~/components/OfferCurrencyDropdown/OfferCurrencyDropdown";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 import NetworkMenu from "./NetworkMenu";
+
 import {
   networks,
   activeExchange,
@@ -42,6 +44,8 @@ const Navbar = (props: Props) => {
     selectedNetwork,
     setSelectedNetwork,
     checkNetwork,
+    setSelectedBitcoinNode,
+    selectedBitcoinNode,
   } = context;
 
   const handleConnect = async () => {
@@ -145,7 +149,7 @@ const Navbar = (props: Props) => {
           {/* Variant2 */}
           {/* <SendBtcDrawer open={showSendBtcBox} onClose={handleShowSendBtc} /> */}
         </div>
-        <NavDropdownButton
+        {/* <NavDropdownButton
           title={mobileView ? "" : "Bitcoin"}
           icon="/icons/bitcoin.svg"
           dropdownItems={[
@@ -156,6 +160,10 @@ const Navbar = (props: Props) => {
             { title: " RPC Password", href: "" },
             { title: " RPC Username", href: "" },
           ]}
+        /> */}
+        <BitcoinNodeSelectionMenu
+          selectedBitcoinNode={selectedBitcoinNode}
+          setSelectedBitcoinNode={setSelectedBitcoinNode}
         />
         {/* <NavDropdownButton
           title={mobileView ? "" : "Ethereum"}

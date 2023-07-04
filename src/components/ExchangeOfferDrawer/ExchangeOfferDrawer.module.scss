@@ -362,6 +362,33 @@ margin: 0;
   padding: 0.5rem 0;
 }
 
+
+.TxHashInput input{
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+  font-family: "Poppins", sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  // font-size: 5.2rem;
+  font-size: 24px;
+  height: 6.4rem;
+  padding: 1rem 0;
+  color: var(--white);
+  // position: static;
+
+  &::placeholder {
+    font-weight: 500;
+    font-size: 2.4rem;
+    color: #808080;
+  }
+
+  &:disabled {
+    background: transparent !important;
+  }
+}
+
+
 @media screen and (max-width: 768px) {
   .root {
     .stepsConatiner {

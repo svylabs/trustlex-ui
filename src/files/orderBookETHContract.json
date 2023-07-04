@@ -102,17 +102,15 @@
             "type": "function"
         },
         {
-            "inputs": [],
-            "name": "liquidateCollateral",
-            "outputs": [],
-            "stateMutability": "payable",
-            "type": "function"
-        },
-        {
             "inputs": [
                 {
                     "internalType": "address",
                     "name": "_tokenContract",
+                    "type": "address"
+                },
+                {
+                    "internalType": "address",
+                    "name": "txInclusionVerifier",
                     "type": "address"
                 }
             ],
@@ -241,6 +239,13 @@
             "type": "function"
         },
         {
+            "inputs": [],
+            "name": "liquidateCollateral",
+            "outputs": [],
+            "stateMutability": "payable",
+            "type": "function"
+        },
+        {
             "anonymous": false,
             "inputs": [
                 {
@@ -297,25 +302,6 @@
                 {
                     "indexed": true,
                     "internalType": "address",
-                    "name": "previousOwner",
-                    "type": "address"
-                },
-                {
-                    "indexed": true,
-                    "internalType": "address",
-                    "name": "newOwner",
-                    "type": "address"
-                }
-            ],
-            "name": "OwnershipTransferred",
-            "type": "event"
-        },
-        {
-            "anonymous": false,
-            "inputs": [
-                {
-                    "indexed": true,
-                    "internalType": "address",
                     "name": "submittedBy",
                     "type": "address"
                 },
@@ -334,13 +320,6 @@
             ],
             "name": "PAYMENT_SUCCESSFUL",
             "type": "event"
-        },
-        {
-            "inputs": [],
-            "name": "renounceOwnership",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
         },
         {
             "inputs": [
@@ -366,22 +345,36 @@
                     "internalType": "uint256",
                     "name": "fulfillmentId",
                     "type": "uint256"
+                },
+                {
+                    "components": [
+                        {
+                            "internalType": "bytes",
+                            "name": "transaction",
+                            "type": "bytes"
+                        },
+                        {
+                            "internalType": "bytes",
+                            "name": "proof",
+                            "type": "bytes"
+                        },
+                        {
+                            "internalType": "uint32",
+                            "name": "index",
+                            "type": "uint32"
+                        },
+                        {
+                            "internalType": "uint32",
+                            "name": "blockHeight",
+                            "type": "uint32"
+                        }
+                    ],
+                    "internalType": "struct TrustlexPerAssetOrderBook.PaymentProof",
+                    "name": "proof",
+                    "type": "tuple"
                 }
             ],
             "name": "submitPaymentProof",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "newOwner",
-                    "type": "address"
-                }
-            ],
-            "name": "transferOwnership",
             "outputs": [],
             "stateMutability": "nonpayable",
             "type": "function"
@@ -878,7 +871,7 @@
         },
         {
             "inputs": [],
-            "name": "owner",
+            "name": "txInclusionVerifierContract",
             "outputs": [
                 {
                     "internalType": "address",

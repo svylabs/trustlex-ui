@@ -14,6 +14,11 @@ import useDetectScrollUpDown from "~/hooks/useDetectScrollUpDown";
 import Countdown from "~/utils/Countdown";
 import { tofixedEther, EthtoWei } from "~/utils/Ether.utills";
 import { AppContext } from "~/Context/AppContext";
+// import { TextInput, TextInputProps } from "@mantine/core";
+import Input from "../Input/Input";
+// import { BitcoinMerkleTree } from "bitcoin-merkle-tree/dist/index";
+import { BitcoinMerkleTree, MerkleProof } from "~/utils/bitcoinmerketree";
+import { IBitcoinPaymentProof } from "~/interfaces/IBitcoinNode";
 import {
   IFullfillmentEvent,
   IFullfillmentResult,
@@ -29,6 +34,11 @@ import {
   getInitializedFulfillments,
   increaseContractAllownace,
 } from "~/service/AppService";
+import {
+  GetTransactionDetails,
+  VerifyTransaction,
+  GetBlock,
+} from "~/service/BitcoinService";
 import { QRCodeCanvas } from "qrcode.react";
 import { address } from "bitcoinjs-lib";
 import { generateTrustlexAddress, tofixedBTC } from "~/utils/BitcoinUtils";
@@ -84,6 +94,7 @@ type Props = {
   setRefreshMySwapCompletedListKey: (
     refreshMySwapCompletedListKey: number
   ) => void;
+  selectedBitcoinNode: string;
 };
 
 const ExchangeOfferDrawer = ({
@@ -106,8 +117,9 @@ const ExchangeOfferDrawer = ({
   setRefreshMySwapOngoingListKey,
   refreshMySwapCompletedListKey,
   setRefreshMySwapCompletedListKey,
+  selectedBitcoinNode,
 }: Props) => {
-  // console.log(data);
+  const { cleanTx } = window;
   const { mobileView } = useWindowDimensions();
   const rootRef = useRef(null);
   const context = useContext(AppContext);
@@ -115,7 +127,11 @@ const ExchangeOfferDrawer = ({
 
   const [checked, setChecked] = useState("allow");
   const [activeStep, setActiveStep] = useState(1);
-  const [verified, setVerified] = useState(false);
+  const [verified, setVerified] = useState("");
+  // const [verified, setIsTxVerify] = useState("");
+  const [blockHash, setBlockHash] = useState("");
+  const [transactionHash, setTransactionHash] = useState("");
+
   const [confirmed, setConfirmed] = useState("");
   const [initatedata, setInitatedata]: any = useState([]);
   const [to, setTo] = useState("");
@@ -140,7 +156,13 @@ const ExchangeOfferDrawer = ({
   // console.log(selectedNetwork, selectedToken);
   let selectedCurrencyIcon =
     currencyObjects[selectedNetwork][selectedToken.toLowerCase()]?.icon;
-
+  const [bitcoinPaymentProof, setBitcoinPaymentProof] =
+    useState<IBitcoinPaymentProof>({
+      transaction: "",
+      proof: "",
+      index: 0,
+      blockHeight: 0,
+    });
   useEffect(() => {
     if (rowOfferId === null) {
       onClose(false);
@@ -179,7 +201,7 @@ const ExchangeOfferDrawer = ({
         contract,
         rowOfferId
       );
-      console.log(fullfillmentResults);
+      // console.log(fullfillmentResults);
       if (!foundOffer || foundOffer === undefined) return;
 
       let countdowntimerTime_ = rowFullFillmentExpiryTime
@@ -217,7 +239,7 @@ const ExchangeOfferDrawer = ({
       // const satoshisReceived = Number(
       //   offer.offerDetailsInJson.satoshisReceived
       // );
-      console.log(offerDetails);
+      // console.log(offerDetails);
       let satoshisToReceive = Number(offerDetails.satoshisToReceive);
       let satoshisReserved = Number(offerDetails.satoshisReserved);
 
@@ -242,7 +264,7 @@ const ExchangeOfferDrawer = ({
           }
         );
 
-      console.log(satoshisReserved);
+      // console.log(satoshisReserved);
       let left_to_buy =
         Number(
           SatoshiToBtcConverter(
@@ -257,7 +279,7 @@ const ExchangeOfferDrawer = ({
       setIsInitating("");
       setTo("");
       setActiveStep(1);
-      setVerified(false);
+      setVerified("");
       setConfirmed("");
 
       setPlanningToSell(planningToSell_);
@@ -275,15 +297,40 @@ const ExchangeOfferDrawer = ({
           foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
           "hex"
         );
+        let pubKeyHash = toAddress;
+        console.log(foundOffer.offerDetailsInJson.bitcoinAddress);
         let fulfillmentId = rowFullFillmentId;
         setOfferFulfillmentId(fulfillmentId);
         if (fulfillmentId.length % 2 != 0) {
           fulfillmentId = "0" + fulfillmentId;
         }
-        let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
+        let contractAddress =
+          currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+            ?.orderBookContractAddreess;
+        let orderTimestamp = foundOffer.offerDetailsInJson.orderedTime;
+        console.log(orderTimestamp);
+        const orderId = ethers.utils.keccak256(
+          ethers.utils.solidityPack(
+            ["address", "uint256", "uint256", "bytes20", "uint256"],
+            // To be interpreted as: address of contract, orderId, fulfillmentId, pubKeyHash, orderTimestamp
+            // ["0xFD05beBFEa081f6902bf9ec57DCb50b40BA02510", 0, 0, '0x0000000000000000000000000000000000000000', 0]
+            [
+              contractAddress,
+              rowOfferId,
+              rowFullFillmentId,
+              foundOffer.offerDetailsInJson.bitcoinAddress,
+              orderTimestamp,
+            ]
+          )
+        );
+
+        const shortOrderId = orderId.slice(2, 10);
+        console.log(shortOrderId, orderId);
+        // let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
+        let hashAdress = generateTrustlexAddress(pubKeyHash, shortOrderId);
         setTo(`${hashAdress}`);
         setActiveStep(2);
-        console.log(rowFullFillmentQuantityRequested);
+        // console.log(rowFullFillmentQuantityRequested);
         left_to_buy =
           Number(
             SatoshiToBtcConverter(rowFullFillmentQuantityRequested as string)
@@ -319,6 +366,11 @@ const ExchangeOfferDrawer = ({
       showErrorMessage(
         `Buy amount can not be greater that offer quanity ${leftToBuy} !`
       );
+      return false;
+    }
+    let btcAmount = getBTCAmount();
+    if (btcAmount == 0) {
+      showErrorMessage("BTC Amount should not be zero.");
       return false;
     }
 
@@ -421,12 +473,36 @@ const ExchangeOfferDrawer = ({
         foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
         "hex"
       );
+      let pubKeyHash = toAddress;
       if (fulfillmentId.length % 2 != 0) {
         fulfillmentId = "0" + fulfillmentId;
       }
+      let contractAddress =
+        currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+          ?.orderBookContractAddreess;
+      let orderTimestamp = foundOffer.offerDetailsInJson.orderedTime;
 
-      // console.log(fulfillmentId);
-      let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
+      const orderId = ethers.utils.keccak256(
+        ethers.utils.solidityPack(
+          ["address", "uint256", "uint256", "bytes20", "uint256"],
+          // To be interpreted as: address of contract, orderId, fulfillmentId, pubKeyHash, orderTimestamp
+          // ["0xFD05beBFEa081f6902bf9ec57DCb50b40BA02510", 0, 0, '0x0000000000000000000000000000000000000000', 0]
+          [
+            contractAddress,
+            foundOffer.offerDetailsInJson.offerId,
+            fulfillmentId,
+            foundOffer.offerDetailsInJson.bitcoinAddress,
+            orderTimestamp,
+          ]
+        )
+      );
+
+      const shortOrderId = orderId.slice(2, 10);
+      // console.log(shortOrderId, orderId);
+      // let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
+      let hashAdress = generateTrustlexAddress(pubKeyHash, shortOrderId);
+
+      // let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
       setTo(`${hashAdress}`);
       setInitatedata(data);
       setActiveStep(activeStep + 1);
@@ -466,13 +542,19 @@ const ExchangeOfferDrawer = ({
       setConfirmed("");
       return false;
     }
+    if (bitcoinPaymentProof.index == 0) {
+      showErrorMessage("Please very the transansaction again");
+      setConfirmed("");
+      return false;
+    }
 
     let result = await submitPaymentProof(
       contract,
       offerId,
-      offerFulfillmentId
+      offerFulfillmentId.toString(),
+      bitcoinPaymentProof
     );
-
+    console.log(bitcoinPaymentProof, result);
     if (result) {
       setSubmitPaymentProofTxHash(result.transactionHash);
       setConfirmed("confirmed");
@@ -516,6 +598,73 @@ const ExchangeOfferDrawer = ({
       (inputAmount * DEFAULT_COLLETARAL_FEES) / 100
     );
     return colletaralValue;
+  };
+  const handleTxVerification = async () => {
+    if (blockHash == "") {
+      showErrorMessage("Please enter the block hash");
+      return;
+    }
+    if (transactionHash == "") {
+      showErrorMessage("Please enter the transaction hash");
+      return;
+    }
+    setVerified("verifing");
+    // first verify the blockhash
+    let blockResult: any = await GetBlock(selectedBitcoinNode, blockHash);
+    if (blockResult.status == false) {
+      showErrorMessage(blockResult.message);
+      setVerified("");
+      return false;
+    }
+    let blockTxs = blockResult.result.tx;
+    let blockHeight = blockResult.result.height;
+
+    // console.log(blockTxs, blockHeight);
+    // now validate the transaction
+    let recieverAddress = to;
+    let paymentAmount = getBTCAmount();
+    let result: any = await VerifyTransaction(
+      selectedBitcoinNode,
+      transactionHash,
+      recieverAddress,
+      paymentAmount
+    );
+    if (result.status == false) {
+      showErrorMessage(result.message);
+      setVerified("");
+      return false;
+    } else {
+      setVerified("verified");
+      setActiveStep(activeStep + 1);
+      let rawTransaction = result.result;
+      const cleanedTx = cleanTx(rawTransaction);
+
+      const bitcoinMerkleTreeInstance = new BitcoinMerkleTree(blockTxs);
+      const proofResult: MerkleProof | boolean | null =
+        bitcoinMerkleTreeInstance.getInclusionProof(transactionHash);
+      if (proofResult == null || (proofResult as unknown) == false) {
+        return false;
+      }
+      let proof = proofResult.hashes;
+      proof.shift(); // skip 0 index element
+      const proof_bytes = proof
+        .map((hash) => {
+          return Buffer.from(hash, "hex").reverse().toString("hex");
+        })
+        .join("");
+      console.log(proofResult);
+
+      console.log(proofResult, proof);
+
+      // create the submit payment proof
+      setBitcoinPaymentProof({
+        ...bitcoinPaymentProof,
+        transaction: "0x" + cleanedTx,
+        blockHeight: blockHeight,
+        index: proofResult.index,
+        proof: "0x" + proof_bytes,
+      });
+    }
   };
 
   return (
@@ -894,6 +1043,85 @@ const ExchangeOfferDrawer = ({
                           ) : (
                             <span className={styles.toAddress}>{to}</span>
                           )}
+                          {/* Input the transaction hash */}
+                          {/* <TextInput
+                            type={"text"}
+                            placeholder={"Enter the transaction hash"}
+                            label={"Transaction Hash"}
+                            value={""}
+                            className="TxHashInput"
+                          /> */}
+                          <Input
+                            type={"text"}
+                            placeholder={"Enter the Block Hash"}
+                            label={"Block Hash"}
+                            value={blockHash}
+                            onChange={(e) => {
+                              setBlockHash(e.target.value);
+                            }}
+                            className="BlockHashInput"
+                          />
+                          <Input
+                            type={"text"}
+                            placeholder={"Enter the Transaction Hash"}
+                            label={"Transaction Hash"}
+                            value={transactionHash}
+                            onChange={(e) => {
+                              setTransactionHash(e.target.value);
+                            }}
+                            className="TxHashInput"
+                          />
+                          <div className={styles.actionButton}>
+                            {verified === "verified" ? (
+                              <Button
+                                variant={VariantsEnum.outline}
+                                radius={10}
+                                style={{
+                                  borderColor: "#53C07F",
+                                  background: "unset",
+                                  color: "#53C07F",
+                                }}
+                                leftIcon={
+                                  <Icon
+                                    icon={"charm:circle-tick"}
+                                    color="#53C07F"
+                                  />
+                                }
+                              >
+                                Verified
+                              </Button>
+                            ) : (
+                              <Button
+                                variant={
+                                  verified === "verifing"
+                                    ? VariantsEnum.outline
+                                    : VariantsEnum.outlinePrimary
+                                }
+                                radius={10}
+                                style={{
+                                  backgroundColor:
+                                    verified === "verifing"
+                                      ? "unset"
+                                      : "transparent",
+                                }}
+                                loading={verified === "verifing" ? true : false}
+                                onClick={handleTxVerification}
+                              >
+                                {verified === "verifing" ? (
+                                  "Verifing"
+                                ) : (
+                                  <>Verify </>
+                                )}
+                              </Button>
+                            )}
+                            {verified === "verifing" ? (
+                              <span className={styles.timer}>
+                                <Countdown />
+                              </span>
+                            ) : (
+                              <></>
+                            )}
+                          </div>
                         </div>
                       </>
                     )}
@@ -932,24 +1160,24 @@ const ExchangeOfferDrawer = ({
                   <div className={styles.spacing} />
                   <div
                     className={`${styles.stepItem} ${styles.proofCheckbox} ${
-                      verified && styles.activeStepItem
+                      verified == "verified" && styles.activeStepItem
                     }`}
                     onClick={() => {
                       // setVerified(!verified);
-                      if (verified == false && activeStep == 2) {
-                        setActiveStep(activeStep + 1);
-                        setVerified(true);
-                      } else if (verified == true && activeStep == 3) {
-                        setActiveStep(activeStep - 1);
-                        setVerified(false);
-                      }
+                      // if (verified == false && activeStep == 2) {
+                      //   setActiveStep(activeStep + 1);
+                      //   setVerified(true);
+                      // } else if (verified == true && activeStep == 3) {
+                      //   setActiveStep(activeStep - 1);
+                      //   setVerified(false);
+                      // }
                     }}
                   >
                     <div className={styles.checkboxContainer}>
                       <input
                         type="radio"
                         className={styles.checkbox}
-                        checked={verified}
+                        checked={verified == "verified" ? true : false}
                         // onChange={() => {
                         //   setVerified(true);
                         // }}
@@ -979,7 +1207,7 @@ const ExchangeOfferDrawer = ({
                               : "linear-gradient(180deg, #ffd572 0%, #febd38 100%)",
                         }}
                         disabled={
-                          confirmed !== "loading" && verified === true
+                          confirmed !== "loading" && verified === "verified"
                             ? false
                             : true
                         }

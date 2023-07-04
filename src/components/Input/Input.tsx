@@ -23,7 +23,7 @@ const Input = ({
       {...props}
       classNames={styles}
       type={type}
-      placeholder={"placeholder"}
+      placeholder={placeholder}
       value={value}
       label={label}
       rightSection={rightSection}

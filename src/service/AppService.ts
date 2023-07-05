@@ -25,8 +25,11 @@ import { AppContext } from "~/Context/AppContext";
 import { ToastContainer, toast } from "react-toastify";
 import { TimestampTotoNow, TimestampfromNow } from "~/utils/TimeConverter";
 import { IBitcoinPaymentProof } from "~/interfaces/IBitcoinNode";
+import moment from "moment";
 
 const getEthereumObject = () => window.ethereum;
+// https://snyk.io/advisor/npm-package/ethereum-block-by-date
+const { EthDater } = window;
 
 export const findMetaMaskAccount = async () => {
   try {
@@ -63,6 +66,113 @@ export const connectToMetamask = async () => {
   } catch (error) {
     console.log(error);
     return false;
+  }
+};
+export const listOffers = async (
+  trustLex: ethers.Contract | undefined,
+  fromBlock: number = 0,
+  toBlock: "latest" | number = "latest"
+) => {
+  try {
+    console.log("Querying... ", fromBlock, toBlock);
+    if (!trustLex || toBlock == -1)
+      return { fromBlock: fromBlock, toBlock: toBlock, offers: [] };
+    let estimatedFromBlock = fromBlock;
+    if (toBlock === "latest") {
+      toBlock = await trustLex.provider.getBlockNumber();
+      estimatedFromBlock = Math.max(0, toBlock - MAX_BLOCKS_TO_QUERY);
+    } else if (toBlock > 0) {
+      estimatedFromBlock = Math.max(fromBlock, toBlock - MAX_BLOCKS_TO_QUERY);
+    }
+    const offers: IListenedOfferData[] = [];
+    let iterations = 0;
+    do {
+      estimatedFromBlock = Math.max(
+        fromBlock,
+        estimatedFromBlock - MAX_BLOCKS_TO_QUERY
+      );
+      console.log(
+        "Querying... ",
+        estimatedFromBlock,
+        estimatedFromBlock + MAX_BLOCKS_TO_QUERY
+      );
+      const offersSubSet = await trustLex.queryFilter(
+        "NEW_OFFER",
+        estimatedFromBlock,
+        estimatedFromBlock + MAX_BLOCKS_TO_QUERY
+      );
+      const promises = offersSubSet.map(async (offer) => {
+        const offerEvent = {
+          from: offer.args ? offer.args[0] : "",
+          to: offer.args ? offer.args[1] : "",
+        };
+
+        const offerData = await getOffers(trustLex, offerEvent.to);
+        const offerDetailsInJson = {
+          offerQuantity: offerData[0].toString(),
+          offeredBy: offerData[1].toString(),
+          offerValidTill: offerData[2].toString(),
+          orderedTime: offerData[3].toString(),
+          offeredBlockNumber: offerData[4].toString(),
+          bitcoinAddress: offerData[5].toString(),
+          satoshisToReceive: offerData[6].toString(),
+          satoshisReceived: offerData[7].toString(),
+          satoshisReserved: offerData[8].toString(),
+          collateralPer3Hours: offerData[9].toString(),
+        };
+        return { offerEvent, offerDetailsInJson };
+      });
+      const offersList: IListenedOfferData[] = await Promise.all(promises);
+      offersList.forEach((o) => {
+        offers.push(o);
+      });
+      iterations++;
+    } while (estimatedFromBlock > fromBlock && iterations < MAX_ITERATIONS);
+    console.log(offers);
+    return {
+      fromBlock: fromBlock,
+      toBlock: toBlock,
+      offers: offers,
+    };
+  } catch (error) {
+    console.log(error);
+    return { offers: [], fromBlock, toBlock };
+  }
+};
+
+export const getEventData = async (ContractInstance: ethers.Contract) => {
+  if (typeof window.ethereum !== undefined) {
+    const { ethereum } = window;
+    const provider = new ethers.providers.Web3Provider(ethereum);
+    let toBlock: any = await provider.getBlockNumber();
+    // Getting block by date:
+    const dater = new EthDater(
+      provider // Ethers provider, required.
+    );
+    let dateFrom = moment().subtract(48, "h").format();
+    let block = await dater.getDate(
+      dateFrom, //"2016-07-20T13:20:40Z", // Date, required. Any valid moment.js value: string, milliseconds, Date() object, moment() object.
+      true, // Block after, optional. Search for the nearest block before or after the given date. By default true.
+      false // Refresh boundaries, optional. Recheck the latest block before request. By default false.
+    );
+    let estimatedFromBlock = block.block;
+    const PAYMENT_SUCCESSFUL_Events = await ContractInstance.queryFilter(
+      "PAYMENT_SUCCESSFUL",
+      estimatedFromBlock,
+      toBlock
+    );
+    PAYMENT_SUCCESSFUL_Events.map((value, index) => {
+      let args: any = value.args;
+      let fulfillmentId = args.fulfillmentId.toString();
+      let offerId = args.offerId.toString();
+      let submittedBy = args.submittedBy;
+      console.log(fulfillmentId, offerId, submittedBy);
+    });
+    console.log(PAYMENT_SUCCESSFUL_Events);
+
+    return toBlock;
+  } else {
+    return 0;
   }
 };
 

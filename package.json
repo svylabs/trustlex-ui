@@ -25,6 +25,7 @@
     "bitcoinjs-lib": "^6.1.0",
     "buffer": "^6.0.3",
     "ecpair": "^2.1.0",
+    "ethereum-block-by-date": "^1.4.7",
     "ethers": "^5.4.4",
     "i": "^0.3.7",
     "moment": "^2.29.4",

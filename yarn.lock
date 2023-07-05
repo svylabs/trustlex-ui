@@ -2174,6 +2174,13 @@
   "resolved" "https://registry.npmjs.org/estree-walker/-/estree-walker-0.6.1.tgz"
   "version" "0.6.1"
 
+"ethereum-block-by-date@^1.4.7":
+  "integrity" "sha512-gWlztYC+jovu6i23U0ylNrBEeG3M14Qs1JEaW4oG5JfVMMY8AlNI3bmNBLFePoXGoM4a+3utQCYGE9iMIB73sA=="
+  "resolved" "https://registry.npmjs.org/ethereum-block-by-date/-/ethereum-block-by-date-1.4.7.tgz"
+  "version" "1.4.7"
+  dependencies:
+    "moment" "^2.29.4"
+
 "ethers@^5.4.4":
   "integrity" "sha512-wswUsmWo1aOK8rR7DIKiWSw9DbLWe6x98Jrn8wcTflTVvaXhAMaB5zGAXy0GYQEQp9iO1iSHWVyARQm11zUtyg=="
   "resolved" "https://registry.npmjs.org/ethers/-/ethers-5.7.2.tgz"

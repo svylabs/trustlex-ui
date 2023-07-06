@@ -13,7 +13,7 @@ export const TOKEN_DECIMAL_PLACE = 4;
 export const OFFER_ORDER_EXPIRY_DIRATION = 3 * 60 * 60; // in seconds
 // export const OFFER_ORDER_EXPIRY_DIRATION = 5 * 60; // in seconds
 export const BTC_DECIMAL_PLACE = 8;
-export const ETH_DECIMAL_PLACE = 5;
+export const ETH_DECIMAL_PLACE = 8;
 export const DEFAULT_COLLETARAL_FEES = 10;
 
 export const ERC20TokenKey = "spvc"; // it should be in lower case
@@ -199,7 +199,8 @@ export const currencyObjects: {
       label: "Matic", // Please always keep the label  in upper case
       value: "Matic",
       icon: <ImageIcon image={"/icons/matic-token.png"} />,
-      orderBookContractAddreess: "0x09009743af4821BEA9177e6253a75357B6D5E06E",
+      orderBookContractAddreess: "0xeb363559bEB67c7b5EdE4105539650339fBcA929",
+      // orderBookContractAddreess: "0xC510838BB4626C7133CEa3E4E3dbb94b9603454E",
       orderBookContractABI: OrderBookETHABI.abi,
       decimalPlace: 18,
       isNativeToken: true,

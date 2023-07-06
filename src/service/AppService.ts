@@ -157,11 +157,14 @@ export const getEventData = async (ContractInstance: ethers.Contract) => {
     );
     let estimatedFromBlock = block.block;
     const PAYMENT_SUCCESSFUL_Events = await ContractInstance.queryFilter(
-      "PAYMENT_SUCCESSFUL",
+      // "PAYMENT_SUCCESSFUL",
+      "*",
       estimatedFromBlock,
       toBlock
     );
-    PAYMENT_SUCCESSFUL_Events.map((value, index) => {
+    PAYMENT_SUCCESSFUL_Events.map(async (value, index) => {
+      let reciept = await value.getTransactionReceipt();
+      console.log(reciept);
       let args: any = value.args;
       let fulfillmentId = args.fulfillmentId.toString();
       let offerId = args.offerId.toString();

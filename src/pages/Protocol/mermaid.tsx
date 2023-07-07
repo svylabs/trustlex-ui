@@ -20,6 +20,10 @@ export const Mermaid: React.FC<MermaidProps> = ({ text }) => {
         lineColor: '#F8B229',
         secondaryColor: '#006100',
         tertiaryColor: '#fff'
+      },
+      sequence: {
+        actorFontSize: 20,
+        rightAngles: false,
       }
     });
   });
@@ -27,10 +31,11 @@ export const Mermaid: React.FC<MermaidProps> = ({ text }) => {
   useEffect(() => {
     if (ref.current && text !== "") {
         mermaid.render("preview", text).then((value) => {
+            value.svg
             ref.current.innerHTML = value.svg;
         });
     }
   }, [text]);
 
-  return <div key="preview" ref={ref} />;
+  return <div key="preview" ref={ref}/>;
 };

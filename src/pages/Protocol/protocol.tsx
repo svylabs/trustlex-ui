@@ -7,20 +7,20 @@ import Faq from 'react-faq-component';
 const CoreProtocol = () => {
     const mermaidProps: MermaidProps = {
         text: `sequenceDiagram
-    box Core Trustlex Protocol
-    actor Alice(TokenHolder)
+    box Trustlex Cross Chain Exchange Protocol <br/> Alice has tokens like ETH, USDT, or other coins and wants to exchange for native BTC, <br/> Bob has native BTC and wants to exchange BTC for ETH or other tokens
+    actor Alice
     participant Trustlex Contract
-    actor Bob(BTCHolder)
+    actor Bob
     end 
-    Alice(TokenHolder)->>+Trustlex Contract: 1. I want to sell 10 ETH(or USDT/other tokens) for 1 BTC <br> and receive BTC in xyz address
+    Alice->>+Trustlex Contract: 1. I want to sell 10 ETH(or USDT/other tokens) for 1 BTC <br> and receive BTC in xyz address
     Trustlex Contract-->>+Trustlex Contract: Adds the offer to Order book
-    Bob(BTCHolder)->>Trustlex Contract: 2. Show me the list of offers available for ETH-BTC pair
-    Trustlex Contract-->>Bob(BTCHolder): List of offers
-    Bob(BTCHolder)->>Trustlex Contract: 3. Chooses an offer and initiates fulfillment of the <br/>selected offer.. can be fractional too
-    Bob(BTCHolder)->>Alice(TokenHolder): 4. Sends the right amount of BTC to the <br/> address registered in the offer
-    Bob(BTCHolder)->>Trustlex Contract: 5. Sends merkle proof of the payment transaction
+    Bob->>Trustlex Contract: 2. Show me the list of offers available for ETH-BTC pair
+    Trustlex Contract-->>Bob: List of offers
+    Bob->>Trustlex Contract: 3. Chooses an offer and initiates fulfillment of the <br/>selected offer.. can be fractional too
+    Bob->>Alice: 4. Sends the right amount of BTC to the <br/> address registered in the offer
+    Bob->>Trustlex Contract: 5. Sends merkle proof of the payment transaction
     Trustlex Contract-->>Trustlex Contract: Verifies merkle proof and output amounts
-    Trustlex Contract->>Bob(BTCHolder): 6. Releases ETH / token`
+    Trustlex Contract-->>Bob: Releases ETH / token`
    };
     
       return (

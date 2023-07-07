@@ -20,7 +20,7 @@ const CoreProtocol = () => {
     Bob(BTCHolder)->>Alice(TokenHolder): 4. Sends the right amount of BTC to the <br/> address registered in the offer
     Bob(BTCHolder)->>Trustlex Contract: 5. Sends merkle proof of the payment transaction
     Trustlex Contract-->>Trustlex Contract: Verifies merkle proof and output amounts
-    Trustlex Contract->>Bob(BTCHolder): 6. Releases ETH / token`
+    Trustlex Contract-->>Bob(BTCHolder): 6. Releases ETH / token`
    };
     
       return (

@@ -16,20 +16,14 @@ export function getStringForTx(
 }
 
 export async function ConvertCrytoToFiat(
+  selectedToken_to_usd_rate: number,
   crypto_amount: number,
-  from: string,
   to: string = "usd"
 ) {
-  let eth_usd = 1916.77;
-  let rate;
+  let rate = selectedToken_to_usd_rate;
 
-  if (from == ERC20TokenLabel) {
-    rate = 1;
-  } else {
-    rate = eth_usd;
-  }
   let usd_amount: any = crypto_amount * rate;
-  // usd_amount = usd_amount.toFixed(2);
+  // console.log(usd_amount);
   let return_amount = convertAmountNumberToHumanReadableFormat(usd_amount);
   return return_amount;
 }

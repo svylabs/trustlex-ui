@@ -23,6 +23,7 @@ import {
   getERC20TokenBalance,
   getEventData,
 } from "~/service/AppService";
+import { getPriceRate } from "~/service/PriceFeedService";
 import { ConvertCrytoToFiat } from "~/helpers/commonHelper";
 
 type Props = {};
@@ -87,6 +88,8 @@ const Home = (props: Props) => {
   const [totalNetworks, setTotalNetworks] = useState(networks.length);
   const [totalPairs, setTotalPairs] = useState(0);
   const [totalLockedAmount, setTotalLockedAmount] = useState<string>("0");
+  const [totalTransactionVolume, setTotalTransactionVolume] =
+    useState<string>("0");
 
   const handleLimitChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setUserInputData((prev) => {
@@ -148,18 +151,39 @@ const Home = (props: Props) => {
       } else if (isNativeToken == false) {
         total_locked_amounts = await total_locked_amount_token();
       }
-      total_locked_amounts = await ConvertCrytoToFiat(
-        total_locked_amounts,
-        label
+
+      // fetch the rate first
+      let priceRateSelectedTokenContractAddress =
+        currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+          .priceRateContractAddress;
+      let selectedToken_to_usd_rate = await getPriceRate(
+        priceRateSelectedTokenContractAddress
       );
-      // console.log(total_locked_amounts);
+      // console.log(selectedToken_to_usd_rate);
+      total_locked_amounts = await ConvertCrytoToFiat(
+        selectedToken_to_usd_rate,
+        total_locked_amounts
+      );
 
       setTotalLockedAmount(total_locked_amounts);
       let contractInstance = await getSelectedTokenContractInstance();
       // console.log(contractInstance);
+      let total_quantityRequested = 0;
       if (contractInstance != false) {
-        await getEventData(contractInstance);
+        total_quantityRequested = await getEventData(contractInstance);
       }
+
+      let priceRateBTCContractAddress =
+        currencyObjects[selectedNetwork]["btc"].priceRateContractAddress;
+      let btc_to_usd_rate = await getPriceRate(priceRateBTCContractAddress);
+      // console.log(btc_to_usd_rate);
+
+      let total_transaction_volume_btc = await ConvertCrytoToFiat(
+        btc_to_usd_rate,
+        total_quantityRequested
+      );
+      console.log(total_transaction_volume_btc);
+      setTotalTransactionVolume(total_transaction_volume_btc);
     })();
   }, [selectedToken]);
 
@@ -188,7 +212,7 @@ const Home = (props: Props) => {
               color="#78CEF9b3"
               icon="/icons/Chart.png"
               title="Total Transaction Volume (last 24h)"
-              value="$ 25 Million"
+              value={`$ ${totalTransactionVolume}`}
             />
           </Slider>
         </div>
@@ -210,7 +234,7 @@ const Home = (props: Props) => {
             color="#78CEF9b3"
             icon="/icons/Chart.png"
             title="Total Transaction Volume (last 24h)"
-            value="$ 25 Million"
+            value={`$ ${totalTransactionVolume}`}
           />
         </div>
       )}

@@ -156,24 +156,38 @@ export const getEventData = async (ContractInstance: ethers.Contract) => {
       false // Refresh boundaries, optional. Recheck the latest block before request. By default false.
     );
     let estimatedFromBlock = block.block;
-    const PAYMENT_SUCCESSFUL_Events = await ContractInstance.queryFilter(
-      // "PAYMENT_SUCCESSFUL",
-      "*",
+    const PAYMENT_SUCCESSFUL_EVENTS = await ContractInstance.queryFilter(
+      "PAYMENT_SUCCESSFUL",
       estimatedFromBlock,
       toBlock
     );
-    PAYMENT_SUCCESSFUL_Events.map(async (value, index) => {
-      let reciept = await value.getTransactionReceipt();
-      console.log(reciept);
+    let total_quantityRequested = 0;
+    PAYMENT_SUCCESSFUL_EVENTS.map(async (value, index) => {
       let args: any = value.args;
       let fulfillmentId = args.fulfillmentId.toString();
       let offerId = args.offerId.toString();
       let submittedBy = args.submittedBy;
-      console.log(fulfillmentId, offerId, submittedBy);
+      let receivedBy = args.receivedBy;
+      let txHash = args.txHash;
+      let outputHash = args.outputHash;
+      let quantityRequested = args.quantityRequested.toString();
+      total_quantityRequested += quantityRequested;
+      console.log(
+        fulfillmentId,
+        offerId,
+        submittedBy,
+        receivedBy,
+        txHash,
+        outputHash,
+        quantityRequested
+      );
     });
-    console.log(PAYMENT_SUCCESSFUL_Events);
-
-    return toBlock;
+    console.log(PAYMENT_SUCCESSFUL_EVENTS);
+    // Converting satoshi to Btc
+    total_quantityRequested = Number(
+      (total_quantityRequested / 10 ** 8).toFixed(8)
+    );
+    return total_quantityRequested;
   } else {
     return 0;
   }

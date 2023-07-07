@@ -27,6 +27,23 @@ export const BITCOIN_TESTNET_API_URL = "https://btc.getblock.io/testnet/";
 export const BITCOIN_MAINNET_RPC_URL = `https://btc.getblock.io/${TrustlexBitcoinNodeApiKey}/mainnet/`;
 export const BITCOIN_TESTNET_RPC_URL = `https://btc.getblock.io/${TrustlexBitcoinNodeApiKey}/testnet/`;
 
+//Contracts  Deployed on Polygon Mumbai mainnet for chain link price feed
+const priceFeedContractAddress = {
+  btc: "0xc907E116054Ad103354f2D350FD2514433D57F6f", // BTC / USD
+  eth: "0xF9680D99D6C9589e2a93a78A04A279e509205945", // ETH / USD
+  matic: "0xAB594600376Ec9fD91F8e885dADF0CE036862dE0", // Matic / USD
+  usdt: "0x0A6513e40db6EB1b165753AD52E80663aeA50545", // USDT / USD
+  bnb: "0x82a6c4AF830caa6c97bb504425f6A66165C2c26e", // BNB / USD
+};
+//Contracts  Deployed on Polygon Mumbai testnet for chain link price feed
+const priceFeedContractAddressTestnet = {
+  btc: "0x007A22900a3B98143368Bd5906f8E17e9867581b", // BTC / USD
+  eth: "0x0715A7794a1dc8e42615F059dD6e406A6594651A", // ETH / USD
+  matic: "0xd0D5e3DB44DE05E9F294BB0a3bEEaF030DE24Ada", // Matic / USD
+  usdt: "0x92C09849638959196E976289418e5973CC96d645", // USDT / USD
+  bnb: "0x0715A7794a1dc8e42615F059dD6e406A6594651A", // BNB / USD
+};
+
 // Networks List
 export const networks = [
   { networkKey: "polygon_matic" },
@@ -184,6 +201,7 @@ export const currencyObjects: {
       ERC20ABI?: any;
       decimalPlace: Number;
       isNativeToken: boolean;
+      priceRateContractAddress: string;
     };
   };
 } = {
@@ -194,16 +212,24 @@ export const currencyObjects: {
       icon: <ImageIcon image={"/icons/bitcoin.svg"} />,
       decimalPlace: 8,
       isNativeToken: true,
+      priceRateContractAddress:
+        Boolean(PRODUCTION_MODE) === true
+          ? priceFeedContractAddress.btc
+          : priceFeedContractAddressTestnet.btc,
     },
     matic: {
       label: "Matic", // Please always keep the label  in upper case
       value: "Matic",
       icon: <ImageIcon image={"/icons/matic-token.png"} />,
-      orderBookContractAddreess: "0xeb363559bEB67c7b5EdE4105539650339fBcA929",
+      orderBookContractAddreess: "0x88a870fd9eeAb8659f5467018FF07eAcF19A30bf",
       // orderBookContractAddreess: "0xC510838BB4626C7133CEa3E4E3dbb94b9603454E",
       orderBookContractABI: OrderBookETHABI.abi,
       decimalPlace: 18,
       isNativeToken: true,
+      priceRateContractAddress:
+        Boolean(PRODUCTION_MODE) === true
+          ? priceFeedContractAddress.matic
+          : priceFeedContractAddressTestnet.matic,
     },
 
     [ERC20TokenKey]: {
@@ -216,6 +242,10 @@ export const currencyObjects: {
       ERC20ABI: erc20ContractABI.abi,
       decimalPlace: 18,
       isNativeToken: false,
+      priceRateContractAddress:
+        Boolean(PRODUCTION_MODE) === true
+          ? priceFeedContractAddress.usdt
+          : priceFeedContractAddressTestnet.usdt,
     },
   },
   trustlex_testnet: {
@@ -225,6 +255,10 @@ export const currencyObjects: {
       icon: <ImageIcon image={"/icons/bitcoin.svg"} />,
       decimalPlace: 8,
       isNativeToken: true,
+      priceRateContractAddress:
+        Boolean(PRODUCTION_MODE) === true
+          ? priceFeedContractAddress.btc
+          : priceFeedContractAddressTestnet.btc,
     },
     eth: {
       label: "ETH", // Please always keep the label  in upper case
@@ -234,6 +268,10 @@ export const currencyObjects: {
       orderBookContractABI: OrderBookETHABI.abi,
       decimalPlace: 18,
       isNativeToken: true,
+      priceRateContractAddress:
+        Boolean(PRODUCTION_MODE) === true
+          ? priceFeedContractAddress.eth
+          : priceFeedContractAddressTestnet.eth,
     },
 
     [ERC20TokenKey]: {
@@ -246,6 +284,10 @@ export const currencyObjects: {
       ERC20ABI: erc20ContractABI.abi,
       decimalPlace: 18,
       isNativeToken: false,
+      priceRateContractAddress:
+        Boolean(PRODUCTION_MODE) === true
+          ? priceFeedContractAddress.usdt
+          : priceFeedContractAddressTestnet.usdt,
     },
   },
   ganache_testnet: {
@@ -255,6 +297,10 @@ export const currencyObjects: {
       icon: <ImageIcon image={"/icons/bitcoin.svg"} />,
       decimalPlace: 8,
       isNativeToken: true,
+      priceRateContractAddress:
+        Boolean(PRODUCTION_MODE) === true
+          ? priceFeedContractAddress.btc
+          : priceFeedContractAddressTestnet.btc,
     },
     eth: {
       label: "ETH", // Please always keep the label  in upper case
@@ -264,6 +310,10 @@ export const currencyObjects: {
       orderBookContractABI: OrderBookETHABI.abi,
       decimalPlace: 18,
       isNativeToken: true,
+      priceRateContractAddress:
+        Boolean(PRODUCTION_MODE) === true
+          ? priceFeedContractAddress.eth
+          : priceFeedContractAddressTestnet.eth,
     },
     [ERC20TokenKey]: {
       label: ERC20TokenLabel,
@@ -275,6 +325,10 @@ export const currencyObjects: {
       ERC20ABI: erc20ContractABI.abi,
       decimalPlace: 18,
       isNativeToken: false,
+      priceRateContractAddress:
+        Boolean(PRODUCTION_MODE) === true
+          ? priceFeedContractAddress.usdt
+          : priceFeedContractAddressTestnet.usdt,
     },
   },
   bnb_testnet: {
@@ -284,6 +338,10 @@ export const currencyObjects: {
       icon: <ImageIcon image={"/icons/bitcoin.svg"} />,
       decimalPlace: 8,
       isNativeToken: true,
+      priceRateContractAddress:
+        Boolean(PRODUCTION_MODE) === true
+          ? priceFeedContractAddress.btc
+          : priceFeedContractAddressTestnet.btc,
     },
     tbnb: {
       label: "tBNB", // Please always keep the label  in upper case
@@ -293,6 +351,10 @@ export const currencyObjects: {
       orderBookContractABI: OrderBookETHABI.abi,
       decimalPlace: 18,
       isNativeToken: true,
+      priceRateContractAddress:
+        Boolean(PRODUCTION_MODE) === true
+          ? priceFeedContractAddress.bnb
+          : priceFeedContractAddressTestnet.bnb,
     },
 
     // [ERC20TokenKey]: {

@@ -22,7 +22,7 @@ export const Mermaid: React.FC<MermaidProps> = ({ text }) => {
         tertiaryColor: '#fff'
       },
       sequence: {
-        boxMargin: 5,
+        actorFontSize: 20,
         rightAngles: false,
       }
     });

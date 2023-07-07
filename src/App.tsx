@@ -52,6 +52,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { number } from "bitcoinjs-lib/src/script";
 import Alert from "./components/Alerts/Alert";
+import ProtocolDocs from "./pages/Protocol/protocol";
 
 export default function App() {
   const { get, set, remove } = useLocalstorage();
@@ -868,6 +869,7 @@ export default function App() {
               <Route path="/exchange" element={<Exchange />} />
               <Route path="/recent" element={<Recent />} />
               <Route path="/earn" element={<Earn />} />
+              <Route path="/protocol" element={<ProtocolDocs />} />
             </Routes>
           </Layout>
         </AppContext.Provider>

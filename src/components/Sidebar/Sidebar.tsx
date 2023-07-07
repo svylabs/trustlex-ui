@@ -25,6 +25,9 @@ const Sidebar = (props: Props) => {
         <NavItem icon={"/icons/earn.png"} to="/earn">
           Earn
         </NavItem>
+        <NavItem icon={"/icons/protocol.png"} to="/protocol">
+          Protocol
+        </NavItem>
         {/* 
         <div className={styles.sidebarUser}>
           <Avatar src="/images/user.png" className={styles.avatar} />

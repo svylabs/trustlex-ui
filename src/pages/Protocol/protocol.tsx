@@ -1,9 +1,9 @@
 import MainLayout from "~/components/MainLayout/MainLayout"
-import { Mermaid, MermaidProps } from "./mermaid";
+//import { Mermaid, MermaidProps } from "./mermaid";
 import React from "react";
 import Faq from 'react-faq-component';
 
-
+/*
 const CoreProtocol = () => {
     const mermaidProps: MermaidProps = {
         text: `sequenceDiagram
@@ -28,6 +28,16 @@ const CoreProtocol = () => {
           <Mermaid {...mermaidProps} />
         </div>
       );
+}
+
+*/
+
+const CoreProtocol = () => {
+    return (
+        <>
+        <img src="./images/protocol.svg"/>
+        </>
+    );
 }
 
 interface QuestionAndAnswer {

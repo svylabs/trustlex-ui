@@ -4,11 +4,11 @@
   "version": "0.0.0",
   "homepage": "http://svylabs.github.io/trustlex-ui",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
+    "dev": "vite -d",
+    "build": "tsc ; vite build",
     "pre-deploy": "npm run build",
     "deploy": "gh-pages -d dist",
-    "preview": "vite preview"
+    "preview": "npm run build ; vite preview"
   },
   "dependencies": {
     "@emotion/react": "^11.10.5",
@@ -43,6 +43,7 @@
     "react-faq-component": "^1.3.4",
     "react-icons": "^4.9.0",
     "react-router-dom": "^6.6.2",
+    "react-scripts": "^5.0.1",
     "react-slick": "^0.29.0",
     "react-to-print": "^2.14.12",
     "react-toastify": "^9.1.2",

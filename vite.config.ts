@@ -8,6 +8,9 @@ import topLevelAwait from "vite-plugin-top-level-await";
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  preview: {
+    port: 5173,
+  },
   plugins: [react(), wasm(), topLevelAwait({
     // The export name of top-level await promise for each chunk module
     promiseExportName: "__tla",
@@ -39,17 +42,18 @@ export default defineConfig({
     format: "es",
     plugins: [wasm()],
   },
+  define: {
+    //globalThis: 'window',
+    _global: {}
+  },
   optimizeDeps: {
     esbuildOptions: {
       // Node.js global to browser globalThis
-      define: {
-        global: "globalThis",
-      },
       // Enable esbuild polyfill plugins
       plugins: [
         NodeGlobalsPolyfillPlugin({
           buffer: true,
-          process: true,
+          process: true
         }),
       ],
     },

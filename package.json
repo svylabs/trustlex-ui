@@ -2,9 +2,12 @@
   "name": "trustlex",
   "private": true,
   "version": "0.0.0",
+  "homepage": "http://svylabs.github.io/trustlex-ui",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "pre-deploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -28,6 +31,7 @@
     "ecpair": "^2.1.0",
     "ethereum-block-by-date": "^1.4.7",
     "ethers": "^5.4.4",
+    "gh-pages": "^5.0.0",
     "i": "^0.3.7",
     "mermaid": "^10.2.4",
     "moment": "^2.29.4",

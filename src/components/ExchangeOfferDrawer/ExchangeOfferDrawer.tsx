@@ -17,7 +17,7 @@ import { AppContext } from "~/Context/AppContext";
 // import { TextInput, TextInputProps } from "@mantine/core";
 import Input from "../Input/Input";
 // import { BitcoinMerkleTree } from "bitcoin-merkle-tree/dist/index";
-import { BitcoinMerkleTree, MerkleProof } from "~/utils/bitcoinmerketree";
+import { BitcoinMerkleTree, MerkleProof } from "~/utils/bitcoinmerkletree";
 import { IBitcoinPaymentProof } from "~/interfaces/IBitcoinNode";
 import {
   IFullfillmentEvent,

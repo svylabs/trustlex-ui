@@ -28,7 +28,7 @@ import ExchangeOfferDrawer from "~/components/ExchangeOfferDrawer/ExchangeOfferD
 import getTableData from "~/components/ExchangePrepareTableData/GetTableData";
 import { AppContext } from "~/Context/AppContext";
 
-import { BitcoinMerkleTree } from "bitcoin-merkle-tree/dist/index";
+import { BitcoinMerkleTree } from "~/utils/bitcoinmerkletree";
 
 import {
   GetTransactionDetails,

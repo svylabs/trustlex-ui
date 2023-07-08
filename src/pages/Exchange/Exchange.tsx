@@ -579,9 +579,6 @@ const Exchange = (props: Props) => {
           colorRight="#FEBD3863"
           colorLeft="#FEBD3833"
         >
-          <button type="button" onClick={handleTxVerification}>
-            Test Function
-          </button>
           <div className={styles.innerWrapper}>
             {addOffer && (
               <div className={styles.exchangeForm}>

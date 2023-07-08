@@ -105,11 +105,11 @@ const Navbar = (props: Props) => {
         </Button>
         {account != "" ? (
           <>
-            <div>
+            <div style={{fontSize: 9}}>
               Connected To: {account} ({balance} ETH)
               <br />
-              on network {networkName}
-              <br /> with contract {contractAddress}
+              Network: {networkName}
+              <br /> Contract: {contractAddress}
             </div>
           </>
         ) : (

@@ -4,7 +4,7 @@ import DropdownSubmenu from "../NavDropdownButton/DropdownSubmenu";
 import BitcoinNodeSelectionMenu from "../BitcoinNodeSelectionMenu/BitcoinNodeSelectionMenu";
 import { Icon } from "@iconify/react";
 import { Button } from "@mantine/core";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { AppContext } from "~/Context/AppContext";
 import {
   connectToMetamask,
@@ -99,7 +99,7 @@ const Navbar = (props: Props) => {
           variant={"subtle"}
           color="gray"
           className={styles.menuBtn}
-          onClick={() => props.toggleSidebar}
+          onClick={props.toggleSidebar}
         >
           <Icon icon="material-symbols:menu-rounded" className={styles.icon} />
         </Button>

@@ -103,8 +103,8 @@ const FAQ = () => {
 const ProtocolDocs = () => {
     return (
         <MainLayout
-            title="Protocol FAQ"
-            description="How the trustlex protocol works"
+            title="Protocol"
+            description=""
         >
             <CoreProtocol/>
             <FAQ/>

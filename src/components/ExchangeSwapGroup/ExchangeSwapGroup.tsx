@@ -64,7 +64,7 @@ const ExchangeSwapGroup = (props: Props) => {
     } else if (sellCurrecny === ERC20TokenKey) {
       setSellBalnce(erc20balance);
     } else {
-      setSellBalnce("10");
+      setSellBalnce(balance);
     }
   }, [userInputData?.activeExchange[1]?.currency, balance, erc20balance]);
   // let activeExchanges = [activeExchange[0]];
@@ -107,6 +107,7 @@ const ExchangeSwapGroup = (props: Props) => {
           ],
         ];
 
+    
   const handleLeftDataChange = async (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -174,7 +175,7 @@ const ExchangeSwapGroup = (props: Props) => {
             onChange={handleRightDataChange}
             placeholder="Enter pay amount"
             label={`Pay with (In your wallet: ${sellBalance} ${
-              currencyObjects[userInputData.activeExchange[1]?.currency]?.value
+              currencyObjects[userInputData.selectedNetwork][userInputData.activeExchange[1]?.currency]?.value
             } )`}
           />
         }

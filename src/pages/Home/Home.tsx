@@ -175,6 +175,7 @@ const Home = (props: Props) => {
           contractInstance,
           fromLastHours
         );
+        // console.log(total_quantityRequested);
       }
 
       let priceRateBTCContractAddress =
@@ -186,7 +187,7 @@ const Home = (props: Props) => {
         btc_to_usd_rate,
         total_quantityRequested
       );
-      console.log(total_transaction_volume_btc);
+      // console.log(total_transaction_volume_btc);
       setTotalTransactionVolume(total_transaction_volume_btc);
     })();
   }, [selectedToken]);

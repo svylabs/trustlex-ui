@@ -177,26 +177,26 @@ export const getEventData = async (
       let receivedBy = args.receivedBy;
       let txHash = args.txHash;
       let outputHash = args.outputHash;
-      // let quantityRequested = args.quantityRequested.toString();
+
       let compactFulfillmentDetail = BigInt(args.compactFulfillmentDetail);
-      // total_quantityRequested += quantityRequested;
-      console.log(compactFulfillmentDetail);
       let fulfillmentId = Number(compactFulfillmentDetail >> BigInt(8 * 8));
       let quantityRequested = Number(
         compactFulfillmentDetail & ((BigInt(1) << BigInt(8 * 8)) - BigInt(1))
       );
-      console.log([
-        fulfillmentId,
-        quantityRequested,
-        offerId,
-        submittedBy,
-        receivedBy,
-        txHash,
-        outputHash,
-        compactFulfillmentDetail,
-      ]);
+      total_quantityRequested += quantityRequested;
+      // console.log([
+      //   fulfillmentId,
+      //   quantityRequested,
+      //   offerId,
+      //   submittedBy,
+      //   receivedBy,
+      //   txHash,
+      //   outputHash,
+      //   compactFulfillmentDetail,
+      // ]);
     });
-    console.log(PAYMENT_SUCCESSFUL_EVENTS);
+    // console.log(PAYMENT_SUCCESSFUL_EVENTS);
+    // console.log(total_quantityRequested);
     // Converting satoshi to Btc
     total_quantityRequested = Number(
       (total_quantityRequested / 10 ** 8).toFixed(8)

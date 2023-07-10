@@ -55,16 +55,12 @@ import Alert from "./components/Alerts/Alert";
 import ProtocolDocs from "./pages/Protocol/protocol";
 
 const DefaultPage = () => {
-   const {ethereum} = window;
-   if (!ethereum) {
-    return (
-      <ProtocolDocs/>
-    )
-   }
-   return (
-      <Home/> 
-   ) 
-}
+  const { ethereum } = window;
+  if (!ethereum) {
+    return <ProtocolDocs />;
+  }
+  return <Home />;
+};
 
 export default function App() {
   const { get, set, remove } = useLocalstorage();
@@ -223,7 +219,13 @@ export default function App() {
 
   // use Effect for setting the selected bitcoin node in local storage
   useEffect(() => {
-    console.log(selectedBitcoinNode);
+    // (async () => {
+    //   let contract = await getSelectedTokenContractInstance();
+    //   let eventFilter = contract.filters.PAYMENT_SUCCESSFUL();
+    //   let events = await contract.queryFilter(eventFilter);
+    //   console.log(events);
+    // })();
+
     set("selectedBitcoinNode", selectedBitcoinNode);
     let selectedBitcoinNode_ = get("selectedBitcoinNode", false);
     console.log(selectedBitcoinNode_);

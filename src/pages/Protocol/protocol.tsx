@@ -130,7 +130,7 @@ const FAQ = () => {
             },
             {
                 title: "Where can I find the whitepaper for the project?",
-                content: `Whitepaper can be found at https://github.com/svylabs/trustlex/tree/main/docs/whitepaper.pdf
+                content: `Whitepaper can be found <a href="https://github.com/svylabs/trustlex/tree/main/docs/whitepaper.pdf">here</a>
                 `
             }
         ]

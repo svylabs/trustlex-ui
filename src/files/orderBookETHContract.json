@@ -142,7 +142,7 @@
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "fulfillmentId",
+          "name": "compactFulfillmentDetail",
           "type": "uint256"
         },
         {
@@ -156,12 +156,6 @@
           "internalType": "bytes32",
           "name": "outputHash",
           "type": "bytes32"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint64",
-          "name": "quantityRequested",
-          "type": "uint64"
         }
       ],
       "name": "PAYMENT_SUCCESSFUL",

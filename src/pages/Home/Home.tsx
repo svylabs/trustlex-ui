@@ -170,7 +170,11 @@ const Home = (props: Props) => {
       // console.log(contractInstance);
       let total_quantityRequested = 0;
       if (contractInstance != false) {
-        total_quantityRequested = await getEventData(contractInstance);
+        let fromLastHours: number = 24;
+        total_quantityRequested = await getEventData(
+          contractInstance,
+          fromLastHours
+        );
       }
 
       let priceRateBTCContractAddress =

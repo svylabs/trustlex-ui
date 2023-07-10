@@ -196,6 +196,7 @@ export const currencyObjects: {
       value: string;
       icon: string | JSX.Element;
       orderBookContractAddreess?: string;
+      TrustedBitcoinSPVChainContractAddress?: string;
       orderBookContractABI?: any;
       ERC20Address?: string;
       ERC20ABI?: any;
@@ -221,8 +222,9 @@ export const currencyObjects: {
       label: "Matic", // Please always keep the label  in upper case
       value: "Matic",
       icon: <ImageIcon image={"/icons/matic-token.png"} />,
-      orderBookContractAddreess: "0x88a870fd9eeAb8659f5467018FF07eAcF19A30bf",
-      // orderBookContractAddreess: "0xC510838BB4626C7133CEa3E4E3dbb94b9603454E",
+      orderBookContractAddreess: "0xbfeebe28E5ba5Ea5EB681099211c2052588f329d",
+      TrustedBitcoinSPVChainContractAddress:
+        "0xF3FB2d78CE5C9b1BFe5249110e6B084bB19f6be3",
       orderBookContractABI: OrderBookETHABI.abi,
       decimalPlace: 18,
       isNativeToken: true,
@@ -237,6 +239,8 @@ export const currencyObjects: {
       value: ERC20TokenValue,
       icon: <ImageIcon image={"/icons/bitcoin.svg"} />,
       orderBookContractAddreess: "0x86E7a1c97dD7618C86070EbA5dF2bc87CF4a6f46",
+      TrustedBitcoinSPVChainContractAddress:
+        "0xbf143e49CB94daaffb973342B23b762553505d19",
       orderBookContractABI: OrderBookTOKENABI.abi,
       ERC20Address: "0xa89315E69a8eE3EFbE835736B35aaf265c84B3e1",
       ERC20ABI: erc20ContractABI.abi,
@@ -265,6 +269,8 @@ export const currencyObjects: {
       value: "Ethereum",
       icon: <ImageIcon image={"/icons/ethereum-2.svg"} />,
       orderBookContractAddreess: "0x43ef4e21Ec14B83A25D8fCa2670FF4B20F82e1c0",
+      TrustedBitcoinSPVChainContractAddress:
+        "0xbf143e49CB94daaffb973342B23b762553505d19",
       orderBookContractABI: OrderBookETHABI.abi,
       decimalPlace: 18,
       isNativeToken: true,
@@ -279,6 +285,8 @@ export const currencyObjects: {
       value: ERC20TokenValue,
       icon: <ImageIcon image={"/icons/bitcoin.svg"} />,
       orderBookContractAddreess: "0x66396A87A0e3c2Bd547E9fA37Accc2ABf56AA306",
+      TrustedBitcoinSPVChainContractAddress:
+        "0xbf143e49CB94daaffb973342B23b762553505d19",
       orderBookContractABI: OrderBookTOKENABI.abi,
       ERC20Address: "0x2671497b1DfE57200883C5f5151AF5492B623835",
       ERC20ABI: erc20ContractABI.abi,
@@ -306,7 +314,9 @@ export const currencyObjects: {
       label: "ETH", // Please always keep the label  in upper case
       value: "Ethereum",
       icon: <ImageIcon image={"/icons/ethereum-2.svg"} />,
-      orderBookContractAddreess: "0xb8f9355B70E4e388Da2b5e5d2B131905Ac61e3ba",
+      orderBookContractAddreess: "0xAFD95b8eD2834B6FdF7a7a09C9Fb4657459A1F9d",
+      TrustedBitcoinSPVChainContractAddress:
+        "0x4231992EB17B6f4295afEBF2A099AB8Df582F60b",
       orderBookContractABI: OrderBookETHABI.abi,
       decimalPlace: 18,
       isNativeToken: true,
@@ -320,6 +330,8 @@ export const currencyObjects: {
       value: ERC20TokenValue,
       icon: <ImageIcon image={"/icons/bitcoin.svg"} />,
       orderBookContractAddreess: "0x86E7a1c97dD7618C86070EbA5dF2bc87CF4a6f46",
+      TrustedBitcoinSPVChainContractAddress:
+        "0xbf143e49CB94daaffb973342B23b762553505d19",
       orderBookContractABI: OrderBookTOKENABI.abi,
       ERC20Address: "0xa89315E69a8eE3EFbE835736B35aaf265c84B3e1",
       ERC20ABI: erc20ContractABI.abi,
@@ -348,6 +360,8 @@ export const currencyObjects: {
       value: "tBNB",
       icon: <ImageIcon image={"/icons/bnb.png"} />,
       orderBookContractAddreess: "0x27e7b02c4032ac81301b64725ff730e1734f1df2",
+      TrustedBitcoinSPVChainContractAddress:
+        "0xbf143e49CB94daaffb973342B23b762553505d19",
       orderBookContractABI: OrderBookETHABI.abi,
       decimalPlace: 18,
       isNativeToken: true,

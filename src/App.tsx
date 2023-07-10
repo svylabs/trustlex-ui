@@ -54,6 +54,18 @@ import { number } from "bitcoinjs-lib/src/script";
 import Alert from "./components/Alerts/Alert";
 import ProtocolDocs from "./pages/Protocol/protocol";
 
+const DefaultPage = () => {
+   const {ethereum} = window;
+   if (!ethereum) {
+    return (
+      <ProtocolDocs/>
+    )
+   }
+   return (
+      <Home/> 
+   ) 
+}
+
 export default function App() {
   const { get, set, remove } = useLocalstorage();
   const [account, setAccount] = useState("");
@@ -219,17 +231,19 @@ export default function App() {
 
   //Account change event
   const { ethereum } = window;
-  (ethereum as any).on("accountsChanged", async function (accounts: any) {
-    setAccount(accounts[0]);
-  });
-  //  Network changed event
-  (ethereum as any).on("networkChanged", async function (networkId: number) {
-    // console.log(networkId);
-    let provider = new ethers.providers.Web3Provider(ethereum);
-    let network = await provider.getNetwork();
-    setNetWorkInfoData(network as INetworkInfo);
-    checkNetwork();
-  });
+  if (ethereum) {
+    (ethereum as any).on("accountsChanged", async function (accounts: any) {
+      setAccount(accounts[0]);
+    });
+    //  Network changed event
+    (ethereum as any).on("networkChanged", async function (networkId: number) {
+      // console.log(networkId);
+      let provider = new ethers.providers.Web3Provider(ethereum);
+      let network = await provider.getNetwork();
+      setNetWorkInfoData(network as INetworkInfo);
+      checkNetwork();
+    });
+  }
 
   useEffect(() => {
     (async () => {
@@ -865,7 +879,7 @@ export default function App() {
             )}
 
             <Routes>
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={<DefaultPage />} />
               <Route path="/exchange" element={<Exchange />} />
               <Route path="/recent" element={<Recent />} />
               <Route path="/earn" element={<Earn />} />

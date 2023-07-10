@@ -28,7 +28,7 @@ import ExchangeOfferDrawer from "~/components/ExchangeOfferDrawer/ExchangeOfferD
 import getTableData from "~/components/ExchangePrepareTableData/GetTableData";
 import { AppContext } from "~/Context/AppContext";
 
-import { BitcoinMerkleTree } from "bitcoin-merkle-tree/dist/index";
+import { BitcoinMerkleTree } from "~/utils/bitcoinmerkletree";
 
 import {
   GetTransactionDetails,
@@ -579,9 +579,6 @@ const Exchange = (props: Props) => {
           colorRight="#FEBD3863"
           colorLeft="#FEBD3833"
         >
-          <button type="button" onClick={handleTxVerification}>
-            Test Function
-          </button>
           <div className={styles.innerWrapper}>
             {addOffer && (
               <div className={styles.exchangeForm}>

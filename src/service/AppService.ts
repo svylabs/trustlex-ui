@@ -180,10 +180,10 @@ export const getEventData = async (
       // let quantityRequested = args.quantityRequested.toString();
       let compactFulfillmentDetail = BigInt(args.compactFulfillmentDetail);
       // total_quantityRequested += quantityRequested;
-
-      let fulfillmentId = Number(compactFulfillmentDetail >> BigInt(8));
+      console.log(compactFulfillmentDetail);
+      let fulfillmentId = Number(compactFulfillmentDetail >> BigInt(8 * 8));
       let quantityRequested = Number(
-        compactFulfillmentDetail & ((BigInt(1) << BigInt(8)) - BigInt(1))
+        compactFulfillmentDetail & ((BigInt(1) << BigInt(8 * 8)) - BigInt(1))
       );
       console.log([
         fulfillmentId,

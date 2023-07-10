@@ -65,9 +65,9 @@ const FAQ = () => {
         rows: [
             {
                 title: "How does the protocol work?",
-                content: `Trustlex is an orderbook dex protocol where users holding ETH or other crypto assets / tokens can post their offers. The holders of BTC wanting to swap their BTC for other crypto assets can fulfill those offers by executing the following three steps
-                &#09; a. Initiate Fulfillment, <br/>
-                &#09; b. Send BTC to the address, <br/>
+                content: `Trustlex is an orderbook dex protocol where users holding ETH or other crypto assets / tokens can post their offers. The holders of BTC wanting to swap their BTC for other crypto assets can fulfill those offers by executing the following three steps <br/>
+                &#09; a. Initiate Fulfillment <br/>
+                &#09; b. Send BTC to the address <br/>
                 &#09; c. Post a payment proof
                 `
             },
@@ -126,6 +126,11 @@ const FAQ = () => {
             {
                 title: "BTC has been received in the address, how can I spend it?",
                 content: `To spend the BTC received, you can either use the UI tool provided or you can import the P2WSH script to a supported wallet and spend it. You have to make sure you download the private key and store it safely. If you lose it you will not be able to spend the bitcoins.
+                `
+            },
+            {
+                title: "Where can I find the whitepaper for the project?",
+                content: `Whitepaper can be found at https://github.com/svylabs/trustlex/tree/main/docs/whitepaper.pdf
                 `
             }
         ]

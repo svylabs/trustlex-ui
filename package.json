@@ -7,7 +7,7 @@
     "dev": "vite -d",
     "build": "tsc ; vite build ; cp dist/index.html dist/404.html",
     "pre-deploy": "npm run build",
-    "deploy": "gh-pages -d dist",
+    "deploy": "npm run build && gh-pages -d dist",
     "preview": "npm run build ; vite preview"
   },
   "dependencies": {

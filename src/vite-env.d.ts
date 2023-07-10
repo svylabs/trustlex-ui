@@ -13,4 +13,6 @@ declare global {
 }
 declare module "wif";
 declare module "bip38";
+declare module 'react-mermaid';
+declare module 'react-faq-component';
 // declare module "vite-plugin-wasm";

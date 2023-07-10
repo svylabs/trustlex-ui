@@ -25,8 +25,12 @@ import { AppContext } from "~/Context/AppContext";
 import { ToastContainer, toast } from "react-toastify";
 import { TimestampTotoNow, TimestampfromNow } from "~/utils/TimeConverter";
 import { IBitcoinPaymentProof } from "~/interfaces/IBitcoinNode";
+import moment from "moment";
+import { tofixedBTC } from "~/utils/BitcoinUtils";
 
 const getEthereumObject = () => window.ethereum;
+// https://snyk.io/advisor/npm-package/ethereum-block-by-date
+const { EthDater } = window;
 
 export const findMetaMaskAccount = async () => {
   try {
@@ -63,6 +67,160 @@ export const connectToMetamask = async () => {
   } catch (error) {
     console.log(error);
     return false;
+  }
+};
+export const listOffers = async (
+  trustLex: ethers.Contract | undefined,
+  fromBlock: number = 0,
+  toBlock: "latest" | number = "latest"
+) => {
+  try {
+    console.log("Querying... ", fromBlock, toBlock);
+    if (!trustLex || toBlock == -1)
+      return { fromBlock: fromBlock, toBlock: toBlock, offers: [] };
+    let estimatedFromBlock = fromBlock;
+    if (toBlock === "latest") {
+      toBlock = await trustLex.provider.getBlockNumber();
+      estimatedFromBlock = Math.max(0, toBlock - MAX_BLOCKS_TO_QUERY);
+    } else if (toBlock > 0) {
+      estimatedFromBlock = Math.max(fromBlock, toBlock - MAX_BLOCKS_TO_QUERY);
+    }
+    const offers: IListenedOfferData[] = [];
+    let iterations = 0;
+    do {
+      estimatedFromBlock = Math.max(
+        fromBlock,
+        estimatedFromBlock - MAX_BLOCKS_TO_QUERY
+      );
+      console.log(
+        "Querying... ",
+        estimatedFromBlock,
+        estimatedFromBlock + MAX_BLOCKS_TO_QUERY
+      );
+      const offersSubSet = await trustLex.queryFilter(
+        "NEW_OFFER",
+        estimatedFromBlock,
+        estimatedFromBlock + MAX_BLOCKS_TO_QUERY
+      );
+      const promises = offersSubSet.map(async (offer) => {
+        const offerEvent = {
+          from: offer.args ? offer.args[0] : "",
+          to: offer.args ? offer.args[1] : "",
+        };
+
+        const offerData = await getOffers(trustLex, offerEvent.to);
+        const offerDetailsInJson = {
+          offerQuantity: offerData[0].toString(),
+          offeredBy: offerData[1].toString(),
+          offerValidTill: offerData[2].toString(),
+          orderedTime: offerData[3].toString(),
+          offeredBlockNumber: offerData[4].toString(),
+          bitcoinAddress: offerData[5].toString(),
+          satoshisToReceive: offerData[6].toString(),
+          satoshisReceived: offerData[7].toString(),
+          satoshisReserved: offerData[8].toString(),
+          collateralPer3Hours: offerData[9].toString(),
+        };
+        return { offerEvent, offerDetailsInJson };
+      });
+      const offersList: IListenedOfferData[] = await Promise.all(promises);
+      offersList.forEach((o) => {
+        offers.push(o);
+      });
+      iterations++;
+    } while (estimatedFromBlock > fromBlock && iterations < MAX_ITERATIONS);
+    console.log(offers);
+    return {
+      fromBlock: fromBlock,
+      toBlock: toBlock,
+      offers: offers,
+    };
+  } catch (error) {
+    console.log(error);
+    return { offers: [], fromBlock, toBlock };
+  }
+};
+
+export const getEventData = async (
+  ContractInstance: ethers.Contract,
+  fromLastHours: number = 0,
+  receivedByAddress: string = ""
+) => {
+  try {
+    if (typeof window.ethereum !== undefined) {
+      const { ethereum } = window;
+      const provider = new ethers.providers.Web3Provider(ethereum);
+      let toBlock: any = await provider.getBlockNumber();
+      // Getting block by date:
+      const dater = new EthDater(
+        provider // Ethers provider, required.
+      );
+      let estimatedFromBlock = 0;
+      if (fromLastHours != 0) {
+        let dateFrom = moment().subtract(fromLastHours, "h").format();
+        let block = await dater.getDate(
+          dateFrom, //"2016-07-20T13:20:40Z", // Date, required. Any valid moment.js value: string, milliseconds, Date() object, moment() object.
+          true, // Block after, optional. Search for the nearest block before or after the given date. By default true.
+          false // Refresh boundaries, optional. Recheck the latest block before request. By default false.
+        );
+        estimatedFromBlock = block.block;
+      }
+
+      let PAYMENT_SUCCESSFUL_EVENTS = await ContractInstance.queryFilter(
+        "PAYMENT_SUCCESSFUL",
+        estimatedFromBlock,
+        toBlock
+      );
+      let total_quantityRequested = 0;
+      if (receivedByAddress != "") {
+        PAYMENT_SUCCESSFUL_EVENTS.filter((value: any, index) => {
+          let args: any = value.args;
+          let receivedBy = args.receivedBy;
+
+          return receivedBy.toLowerCase() == receivedByAddress.toLowerCase();
+        });
+      }
+      console.log(PAYMENT_SUCCESSFUL_EVENTS);
+      PAYMENT_SUCCESSFUL_EVENTS.map(async (value, index) => {
+        let args: any = value.args;
+        // let fulfillmentId = args.fulfillmentId.toString();
+        let offerId = args.offerId.toString();
+        let submittedBy = args.submittedBy;
+        let receivedBy = args.receivedBy;
+        let txHash = args.txHash;
+        let outputHash = args.outputHash;
+
+        let compactFulfillmentDetail = BigInt(args.compactFulfillmentDetail);
+        let fulfillmentId = Number(compactFulfillmentDetail >> BigInt(8 * 8));
+        let quantityRequested = Number(
+          compactFulfillmentDetail & ((BigInt(1) << BigInt(8 * 8)) - BigInt(1))
+        );
+        total_quantityRequested += quantityRequested;
+        // console.log([
+        //   fulfillmentId,
+        //   quantityRequested,
+        //   offerId,
+        //   submittedBy,
+        //   receivedBy,
+        //   txHash,
+        //   outputHash,
+        //   compactFulfillmentDetail,
+        // ]);
+      });
+      console.log(PAYMENT_SUCCESSFUL_EVENTS);
+      console.log(total_quantityRequested);
+
+      // Converting satoshi to Btc
+      total_quantityRequested = Number(
+        tofixedBTC(total_quantityRequested / 10 ** 8)
+      );
+      return total_quantityRequested;
+    } else {
+      return 0;
+    }
+  } catch (err) {
+    console.log(err);
+    return 0;
   }
 };
 

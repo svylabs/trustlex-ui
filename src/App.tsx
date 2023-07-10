@@ -22,6 +22,7 @@ import {
   showErrorMessage,
   showSuccessMessage,
   createContractInstance,
+  getEventData,
 } from "./service/AppService";
 import IUserInputData from "./interfaces/IUserInputData";
 import { INetworkInfo } from "./interfaces/INetworkInfo";
@@ -47,11 +48,21 @@ import {
   DEFAULT_IS_NATIVE_TOKEN,
   NetworkInfo,
   DEFAULT_TOKEN,
+  BTCRecievedFromLastHours,
 } from "~/Context/Constants";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { number } from "bitcoinjs-lib/src/script";
 import Alert from "./components/Alerts/Alert";
+import ProtocolDocs from "./pages/Protocol/protocol";
+
+const DefaultPage = () => {
+  const { ethereum } = window;
+  if (!ethereum) {
+    return <ProtocolDocs />;
+  }
+  return <Home />;
+};
 
 export default function App() {
   const { get, set, remove } = useLocalstorage();
@@ -83,6 +94,9 @@ export default function App() {
     "Connecting to Network"
   );
   const [refreshOffersListKey, setRefreshOffersListKey] = useState<number>(1);
+
+  // variable for current user bitcoin balance
+  const [BTCBalance, setBTCBalance] = useState(0);
 
   //Start My Swap ongoing variable
   const [
@@ -178,6 +192,23 @@ export default function App() {
   const [alertMessage, setAlertMessage] = useState<string | JSX.Element>("");
   const [alertOpen, setAlertOpen] = useState<number>(0);
 
+  // use effect for BTC balance
+  useEffect(() => {
+    (async () => {
+      let contractInstance = await getSelectedTokenContractInstance();
+      let fromLastHours = BTCRecievedFromLastHours;
+      let receivedByAddress = account;
+      if (receivedByAddress != "") {
+        let BTCBalance = await getEventData(
+          contractInstance as ethers.Contract,
+          fromLastHours,
+          receivedByAddress
+        );
+        setBTCBalance(BTCBalance);
+      }
+    })();
+  }, [userInputData.selectedNetwork, account]);
+
   useEffect(() => {
     // on network change update below
     set("userInputData", userInputData);
@@ -210,7 +241,13 @@ export default function App() {
 
   // use Effect for setting the selected bitcoin node in local storage
   useEffect(() => {
-    console.log(selectedBitcoinNode);
+    // (async () => {
+    //   let contract = await getSelectedTokenContractInstance();
+    //   let eventFilter = contract.filters.PAYMENT_SUCCESSFUL();
+    //   let events = await contract.queryFilter(eventFilter);
+    //   console.log(events);
+    // })();
+
     set("selectedBitcoinNode", selectedBitcoinNode);
     let selectedBitcoinNode_ = get("selectedBitcoinNode", false);
     console.log(selectedBitcoinNode_);
@@ -218,17 +255,19 @@ export default function App() {
 
   //Account change event
   const { ethereum } = window;
-  (ethereum as any).on("accountsChanged", async function (accounts: any) {
-    setAccount(accounts[0]);
-  });
-  //  Network changed event
-  (ethereum as any).on("networkChanged", async function (networkId: number) {
-    // console.log(networkId);
-    let provider = new ethers.providers.Web3Provider(ethereum);
-    let network = await provider.getNetwork();
-    setNetWorkInfoData(network as INetworkInfo);
-    checkNetwork();
-  });
+  if (ethereum) {
+    (ethereum as any).on("accountsChanged", async function (accounts: any) {
+      setAccount(accounts[0]);
+    });
+    //  Network changed event
+    (ethereum as any).on("networkChanged", async function (networkId: number) {
+      // console.log(networkId);
+      let provider = new ethers.providers.Web3Provider(ethereum);
+      let network = await provider.getNetwork();
+      setNetWorkInfoData(network as INetworkInfo);
+      checkNetwork();
+    });
+  }
 
   useEffect(() => {
     (async () => {
@@ -845,6 +884,9 @@ export default function App() {
             setAlertMessage,
             selectedBitcoinNode,
             setSelectedBitcoinNode,
+            // BTC balance context variable
+            BTCBalance,
+            setBTCBalance,
           }}
         >
           <Layout>
@@ -864,10 +906,11 @@ export default function App() {
             )}
 
             <Routes>
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={<DefaultPage />} />
               <Route path="/exchange" element={<Exchange />} />
               <Route path="/recent" element={<Recent />} />
               <Route path="/earn" element={<Earn />} />
+              <Route path="/protocol" element={<ProtocolDocs />} />
             </Routes>
           </Layout>
         </AppContext.Provider>

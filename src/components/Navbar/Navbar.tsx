@@ -4,7 +4,7 @@ import DropdownSubmenu from "../NavDropdownButton/DropdownSubmenu";
 import BitcoinNodeSelectionMenu from "../BitcoinNodeSelectionMenu/BitcoinNodeSelectionMenu";
 import { Icon } from "@iconify/react";
 import { Button } from "@mantine/core";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { AppContext } from "~/Context/AppContext";
 import {
   connectToMetamask,
@@ -46,6 +46,7 @@ const Navbar = (props: Props) => {
     checkNetwork,
     setSelectedBitcoinNode,
     selectedBitcoinNode,
+    BTCBalance,
   } = context;
 
   const handleConnect = async () => {
@@ -99,17 +100,17 @@ const Navbar = (props: Props) => {
           variant={"subtle"}
           color="gray"
           className={styles.menuBtn}
-          onClick={() => props.toggleSidebar}
+          onClick={props.toggleSidebar}
         >
           <Icon icon="material-symbols:menu-rounded" className={styles.icon} />
         </Button>
         {account != "" ? (
           <>
-            <div>
+            <div style={{ fontSize: 9 }}>
               Connected To: {account} ({balance} ETH)
               <br />
-              on network {networkName}
-              <br /> with contract {contractAddress}
+              Network: {networkName}
+              <br /> Contract: {contractAddress}
             </div>
           </>
         ) : (
@@ -139,7 +140,7 @@ const Navbar = (props: Props) => {
       <div className={styles.right}>
         <div className={styles.btcNavbutton}>
           <NavDropdownButton
-            title="0.5 BTC"
+            title={`${BTCBalance} BTC`}
             handleNavButtonClick={handleShowSendBtc}
           />
           {/* Variant1 */}

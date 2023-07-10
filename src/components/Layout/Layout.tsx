@@ -7,7 +7,10 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const mobileSidebarRef = React.useRef(null);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+  const toggleSidebar = () => {
+    console.log("Clicked...");
+    setSidebarOpen(!sidebarOpen);
+  }
 
   useDetectOutsideClick({
     ref: mobileSidebarRef,

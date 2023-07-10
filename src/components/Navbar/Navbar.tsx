@@ -46,6 +46,7 @@ const Navbar = (props: Props) => {
     checkNetwork,
     setSelectedBitcoinNode,
     selectedBitcoinNode,
+    BTCBalance,
   } = context;
 
   const handleConnect = async () => {
@@ -105,7 +106,7 @@ const Navbar = (props: Props) => {
         </Button>
         {account != "" ? (
           <>
-            <div style={{fontSize: 9}}>
+            <div style={{ fontSize: 9 }}>
               Connected To: {account} ({balance} ETH)
               <br />
               Network: {networkName}
@@ -139,7 +140,7 @@ const Navbar = (props: Props) => {
       <div className={styles.right}>
         <div className={styles.btcNavbutton}>
           <NavDropdownButton
-            title="0.5 BTC"
+            title={`${BTCBalance} BTC`}
             handleNavButtonClick={handleShowSendBtc}
           />
           {/* Variant1 */}

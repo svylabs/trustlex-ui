@@ -26,6 +26,7 @@ import { ToastContainer, toast } from "react-toastify";
 import { TimestampTotoNow, TimestampfromNow } from "~/utils/TimeConverter";
 import { IBitcoinPaymentProof } from "~/interfaces/IBitcoinNode";
 import moment from "moment";
+import { tofixedBTC } from "~/utils/BitcoinUtils";
 
 const getEthereumObject = () => window.ethereum;
 // https://snyk.io/advisor/npm-package/ethereum-block-by-date
@@ -142,67 +143,83 @@ export const listOffers = async (
 
 export const getEventData = async (
   ContractInstance: ethers.Contract,
-  fromLastHours: number = 0
+  fromLastHours: number = 0,
+  receivedByAddress: string = ""
 ) => {
-  if (typeof window.ethereum !== undefined) {
-    const { ethereum } = window;
-    const provider = new ethers.providers.Web3Provider(ethereum);
-    let toBlock: any = await provider.getBlockNumber();
-    // Getting block by date:
-    const dater = new EthDater(
-      provider // Ethers provider, required.
-    );
-    let estimatedFromBlock = 0;
-    if (fromLastHours != 0) {
-      let dateFrom = moment().subtract(fromLastHours, "h").format();
-      let block = await dater.getDate(
-        dateFrom, //"2016-07-20T13:20:40Z", // Date, required. Any valid moment.js value: string, milliseconds, Date() object, moment() object.
-        true, // Block after, optional. Search for the nearest block before or after the given date. By default true.
-        false // Refresh boundaries, optional. Recheck the latest block before request. By default false.
+  try {
+    if (typeof window.ethereum !== undefined) {
+      const { ethereum } = window;
+      const provider = new ethers.providers.Web3Provider(ethereum);
+      let toBlock: any = await provider.getBlockNumber();
+      // Getting block by date:
+      const dater = new EthDater(
+        provider // Ethers provider, required.
       );
-      estimatedFromBlock = block.block;
+      let estimatedFromBlock = 0;
+      if (fromLastHours != 0) {
+        let dateFrom = moment().subtract(fromLastHours, "h").format();
+        let block = await dater.getDate(
+          dateFrom, //"2016-07-20T13:20:40Z", // Date, required. Any valid moment.js value: string, milliseconds, Date() object, moment() object.
+          true, // Block after, optional. Search for the nearest block before or after the given date. By default true.
+          false // Refresh boundaries, optional. Recheck the latest block before request. By default false.
+        );
+        estimatedFromBlock = block.block;
+      }
+
+      let PAYMENT_SUCCESSFUL_EVENTS = await ContractInstance.queryFilter(
+        "PAYMENT_SUCCESSFUL",
+        estimatedFromBlock,
+        toBlock
+      );
+      let total_quantityRequested = 0;
+      if (receivedByAddress != "") {
+        PAYMENT_SUCCESSFUL_EVENTS.filter((value: any, index) => {
+          let args: any = value.args;
+          let receivedBy = args.receivedBy;
+
+          return receivedBy.toLowerCase() == receivedByAddress.toLowerCase();
+        });
+      }
+      console.log(PAYMENT_SUCCESSFUL_EVENTS);
+      PAYMENT_SUCCESSFUL_EVENTS.map(async (value, index) => {
+        let args: any = value.args;
+        // let fulfillmentId = args.fulfillmentId.toString();
+        let offerId = args.offerId.toString();
+        let submittedBy = args.submittedBy;
+        let receivedBy = args.receivedBy;
+        let txHash = args.txHash;
+        let outputHash = args.outputHash;
+
+        let compactFulfillmentDetail = BigInt(args.compactFulfillmentDetail);
+        let fulfillmentId = Number(compactFulfillmentDetail >> BigInt(8 * 8));
+        let quantityRequested = Number(
+          compactFulfillmentDetail & ((BigInt(1) << BigInt(8 * 8)) - BigInt(1))
+        );
+        total_quantityRequested += quantityRequested;
+        // console.log([
+        //   fulfillmentId,
+        //   quantityRequested,
+        //   offerId,
+        //   submittedBy,
+        //   receivedBy,
+        //   txHash,
+        //   outputHash,
+        //   compactFulfillmentDetail,
+        // ]);
+      });
+      console.log(PAYMENT_SUCCESSFUL_EVENTS);
+      console.log(total_quantityRequested);
+
+      // Converting satoshi to Btc
+      total_quantityRequested = Number(
+        tofixedBTC(total_quantityRequested / 10 ** 8)
+      );
+      return total_quantityRequested;
+    } else {
+      return 0;
     }
-
-    const PAYMENT_SUCCESSFUL_EVENTS = await ContractInstance.queryFilter(
-      "PAYMENT_SUCCESSFUL",
-      estimatedFromBlock,
-      toBlock
-    );
-    let total_quantityRequested = 0;
-    PAYMENT_SUCCESSFUL_EVENTS.map(async (value, index) => {
-      let args: any = value.args;
-      // let fulfillmentId = args.fulfillmentId.toString();
-      let offerId = args.offerId.toString();
-      let submittedBy = args.submittedBy;
-      let receivedBy = args.receivedBy;
-      let txHash = args.txHash;
-      let outputHash = args.outputHash;
-
-      let compactFulfillmentDetail = BigInt(args.compactFulfillmentDetail);
-      let fulfillmentId = Number(compactFulfillmentDetail >> BigInt(8 * 8));
-      let quantityRequested = Number(
-        compactFulfillmentDetail & ((BigInt(1) << BigInt(8 * 8)) - BigInt(1))
-      );
-      total_quantityRequested += quantityRequested;
-      // console.log([
-      //   fulfillmentId,
-      //   quantityRequested,
-      //   offerId,
-      //   submittedBy,
-      //   receivedBy,
-      //   txHash,
-      //   outputHash,
-      //   compactFulfillmentDetail,
-      // ]);
-    });
-    // console.log(PAYMENT_SUCCESSFUL_EVENTS);
-    // console.log(total_quantityRequested);
-    // Converting satoshi to Btc
-    total_quantityRequested = Number(
-      (total_quantityRequested / 10 ** 8).toFixed(8)
-    );
-    return total_quantityRequested;
-  } else {
+  } catch (err) {
+    console.log(err);
     return 0;
   }
 };

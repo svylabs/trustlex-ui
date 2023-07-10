@@ -108,4 +108,6 @@ export const AppContext = createContext<null | {
   setAlertMessage: (alertMessage: string) => void;
   selectedBitcoinNode: string;
   setSelectedBitcoinNode: (selectedBitcoinNode: string) => void;
+  BTCBalance: number;
+  setBTCBalance: (BTCBalance: number) => void;
 }>(null);

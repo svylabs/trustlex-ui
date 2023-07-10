@@ -12,13 +12,15 @@ export const PAGE_SIZE = 50;
 export const TOKEN_DECIMAL_PLACE = 4;
 export const OFFER_ORDER_EXPIRY_DIRATION = 3 * 60 * 60; // in seconds
 // export const OFFER_ORDER_EXPIRY_DIRATION = 5 * 60; // in seconds
-export const BTC_DECIMAL_PLACE = 8;
+export const BTC_DECIMAL_PLACE = 6;
 export const ETH_DECIMAL_PLACE = 8;
 export const DEFAULT_COLLETARAL_FEES = 10;
 
 export const ERC20TokenKey = "spvc"; // it should be in lower case
 export const ERC20TokenLabel = "SPVC"; // To show in the dropdown
 export const ERC20TokenValue = "SPVC";
+
+export const BTCRecievedFromLastHours = 2 * 7 * 24; //Default 2 week
 
 export const TrustlexBitcoinNodeApiKey = "d924a382-ab7c-4649-b4eb-0f731b9a100e";
 export const BITCOIN_MAINNET_API_URL = "https://btc.getblock.io/mainnet/";

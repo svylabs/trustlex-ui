@@ -90,14 +90,12 @@ const RecentOngoingTable = ({
             />{" "} */}
             {row.planningToSell.type}
             {/* {row.planningToSell.type} */}
-            {selectedToken}
           </div>,
           <div className={styles.planningCell}>
             {row.planningToBuy.amount}{" "}
             <ImageIcon
               image={getIconFromCurrencyType(row.planningToBuy.type)}
             />{" "}
-            {row.planningToBuy.type}
           </div>,
           <div className={styles.planningCell}>
             {row.rateInBTC}{" "}

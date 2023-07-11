@@ -592,6 +592,11 @@ const ExchangeOfferDrawer = ({
     return BTCAmount;
   };
 
+  const renderer = ({ days, hours, minutes, seconds, completed }) => {
+      // Render a countdown
+      return <span>{days}d:{hours}h {minutes}m:{seconds}s <br/></span>;
+  }
+
   const getColletaralValue = () => {
     let inputAmount = Number(ethValue);
     let colletaralValue = tofixedEther(
@@ -793,8 +798,8 @@ const ExchangeOfferDrawer = ({
                   isOrderExpired == false &&
                   fullFillmentPaymentProofSubmitted == false ? (
                     <>
-                      <span>Time Left</span>: &nbsp;
-                      <span style={{ color: countDownTimeColor }}>
+                      <span style={{fontSize: "8"}}>Time Left</span>&nbsp;
+                      <span style={{ borderBlockColor: "green", color: countDownTimeColor }}>
                         <Countdowntimer
                           date={
                             countdowntimerTime
@@ -805,10 +810,10 @@ const ExchangeOfferDrawer = ({
                               findOrderExpireColor(countdowntimerTime)
                             );
                           }}
+                          renderer={renderer}
                           key={countdowntimerKey}
                         />
                       </span>
-                      <br />
                       <small>(For submiiting the payment proof)</small>
                     </>
                   ) : (
@@ -1054,7 +1059,6 @@ const ExchangeOfferDrawer = ({
                           <Input
                             type={"text"}
                             placeholder={"Enter the Block Hash"}
-                            label={"Block Hash"}
                             value={blockHash}
                             onChange={(e) => {
                               setBlockHash(e.target.value);
@@ -1064,7 +1068,6 @@ const ExchangeOfferDrawer = ({
                           <Input
                             type={"text"}
                             placeholder={"Enter the Transaction Hash"}
-                            label={"Transaction Hash"}
                             value={transactionHash}
                             onChange={(e) => {
                               setTransactionHash(e.target.value);
@@ -1153,7 +1156,7 @@ const ExchangeOfferDrawer = ({
                         {TimeToDateFormat(rowFullFillmentExpiryTime)}
                       </strong>{" "}
                       or add more collateral to increase payment confirmation
-                      time in order to have the ability to withdraw ETH from
+                      time in order to have the ability to withdraw {selectedToken} from
                       smart contract
                     </p>
                   </div>

@@ -446,7 +446,7 @@ export default function App() {
           updateTokenBalance(account, ERC20Address, ERC20ABI);
         }
       } else {
-        showErrorMessage("Metamask is not found ! kindly install the Metamask");
+        showErrorMessage("Unable to connect to Web3 wallet! Please install Metamask to continue");
         setExchangeLoadingText("");
         setMySwapOngoingLoadingText("");
         setMySwapCompletedLoadingText("");

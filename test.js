@@ -13,7 +13,7 @@ const ethers = require('ethers');
 
 const orderId = ethers.utils.keccak256(ethers.utils.solidityPack(
   ["address", "uint256", "uint256", "bytes20", "uint256"],
-  ["0xFD05beBFEa081f6902bf9ec57DCb50b40BA02510", 0, 0, '0x0000000000000000000000000000000000000000', 0]
+  ["0x0000000000000000000000000000000000000000", 0, 0, '0x0000000000000000000000000000000000000000', 0]
 ));
 
 console.log(orderId);
@@ -28,6 +28,11 @@ let witnessScript = bitcoin.script.compile([
   bitcoin.opcodes.OP_EQUALVERIFY,
   bitcoin.opcodes.OP_CHECKSIG
 ]);
+
+const locktime = 500000001;
+
+const LOCKTIME_VALUE = parseInt(locktime).toString(16);
+console.log("LOCKTIME: ", Buffer.from(LOCKTIME_VALUE, 'hex').toString('hex'), bitcoin.script.number.encode(500000001).toString('hex'));
    
 
 let witnessScript1 = bitcoin.script.compile([
@@ -38,7 +43,7 @@ let witnessScript1 = bitcoin.script.compile([
     Buffer.from("0000000000000000000000000000000000000000", 'hex'), // counterparty pubKeyHash
     bitcoin.opcodes.OP_EQUAL,
     bitcoin.opcodes.OP_NOTIF,
-    Buffer.from("0fffffff", 'hex'), // populate the future timestamp or future block number here
+    bitcoin.script.number.encode(locktime), // populate the future timestamp or future block number here
     bitcoin.opcodes.OP_CHECKLOCKTIMEVERIFY,
     bitcoin.opcodes.OP_DROP,
     bitcoin.opcodes.OP_DUP, // should duplicate public key
@@ -49,6 +54,33 @@ let witnessScript1 = bitcoin.script.compile([
     bitcoin.opcodes.OP_CHECKSIG,
 ]);
 console.log("Witness Script1: " + witnessScript1.toString('hex'));
+const hashedSecret = Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex');
+
+let witnessScript2 = bitcoin.script.compile([
+  Buffer.from(shortOrderId, 'hex'),
+  bitcoin.opcodes.OP_DROP,
+  bitcoin.opcodes.OP_DUP,
+  bitcoin.opcodes.OP_HASH160,
+  Buffer.from("0000000000000000000000000000000000000000", 'hex'), // counterparty pubKeyHash
+  bitcoin.opcodes.OP_EQUAL,
+  bitcoin.opcodes.OP_IF,
+  bitcoin.opcodes.OP_SWAP,
+  bitcoin.opcodes.OP_HASH256,
+  hashedSecret,
+  bitcoin.opcodes.OP_EQUALVERIFY,
+  bitcoin.opcodes.OP_ELSE,
+  bitcoin.script.number.encode(locktime), // populate the future timestamp or future block number here
+  bitcoin.opcodes.OP_CHECKLOCKTIMEVERIFY,
+  bitcoin.opcodes.OP_DROP,
+  bitcoin.opcodes.OP_DUP, // should duplicate public key
+  bitcoin.opcodes.OP_HASH160,
+  Buffer.from("0000000000000000000000000000000000000000", 'hex'), // my pub key hash
+  bitcoin.opcodes.OP_EQUALVERIFY,
+  bitcoin.opcodes.OP_ENDIF,
+  bitcoin.opcodes.OP_CHECKSIG,
+]);
+
+console.log("New address: ", witnessScript2.toString('hex'));
 
 const scriptPubKey = ethers.utils.solidityPack(
   ["bytes2", "bytes32"],
@@ -68,10 +100,20 @@ console.log(witnessScript.toString('hex'))
 const p2wshAddress = bitcoin.payments.p2wsh({redeem: { output: witnessScript }, network: regtest});
 console.log(bitcoin.crypto.sha256(witnessScript).toString('hex'));
 
+const p2wshAddress1 = bitcoin.payments.p2wsh({redeem: { output: witnessScript1 }, network: regtest});
+console.log('0x0002' + bitcoin.crypto.sha256(witnessScript1).toString('hex'));
+
+const p2wshAddress2 = bitcoin.payments.p2wsh({redeem: { output: witnessScript2 }, network: regtest});
+console.log('0x0002' + bitcoin.crypto.sha256(witnessScript2).toString('hex'));
+
+console.log(p2wshAddress1 + "p2wshaddress1");
+console.log(p2wshAddress2 + "p2wshaddress2");
+
 console.log(p2wshAddress.address);
 
 console.log("witness script0 address", p2wshAddress);
-console.log("witness script1 address", bitcoin.payments.p2wsh({redeem: { output: witnessScript1 }}));
+console.log("witness script1 address", bitcoin.payments.p2wsh({redeem: { output: witnessScript1 }}).address);
+console.log("witness script2 address", bitcoin.payments.p2wsh({redeem: { output: witnessScript2 }}).address);
 //console.log(btcutils.generateTrustlexAddress(Buffer.from("0000000000000000000000000000000000000000", 'hex'), Buffer.from("10000000", 'hex')));
 
 const pubkeys = [

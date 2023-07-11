@@ -147,6 +147,7 @@ export const getEventData = async (
   receivedByAddress: string = ""
 ) => {
   try {
+    // console.log(fromLastHours, receivedByAddress);
     if (typeof window.ethereum !== undefined) {
       const { ethereum } = window;
       const provider = new ethers.providers.Web3Provider(ethereum);
@@ -172,15 +173,18 @@ export const getEventData = async (
         toBlock
       );
       let total_quantityRequested = 0;
+      // console.log(PAYMENT_SUCCESSFUL_EVENTS);
       if (receivedByAddress != "") {
-        PAYMENT_SUCCESSFUL_EVENTS.filter((value: any, index) => {
-          let args: any = value.args;
-          let receivedBy = args.receivedBy;
-
-          return receivedBy.toLowerCase() == receivedByAddress.toLowerCase();
-        });
+        PAYMENT_SUCCESSFUL_EVENTS = PAYMENT_SUCCESSFUL_EVENTS.filter(
+          (value: any, index) => {
+            let args: any = value.args;
+            let receivedBy = args.receivedBy;
+            // console.log("receivedBy", receivedBy);
+            return receivedBy.toLowerCase() == receivedByAddress.toLowerCase();
+          }
+        );
       }
-      console.log(PAYMENT_SUCCESSFUL_EVENTS);
+      // console.log(PAYMENT_SUCCESSFUL_EVENTS);
       PAYMENT_SUCCESSFUL_EVENTS.map(async (value, index) => {
         let args: any = value.args;
         // let fulfillmentId = args.fulfillmentId.toString();
@@ -207,8 +211,8 @@ export const getEventData = async (
         //   compactFulfillmentDetail,
         // ]);
       });
-      console.log(PAYMENT_SUCCESSFUL_EVENTS);
-      console.log(total_quantityRequested);
+      // console.log(PAYMENT_SUCCESSFUL_EVENTS);
+      // console.log(total_quantityRequested);
 
       // Converting satoshi to Btc
       total_quantityRequested = Number(
@@ -274,13 +278,14 @@ export const getBalance = async (address: string) => {
       const { ethereum } = window;
       const provider = new ethers.providers.Web3Provider(ethereum);
       let balance: any = await provider.getBalance(address);
-      balance = (+ethers.utils.formatEther(balance)).toFixed(4);
+      balance = +ethers.utils.formatEther(balance);
       return balance;
     } else {
-      return false;
+      return 0;
     }
   } catch (error) {
-    return false;
+    console.log(error);
+    return 0;
   }
 };
 

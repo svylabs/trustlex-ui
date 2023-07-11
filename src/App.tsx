@@ -195,6 +195,7 @@ export default function App() {
   // use effect for BTC balance
   useEffect(() => {
     (async () => {
+      setBTCBalance(0);
       let contractInstance = await getSelectedTokenContractInstance();
       let fromLastHours = BTCRecievedFromLastHours;
       let receivedByAddress = account;
@@ -204,6 +205,7 @@ export default function App() {
           fromLastHours,
           receivedByAddress
         );
+        // console.log(BTCBalance);
         setBTCBalance(BTCBalance);
       }
     })();

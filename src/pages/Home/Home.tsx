@@ -160,11 +160,13 @@ const Home = (props: Props) => {
         priceRateSelectedTokenContractAddress
       );
       // console.log(selectedToken_to_usd_rate);
+      // console.log(total_locked_amounts);
       total_locked_amounts = await ConvertCrytoToFiat(
         selectedToken_to_usd_rate,
         total_locked_amounts
       );
 
+      console.log(total_locked_amounts);
       setTotalLockedAmount(total_locked_amounts);
       let contractInstance = await getSelectedTokenContractInstance();
       // console.log(contractInstance);
@@ -181,7 +183,8 @@ const Home = (props: Props) => {
       let priceRateBTCContractAddress =
         currencyObjects[selectedNetwork]["btc"].priceRateContractAddress;
       let btc_to_usd_rate = await getPriceRate(priceRateBTCContractAddress);
-      // console.log(btc_to_usd_rate);
+      console.log("btc_to_usd_rate", btc_to_usd_rate);
+      console.log("total_quantityRequested", total_quantityRequested);
 
       let total_transaction_volume_btc = await ConvertCrytoToFiat(
         btc_to_usd_rate,

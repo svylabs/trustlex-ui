@@ -28,6 +28,7 @@ import IUserInputData from "./interfaces/IUserInputData";
 import { INetworkInfo } from "./interfaces/INetworkInfo";
 import swapArrayElements from "./utils/swapArray";
 import { formatERC20Tokens } from "./utils/Ether.utills";
+import { IBTCWallet } from "./utils/BitcoinUtils";
 import { BitcoinNodeEnum } from "./interfaces/IBitcoinNode";
 import {
   IListenedOfferData,
@@ -97,6 +98,12 @@ export default function App() {
 
   // variable for current user bitcoin balance
   const [BTCBalance, setBTCBalance] = useState(0);
+  const btcWalletDataLocal = get("btcWalletData", false);
+  const [btcWalletData, setBTCWalletData] = useState<IBTCWallet>();
+  if (btcWalletData) {
+    set("BTCWalletData", btcWalletDataLocal);
+  }
+  //btcWalletDataLocal ? JSON.parse(btcWalletDataLocal) : undefined
 
   //Start My Swap ongoing variable
   const [
@@ -243,17 +250,17 @@ export default function App() {
 
   // use Effect for setting the selected bitcoin node in local storage
   useEffect(() => {
-    // (async () => {
-    //   let contract = await getSelectedTokenContractInstance();
-    //   let eventFilter = contract.filters.PAYMENT_SUCCESSFUL();
-    //   let events = await contract.queryFilter(eventFilter);
-    //   console.log(events);
-    // })();
-
     set("selectedBitcoinNode", selectedBitcoinNode);
     let selectedBitcoinNode_ = get("selectedBitcoinNode", false);
-    console.log(selectedBitcoinNode_);
   }, [selectedBitcoinNode]);
+
+  // use Effect for setting the bitcoin wallet data in local storage
+  useEffect(() => {
+    // console.log(btcWalletData);
+    if (btcWalletData) {
+      set("BTCWalletData", btcWalletData);
+    }
+  }, [btcWalletData]);
 
   //Account change event
   const { ethereum } = window;
@@ -889,6 +896,9 @@ export default function App() {
             // BTC balance context variable
             BTCBalance,
             setBTCBalance,
+            //BTC Wallet data variables
+            btcWalletData,
+            setBTCWalletData,
           }}
         >
           <Layout>

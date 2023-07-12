@@ -9,6 +9,7 @@ import {
 import { ethers } from "ethers";
 
 import IUserInputData from "~/interfaces/IUserInputData";
+import { IBTCWallet } from "~/utils/BitcoinUtils";
 
 export const AppContext = createContext<null | {
   contract: ethers.Contract | undefined;
@@ -110,4 +111,7 @@ export const AppContext = createContext<null | {
   setSelectedBitcoinNode: (selectedBitcoinNode: string) => void;
   BTCBalance: number;
   setBTCBalance: (BTCBalance: number) => void;
+
+  btcWalletData: IBTCWallet;
+  setBTCWalletData: (btcWalletData: IBTCWallet) => void;
 }>(null);

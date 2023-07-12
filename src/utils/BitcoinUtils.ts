@@ -13,6 +13,11 @@ export interface Wallet {
   pubkeyHash: Buffer;
 }
 
+export interface IBTCWallet {
+  publicKey: Buffer;
+  pubkeyHash: Buffer;
+}
+
 export interface OfflineWallet {
   address: string;
   publicKey: string;
@@ -37,12 +42,13 @@ export const encryptWallet = (keyPair: Wallet, password: string): string => {
   const { bip38_encrypt } = window;
   // const encryptedKey = bip38.encrypt(keyPair.privateKey, true, password);
   // const encryptedKey = window.bip38_encrypt(keyPair.privateKey, true, password);
-  console.log(keyPair.privateKey.toString());
+  // console.log(keyPair.privateKey.toString());
 
   const encryptedKey = bip38_encrypt(keyPair.privateKey, true, password);
   return JSON.stringify({
     address: bitcoin.payments.p2wpkh({ pubkey: keyPair.publicKey })?.address,
     publicKey: keyPair.publicKey.toString("hex"),
+    pubkeyHash: keyPair.pubkeyHash.toString("hex"),
     encryptedPrivateKey: encryptedKey,
   });
 };

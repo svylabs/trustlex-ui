@@ -1,0 +1,36 @@
+.instantWalletRoot {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+
+  .generatedAddress {
+    display: flex;
+    gap: 16px;
+    flex-direction: column;
+    width: 100%;
+
+    >h3 {
+      font-weight: 500;
+      font-size: 14px;
+      line-height: 17px;
+      color: #f8f8f8;
+    }
+
+    >p {
+      font-weight: 600;
+      font-size: 16px;
+      line-height: 19px;
+      text-decoration: underline;
+      color: #ffffff;
+      text-align: center;
+      overflow-wrap: break-word;
+    }
+  }
+
+  .subText {
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 17px;
+    color: #8b8b8b;
+  }
+}

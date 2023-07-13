@@ -474,7 +474,7 @@ const Exchange = (props: Props) => {
 
   const handleGenerateBitcoinWallet = async () => {
     const data = generateBitcoinWallet();
-    console.log(data, data.privateKey.toString("hex"));
+    // console.log(data, data.privateKey.toString("hex"));
     setGeneratedBitcoinData(data);
     setPaperWalletDownloaded(PaperWalletDownloadedEnum.Generated);
   };

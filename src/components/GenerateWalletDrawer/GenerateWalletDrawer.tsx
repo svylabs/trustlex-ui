@@ -166,6 +166,7 @@ const GenerateWalletContent = ({
   useEffect(() => {
     if (data === null || data.pubkeyHash === undefined) return;
     const address = generateTrustlexAddress(data.pubkeyHash, "10");
+    // console.log(address);
     setGeneratedAddress(address as string);
     generateAddress(address);
   }, [data]);

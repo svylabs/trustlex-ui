@@ -1,6 +1,6 @@
 import { Drawer, Grid, Text, Dialog } from "@mantine/core";
 import GradientBackgroundContainer from "~/components/GradientBackgroundContainer/GradientBackgroundContainer";
-import styles from "~/components/GenerateWalletDrawer/GenerateWalletDrawer.module.scss";
+import styles from "~/components/GenerateWalletDrawer/MyWalletDrawer.module.scss";
 import Button from "~/components/Button/Button";
 import { VariantsEnum } from "~/enums/VariantsEnum";
 import { Icon } from "@iconify/react";
@@ -25,8 +25,8 @@ interface IProps {
   ) => void;
   paperWalletDownloaded: PaperWalletDownloadedEnum;
   setMyBTCWalletDrawerOpen: (open: boolean) => void;
-  btcWalletData: IBTCWallet;
-  setBTCWalletData: (btcWalletData: IBTCWallet) => void;
+  btcWalletData: IBTCWallet | undefined;
+  setBTCWalletData: (btcWalletData: IBTCWallet | undefined) => void;
 }
 
 const MyWalletDrawer = ({
@@ -144,27 +144,20 @@ const GenerateWalletContent = ({
   setBTCWalletData,
 }: {
   onClose: () => void;
-  generateAddress: any;
-  setPaperWalletDownloaded: (
-    paperWalletDownloaded: PaperWalletDownloadedEnum
-  ) => void;
-  paperWalletDownloaded: PaperWalletDownloadedEnum;
   confirmBoxMessage: string | JSX.Element;
   confirmBoxOpen: number;
   handleInstantWalletDownloadContinueAnyway: () => void;
-  btcWalletData: IBTCWallet;
-  setBTCWalletData: (btcWalletData: IBTCWallet) => void;
+  btcWalletData: IBTCWallet | undefined;
+  setBTCWalletData: (btcWalletData: IBTCWallet | undefined) => void;
 }) => {
   const { mobileView } = useWindowDimensions();
   const generateWalletRef = useRef(null);
   useAutoHideScrollbar(generateWalletRef);
 
-  // useEffect(() => {
-  //   // if (data === null || data.pubkeyHash === undefined) return;
-  //   // const address = generateTrustlexAddress(data.pubkeyHash, "10");
-  //   // setGeneratedAddress(address as string);
-  //   // generateAddress(address);
-  // }, [data]);
+  const handleResetWallet = () => {
+    setBTCWalletData(undefined);
+    localStorage.removeItem("btcWalletData");
+  };
 
   return (
     <div className={styles.generateWalletRoot} ref={generateWalletRef}>
@@ -208,20 +201,35 @@ const GenerateWalletContent = ({
       )}
       {btcWalletData !== undefined ? (
         <>
-          <div>
-            BTC Address:
-            <br />
-            {generateTrustlexAddress(btcWalletData.pubkeyHash, "10")}
+          <div className={styles.instantWalletRoot}>
+            <div className={styles.generatedAddress}>
+              <h3> BTC Address:</h3>
+              <p>
+                {generateTrustlexAddress(
+                  Buffer.from(btcWalletData.pubkeyHash, "hex"),
+                  "10"
+                )}
+              </p>
+            </div>
+
+            <div className={styles.generatedAddress}>
+              <h3> PublicKey:</h3>
+              <p>{btcWalletData.publicKey}</p>
+            </div>
+            <div className={styles.generatedAddress}>
+              <h3> PubKeyHash:</h3>
+              <p>{btcWalletData.pubkeyHash}</p>
+            </div>
           </div>
-          <div>
-            PublicKey:
-            <br />
-            {btcWalletData.publicKey.toString("hex")}
-          </div>
-          <div>
-            PubKeyHash:
-            <br />
-            {btcWalletData.pubkeyHash.toString("hex")}
+          <div style={{ marginTop: "20px" }}>
+            <Button
+              variant={VariantsEnum.outlinePrimary}
+              style={{ background: "transparent" }}
+              radius={10}
+              onClick={handleResetWallet}
+            >
+              Reset Wallet
+            </Button>
           </div>
         </>
       ) : (

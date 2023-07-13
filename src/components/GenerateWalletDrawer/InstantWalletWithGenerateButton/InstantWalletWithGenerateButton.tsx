@@ -24,8 +24,8 @@ import {
 } from "~/utils/BitcoinUtils";
 
 interface IInstantWallet {
-  btcWalletData: IBTCWallet;
-  setBTCWalletData: (btcWalletData: IBTCWallet) => void;
+  btcWalletData: IBTCWallet | undefined;
+  setBTCWalletData: (btcWalletData: IBTCWallet | undefined) => void;
 }
 
 const InstantWalletWithGenerateButton = ({
@@ -124,8 +124,8 @@ const InstantWalletWithGenerateButton = ({
 
     // set BTC data in state variable
     setBTCWalletData({
-      publicKey: generatedBitcoinData.publicKey,
-      pubkeyHash: generatedBitcoinData.pubkeyHash,
+      publicKey: generatedBitcoinData.publicKey.toString("hex"),
+      pubkeyHash: generatedBitcoinData.pubkeyHash.toString("hex"),
     });
     showSuccessMessage("Your wallet is successfully created.");
 

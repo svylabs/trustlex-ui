@@ -1107,3 +1107,15 @@ export const cancelOfferService = async (
     return false;
   }
 };
+
+export const getClaimPeriod = async (trustLex: ethers.Contract | false) => {
+  try {
+    if (!trustLex) return false;
+
+    let CLAIM_PERIOD: number = await trustLex.CLAIM_PERIOD();
+    return CLAIM_PERIOD;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};

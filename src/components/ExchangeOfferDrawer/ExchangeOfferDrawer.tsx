@@ -33,6 +33,7 @@ import {
   getInitializedFulfillmentsByOfferId,
   getInitializedFulfillments,
   increaseContractAllownace,
+  getClaimPeriod,
 } from "~/service/AppService";
 import {
   GetTransactionDetails,
@@ -41,7 +42,12 @@ import {
 } from "~/service/BitcoinService";
 import { QRCodeCanvas } from "qrcode.react";
 import { address } from "bitcoinjs-lib";
-import { generateTrustlexAddress, tofixedBTC } from "~/utils/BitcoinUtils";
+import {
+  generateTrustlexAddress,
+  tofixedBTC,
+  generateSecret,
+  generateTrustlexAddressWithRecoveryHash,
+} from "~/utils/BitcoinUtils";
 import ImageIcon from "../ImageIcon/ImageIcon";
 import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";
 import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
@@ -67,6 +73,7 @@ import { Tooltip } from "@mantine/core";
 import { default as Countdowntimer } from "react-countdown";
 import BtcToSatoshiConverter from "~/utils/BtcToSatoshiConverter";
 import { currencyObjects } from "~/Context/Constants";
+import { IBTCWallet } from "~/utils/BitcoinUtils";
 
 type Props = {
   isOpened: boolean;
@@ -95,6 +102,9 @@ type Props = {
     refreshMySwapCompletedListKey: number
   ) => void;
   selectedBitcoinNode: string;
+  btcWalletData: IBTCWallet | undefined;
+  setBTCWalletData: (btcWalletData: IBTCWallet | undefined) => void;
+  getSelectedTokenContractInstance: () => Promise<ethers.Contract | false>;
 };
 
 const ExchangeOfferDrawer = ({
@@ -118,6 +128,9 @@ const ExchangeOfferDrawer = ({
   refreshMySwapCompletedListKey,
   setRefreshMySwapCompletedListKey,
   selectedBitcoinNode,
+  btcWalletData,
+  setBTCWalletData,
+  getSelectedTokenContractInstance,
 }: Props) => {
   const { cleanTx } = window;
   const { mobileView } = useWindowDimensions();
@@ -201,7 +214,7 @@ const ExchangeOfferDrawer = ({
         contract,
         rowOfferId
       );
-      // console.log(fullfillmentResults);
+      console.log(fullfillmentResults, rowFullFillmentId);
       if (!foundOffer || foundOffer === undefined) return;
 
       let countdowntimerTime_ = rowFullFillmentExpiryTime
@@ -293,12 +306,36 @@ const ExchangeOfferDrawer = ({
       ) {
         isInitating = true;
         setIsInitating("initiated");
+
+        let rowFullfillment: IFullfillmentResult = fullfillmentResults.find(
+          (value: IFullfillmentResult, index: number) => {
+            let currentFullFillmentId = value.fulfillmentRequestId;
+
+            if (BigInt(rowFullFillmentId) == BigInt(currentFullFillmentId)) {
+              return true;
+            } else {
+              return false;
+            }
+          }
+        );
+
+        let fulfillRequestedTime =
+          rowFullfillment.fulfillmentRequest.fulfillRequestedTime;
+        console.log(rowFullfillment, fulfillRequestedTime);
+
+        // get claim period
+        let contractInstance = await getSelectedTokenContractInstance();
+        let claim_period = await getClaimPeriod(contractInstance);
+        // if (!claim_period) {
+        //   showErrorMessage("Failed to connect the contract!");
+        //   return false;
+        // }
         let toAddress = Buffer.from(
           foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
           "hex"
         );
         let pubKeyHash = toAddress;
-        console.log(foundOffer.offerDetailsInJson.bitcoinAddress);
+        // console.log(foundOffer.offerDetailsInJson.bitcoinAddress);
         let fulfillmentId = rowFullFillmentId;
         setOfferFulfillmentId(fulfillmentId);
         if (fulfillmentId.length % 2 != 0) {
@@ -308,7 +345,7 @@ const ExchangeOfferDrawer = ({
           currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
             ?.orderBookContractAddreess;
         let orderTimestamp = foundOffer.offerDetailsInJson.orderedTime;
-        console.log(orderTimestamp);
+        // console.log(orderTimestamp);
         const orderId = ethers.utils.keccak256(
           ethers.utils.solidityPack(
             ["address", "uint256", "uint256", "bytes20", "uint256"],
@@ -325,9 +362,21 @@ const ExchangeOfferDrawer = ({
         );
 
         const shortOrderId = orderId.slice(2, 10);
-        console.log(shortOrderId, orderId);
+        let publicKeyCurrentUser = btcWalletData?.publicKey;
+        let pubKeyHashCurrentUser = btcWalletData?.pubkeyHash;
+        let inputForSecret = publicKeyCurrentUser + shortOrderId;
+        let inputForSecretBuffer: Buffer = Buffer.from(inputForSecret, "hex");
+        let secret = generateSecret(inputForSecretBuffer);
+        let locktime = 0; //claim_period + fulfillRequestedTime;
+
         // let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
-        let hashAdress = generateTrustlexAddress(pubKeyHash, shortOrderId);
+        let hashAdress = generateTrustlexAddressWithRecoveryHash(
+          pubKeyHash,
+          shortOrderId,
+          secret,
+          pubKeyHashCurrentUser as string,
+          locktime
+        );
         setTo(`${hashAdress}`);
         setActiveStep(2);
         // console.log(rowFullFillmentQuantityRequested);
@@ -405,7 +454,10 @@ const ExchangeOfferDrawer = ({
     let colletarealValue = "0";
 
     if (isColletaralNeeded == true) {
-      colletarealValue = getColletaralValue().toString();
+      colletarealValue = getColletaralValue().toLocaleString("fullwide", {
+        useGrouping: false,
+      });
+
       totalCollateralAdded = EthtoWei(colletarealValue).toString();
       // if (selectedToken != "ETH") {
       //   let tokenAmount = colletarealValue;
@@ -438,7 +490,7 @@ const ExchangeOfferDrawer = ({
       isExpired: false,
     };
 
-    console.log(_fulfillment);
+    // console.log(_fulfillment);
 
     const data = await InitializeFullfillment(
       context.contract,
@@ -498,6 +550,9 @@ const ExchangeOfferDrawer = ({
       );
 
       const shortOrderId = orderId.slice(2, 10);
+      let publicKey = btcWalletData?.publicKey;
+      let inputForSecret = publicKey + shortOrderId;
+      console.log(inputForSecret);
       // console.log(shortOrderId, orderId);
       // let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
       let hashAdress = generateTrustlexAddress(pubKeyHash, shortOrderId);

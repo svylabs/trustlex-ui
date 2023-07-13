@@ -8,8 +8,8 @@ import { VariantsEnum } from "~/enums/VariantsEnum";
 import { IBTCWallet } from "~/utils/BitcoinUtils";
 
 interface IInstantWallet {
-  btcWalletData: IBTCWallet;
-  setBTCWalletData: (btcWalletData: IBTCWallet) => void;
+  btcWalletData: IBTCWallet | undefined;
+  setBTCWalletData: (btcWalletData: IBTCWallet | undefined) => void;
 }
 
 const ImportWallet = ({ btcWalletData, setBTCWalletData }: IInstantWallet) => {
@@ -80,12 +80,10 @@ function Demo({ btcWalletData, setBTCWalletData }: IInstantWallet) {
 
       // set BTC data in state variable
       setBTCWalletData({
-        publicKey: publicKey,
-        pubkeyHash: pubKeyHash,
+        publicKey: publicKeyString,
+        pubkeyHash: pubkeyHashString,
       });
       showSuccessMessage("You wallet is successfully imported.");
-      // console.log("e.target.result", e.target.result);
-      console.log(address);
     };
   };
   return (
@@ -99,7 +97,9 @@ function Demo({ btcWalletData, setBTCWalletData }: IInstantWallet) {
             <p>Size in bytes: {selectedFile?.size}</p>
             <p>
               lastModifiedDate:{" "}
-              {selectedFile?.lastModifiedDate?.toLocaleDateString()}
+              {new Date(
+                (selectedFile as File).lastModified
+              )?.toLocaleDateString()}
             </p>
           </div>
         ) : (

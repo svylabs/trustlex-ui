@@ -112,6 +112,6 @@ export const AppContext = createContext<null | {
   BTCBalance: number;
   setBTCBalance: (BTCBalance: number) => void;
 
-  btcWalletData: IBTCWallet;
-  setBTCWalletData: (btcWalletData: IBTCWallet) => void;
+  btcWalletData: IBTCWallet | undefined;
+  setBTCWalletData: (btcWalletData: IBTCWallet | undefined) => void;
 }>(null);

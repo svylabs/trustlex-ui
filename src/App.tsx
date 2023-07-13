@@ -99,11 +99,9 @@ export default function App() {
   // variable for current user bitcoin balance
   const [BTCBalance, setBTCBalance] = useState(0);
   const btcWalletDataLocal = get("btcWalletData", false);
-  const [btcWalletData, setBTCWalletData] = useState<IBTCWallet>();
-  if (btcWalletData) {
-    set("BTCWalletData", btcWalletDataLocal);
-  }
-  //btcWalletDataLocal ? JSON.parse(btcWalletDataLocal) : undefined
+  const [btcWalletData, setBTCWalletData] = useState<IBTCWallet | undefined>(
+    btcWalletDataLocal ? JSON.parse(btcWalletDataLocal) : undefined
+  );
 
   //Start My Swap ongoing variable
   const [
@@ -256,9 +254,8 @@ export default function App() {
 
   // use Effect for setting the bitcoin wallet data in local storage
   useEffect(() => {
-    // console.log(btcWalletData);
     if (btcWalletData) {
-      set("BTCWalletData", btcWalletData);
+      set("btcWalletData", btcWalletData);
     }
   }, [btcWalletData]);
 

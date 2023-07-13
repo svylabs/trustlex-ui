@@ -224,9 +224,9 @@ export const currencyObjects: {
       label: "Matic", // Please always keep the label  in upper case
       value: "Matic",
       icon: <ImageIcon image={"/icons/matic-token.png"} />,
-      orderBookContractAddreess: "0x0C59CCD8D3525C27BB8d0df47ca7568Da878121d",
+      orderBookContractAddreess: "0x5101dD14fA7262103c06B259a22Ea8Ab6d99734B",
       TrustedBitcoinSPVChainContractAddress:
-        "0x577C5F0Ad460B219eD154d620d85D4e5C26A8eAD",
+        "0x7a831F59520783A89F27Bbeb31CcdF8c8a6d588D",
       orderBookContractABI: OrderBookETHABI.abi,
       decimalPlace: 18,
       isNativeToken: true,

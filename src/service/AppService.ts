@@ -24,7 +24,7 @@ import { EthtoWei, WeitoEth } from "~/utils/Ether.utills";
 import { AppContext } from "~/Context/AppContext";
 import { ToastContainer, toast } from "react-toastify";
 import { TimestampTotoNow, TimestampfromNow } from "~/utils/TimeConverter";
-import { IBitcoinPaymentProof } from "~/interfaces/IBitcoinNode";
+import { HTLCDetail, IBitcoinPaymentProof } from "~/interfaces/IBitcoinNode";
 import moment from "moment";
 import { tofixedBTC } from "~/utils/BitcoinUtils";
 
@@ -1045,7 +1045,8 @@ export const submitPaymentProof = async (
   trustLex: ethers.Contract | undefined,
   offerId: string,
   fulfillmentId: string,
-  bitcoinPaymentProof: IBitcoinPaymentProof
+  bitcoinPaymentProof: IBitcoinPaymentProof,
+  htlcDetails: HTLCDetail
 ) => {
   try {
     if (!trustLex) return false;
@@ -1063,6 +1064,10 @@ export const submitPaymentProof = async (
         bitcoinPaymentProof.proof,
         bitcoinPaymentProof.index,
         bitcoinPaymentProof.blockHeight,
+      ],
+      [
+         htlcDetails.secret,
+         htlcDetails.recoveryPubKeyHash
       ]
     );
 

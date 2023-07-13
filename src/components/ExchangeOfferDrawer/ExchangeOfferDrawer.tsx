@@ -186,6 +186,35 @@ const ExchangeOfferDrawer = ({
     return <>Loading...</>;
   }
 
+  const getParametersForAddress = (contractAddress: string, foundOffer: any, orderTimestamp: any): {
+     shortOrderId: string;
+     secret: Buffer;
+     pubKeyHash: String;
+  } => {
+    const orderId = ethers.utils.keccak256(
+      ethers.utils.solidityPack(
+        ["address", "uint256", "uint256", "bytes20", "uint256"],
+        // To be interpreted as: address of contract, orderId, fulfillmentId, pubKeyHash, orderTimestamp
+        // ["0xFD05beBFEa081f6902bf9ec57DCb50b40BA02510", 0, 0, '0x0000000000000000000000000000000000000000', 0]
+        [
+          contractAddress,
+          rowOfferId,
+          rowFullFillmentId,
+          foundOffer.offerDetailsInJson.bitcoinAddress,
+          orderTimestamp,
+        ]
+      )
+    );
+
+    const shortOrderId = orderId.slice(2, 10);
+    let publicKeyCurrentUser = btcWalletData?.publicKey;
+    let pubKeyHash = btcWalletData?.pubkeyHash || '';
+    let inputForSecret = publicKeyCurrentUser + shortOrderId;
+    let inputForSecretBuffer: Buffer = Buffer.from(inputForSecret, "hex");
+    let secret = generateSecret(inputForSecretBuffer);
+    return {shortOrderId, secret, pubKeyHash};
+  }
+
   const { listenedOfferData, listenedOfferDataByNonEvent } = context;
 
   let foundOffer =
@@ -346,35 +375,15 @@ const ExchangeOfferDrawer = ({
             ?.orderBookContractAddreess;
         let orderTimestamp = foundOffer.offerDetailsInJson.orderedTime;
         // console.log(orderTimestamp);
-        const orderId = ethers.utils.keccak256(
-          ethers.utils.solidityPack(
-            ["address", "uint256", "uint256", "bytes20", "uint256"],
-            // To be interpreted as: address of contract, orderId, fulfillmentId, pubKeyHash, orderTimestamp
-            // ["0xFD05beBFEa081f6902bf9ec57DCb50b40BA02510", 0, 0, '0x0000000000000000000000000000000000000000', 0]
-            [
-              contractAddress,
-              rowOfferId,
-              rowFullFillmentId,
-              foundOffer.offerDetailsInJson.bitcoinAddress,
-              orderTimestamp,
-            ]
-          )
-        );
-
-        const shortOrderId = orderId.slice(2, 10);
-        let publicKeyCurrentUser = btcWalletData?.publicKey;
-        let pubKeyHashCurrentUser = btcWalletData?.pubkeyHash;
-        let inputForSecret = publicKeyCurrentUser + shortOrderId;
-        let inputForSecretBuffer: Buffer = Buffer.from(inputForSecret, "hex");
-        let secret = generateSecret(inputForSecretBuffer);
-        let locktime = 0; //claim_period + fulfillRequestedTime;
+        const addressParameters = getParametersForAddress(contractAddress || '', foundOffer, orderTimestamp);
+        let locktime = fulfillRequestedTime + 7 * 24 * 60 * 60; //claim_period + fulfillRequestedTime;
 
         // let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
         let hashAdress = generateTrustlexAddressWithRecoveryHash(
           pubKeyHash,
-          shortOrderId,
-          secret,
-          pubKeyHashCurrentUser as string,
+          addressParameters.shortOrderId,
+          addressParameters.secret,
+          addressParameters.pubKeyHash as string,
           locktime
         );
         setTo(`${hashAdress}`);
@@ -484,6 +493,7 @@ const ExchangeOfferDrawer = ({
       // expiryTime: foundOffer.offerDetailsInJson.offerValidTill,
       expiryTime: getTimeInSeconds().toString(),
       fulfilledTime: 0,
+      fulfillRequestedTime: 0,
       // collateralAddedBy: foundOffer.offerEvent.from,
       collateralAddedBy: account,
       paymentProofSubmitted: false,
@@ -603,13 +613,21 @@ const ExchangeOfferDrawer = ({
       return false;
     }
 
+    let orderTimestamp = foundOffer?.offerDetailsInJson.orderedTime;
+    const addressParameters = getParametersForAddress(contract?.address || '', foundOffer, orderTimestamp);
+    const htlcDetails = {
+       secret: '0x' + addressParameters.secret.toString('hex'),
+       recoveryPubKeyHash: '0x' + addressParameters.pubKeyHash
+    };
+
     let result = await submitPaymentProof(
       contract,
       offerId,
       offerFulfillmentId.toString(),
-      bitcoinPaymentProof
+      bitcoinPaymentProof,
+      htlcDetails
     );
-    console.log(bitcoinPaymentProof, result);
+    console.log(bitcoinPaymentProof, htlcDetails, result);
     if (result) {
       setSubmitPaymentProofTxHash(result.transactionHash);
       setConfirmed("confirmed");

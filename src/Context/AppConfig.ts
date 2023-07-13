@@ -3,7 +3,7 @@ import { ERC20TokenKey, ERC20TokenLabel } from "~/Context/Constants";
 export const ContractMap: any = {
   ETH: {
     // Address of TrustlexPerAssetOrderBook for addOfferWithETH
-    address: "0x432d85454a618C4Bd7b6AC084C316007C155480A", //Mumbai
+    address: "0x5101dD14fA7262103c06B259a22Ea8Ab6d99734B", //Mumbai
     // address: "0x41b80920255a5c385221AEf56eD7377B1210acC6", //Trustless Network
   },
   [ERC20TokenLabel]: {

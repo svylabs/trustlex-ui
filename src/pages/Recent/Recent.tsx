@@ -105,6 +105,10 @@ function MySwaps() {
     setAlertOpen,
     setAlertMessage,
     getSelectedTokenContractInstance,
+
+    selectedBitcoinNode,
+    btcWalletData,
+    setBTCWalletData,
   } = context;
 
   const [isMoreOngoingLoading, setMoreOngoingDataLoading] = useState(false);
@@ -504,6 +508,10 @@ function MySwaps() {
           setRefreshMySwapOngoingListKey={setRefreshMySwapOngoingListKey}
           refreshMySwapCompletedListKey={refreshMySwapCompletedListKey}
           setRefreshMySwapCompletedListKey={setRefreshMySwapCompletedListKey}
+          selectedBitcoinNode={selectedBitcoinNode}
+          btcWalletData={btcWalletData}
+          setBTCWalletData={setBTCWalletData}
+          getSelectedTokenContractInstance={getSelectedTokenContractInstance}
         />
       </GradientBackgroundContainer>
       {/* Star My Swap completed History */}

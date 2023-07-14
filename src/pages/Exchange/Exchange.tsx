@@ -153,10 +153,14 @@ const Exchange = (props: Props) => {
     refreshMySwapCompletedListKey,
     setRefreshMySwapCompletedListKey,
     selectedBitcoinNode,
+    btcWalletData,
+    setBTCWalletData,
+    getSelectedTokenContractInstance,
   } = context;
 
   const [exchangeData, setExchangeData] = useState({
     address: "",
+    pubkeyHash: "",
     valid:
       typeof offerValidity[0] === "string"
         ? offerValidity[0]
@@ -190,30 +194,6 @@ const Exchange = (props: Props) => {
   const [generateWalletDrawerOpen, setGenerateWalletDrawerOpen] =
     useState(false);
 
-  const loadMoreOffers = async () => {
-    setMoreTableDataLoading(true);
-    let fromBlock = Math.max(
-      0,
-      listenedOfferData.fromBlock - MAX_ITERATIONS * MAX_BLOCKS_TO_QUERY
-    );
-
-    // listOffers(
-    //   context.contract,
-    //   fromBlock,
-    //   listenedOfferData.fromBlock - 1
-    // ).then((offers) => {
-    //   const listenedOffers = {
-    //     fromBlock: offers.fromBlock,
-    //     toBlock: listenedOfferData.toBlock,
-    //     offers: [...listenedOfferData.offers, ...offers.offers],
-    //   };
-    //   setListenedOfferData(listenedOffers);
-    //   let tableData = getTableData(listenedOffers.offers);
-    //   setTableData(tableData);
-    //   setMoreTableDataLoading(false);
-    //   console.log(listenedOffers);
-    // });
-  };
   const loadMoreOffersByNonEvent = async () => {
     setMoreTableDataLoading(true);
 
@@ -273,16 +253,19 @@ const Exchange = (props: Props) => {
     });
 
   const [hashedOfferData, setHashedOfferData] = useState("");
+
+  // This function is triggered when click on add offer confirm button
   const handleOfferConfirm = async () => {
     try {
-      let bitcoinAddress = generatedBitcoinData?.pubkeyHash.toString("hex");
-      console.log(bitcoinAddress);
+      // let bitcoinAddress = generatedBitcoinData?.pubkeyHash.toString("hex");
+      let bitcoinAddress = exchangeData?.pubkeyHash;
       if (bitcoinAddress === undefined) {
         showErrorMessage(
           "Address to receive Bitcoin is empty. Please click on Generate in Browser button."
         );
         return false;
       }
+
       setConfirm("loading");
 
       let inputEther: string = userInputData.activeExchange[1].value;
@@ -350,117 +333,6 @@ const Exchange = (props: Props) => {
     }
   };
 
-  const listentotheEvent = async () => {
-    try {
-      const trustLex = context.contract;
-      if (!trustLex) return false;
-
-      trustLex.on("NEW_OFFER", async (from, to, value) => {
-        const offerEvent = {
-          from: from.toString(),
-          to: to.toString(),
-          value: value,
-        };
-
-        const offerData = await getOffers(trustLex, to);
-        const offerDetailsInJson = {
-          offerQuantity: offerData[0].toString(),
-          offeredBy: offerData[1].toString(),
-          offerValidTill: offerData[2].toString(),
-          orderedTime: offerData[3].toString(),
-          offeredBlockNumber: offerData[4].toString(),
-          bitcoinAddress: offerData[5].toString(),
-          satoshisToReceive: offerData[6].toString(),
-          satoshisReceived: offerData[7].toString(),
-          satoshisReserved: offerData[8].toString(),
-          collateralPer3Hours: offerData[9].toString(),
-        };
-
-        const exists = listenedOfferData.offers.find(
-          (offer) =>
-            offer.offerDetailsInJson.offeredBlockNumber ===
-            offerDetailsInJson.offeredBlockNumber
-        );
-        if (exists === undefined) {
-          setListenedOfferData({
-            fromBlock: listenedOfferData.fromBlock,
-            toBlock: offerDetailsInJson.offeredBlockNumber,
-            offers: [
-              ...listenedOfferData.offers,
-              { offerEvent, offerDetailsInJson },
-            ],
-          });
-          setTableData((prev) => {
-            return [
-              ...prev,
-
-              [
-                offerDetailsInJson.offeredBlockNumber,
-                <>
-                  10{" "}
-                  <ImageIcon
-                    image={getIconFromCurrencyType(CurrencyEnum.ETH)}
-                  />
-                  {CurrencyEnum.ETH}
-                </>,
-                <>
-                  {SatoshiToBtcConverter(offerDetailsInJson.satoshisToReceive)}{" "}
-                  <ImageIcon
-                    image={getIconFromCurrencyType(CurrencyEnum.BTC)}
-                  />{" "}
-                  {CurrencyEnum.BTC}
-                </>,
-                <>
-                  0.078{" "}
-                  <ImageIcon
-                    image={getIconFromCurrencyType(CurrencyEnum.BTC)}
-                  />{" "}
-                  {CurrencyEnum.BTC}
-                </>,
-                <>
-                  1 out of 10
-                  <ImageIcon
-                    image={getIconFromCurrencyType(CurrencyEnum.ETH)}
-                  />{" "}
-                  {CurrencyEnum.ETH}
-                </>,
-                NumberToTime(offerDetailsInJson.offerValidTill),
-                "09 Jan, 13:45pm",
-              ],
-            ];
-          });
-          setMobileTableData((prev) => {
-            return [
-              ...prev,
-              offerDetailsInJson.offeredBlockNumber,
-              "09 Jan, 13:45pm",
-              <SeeMoreButton
-                onClick={(e) => {
-                  // console.log("button clicked");
-                }}
-              />,
-            ];
-          });
-        } else {
-          console.log("already exists");
-        }
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const listenEvent = async () => {
-    await listentotheEvent();
-  };
-  // useEffect(() => {
-  //   listenEvent();
-  //   listOffers(context.contract).then((offers) => {
-  //     setListenedOfferData(offers);
-  //     setTableData(getTableData(offers.offers));
-  //   });
-  // }, [hashedOfferData]);
-
   useEffect(() => {
     if (listenedOfferDataByNonEvent?.offers) {
       const result = getTableData(
@@ -472,16 +344,43 @@ const Exchange = (props: Props) => {
     }
   }, [listenedOfferDataByNonEvent]);
 
+  // This use effect is used if any user reset the wallet from header option
+  useEffect(() => {
+    if (generatedBitcoinData == null) {
+      let address =
+        btcWalletData !== undefined
+          ? generateTrustlexAddress(
+              Buffer.from(btcWalletData.pubkeyHash, "hex"),
+              "10"
+            )
+          : "";
+      let pubkeyHash =
+        btcWalletData !== undefined ? btcWalletData.pubkeyHash : "";
+      setExchangeData((prev) => {
+        return {
+          ...prev,
+          address: address,
+          pubkeyHash: pubkeyHash,
+        };
+      });
+    }
+  }, [btcWalletData]);
+
   const handleGenerateBitcoinWallet = async () => {
     const data = generateBitcoinWallet();
-    console.log(data, data.privateKey.toString("hex"));
+    // console.log(data, data.privateKey.toString("hex"));
     setGeneratedBitcoinData(data);
     setPaperWalletDownloaded(PaperWalletDownloadedEnum.Generated);
   };
 
   useEffect(() => {
+    if (generatedBitcoinData == null) return;
     setExchangeData((prev) => {
-      return { ...prev, address: generateAddress };
+      return {
+        ...prev,
+        address: generateAddress,
+        pubkeyHash: generatedBitcoinData?.pubkeyHash.toString("hex"),
+      };
     });
   }, [generateAddress]);
 
@@ -497,40 +396,14 @@ const Exchange = (props: Props) => {
   //   }
   //   setGenerateWalletDrawerOpen(false);
   // };
-  const handleTxVerification = async () => {
-    // showNewTransactions();
-    // return;
-    let transactionHash =
-      "f4defa29eb33caaab3e5bb9c62fe659b3676da8a55c554984f766455a4e4c877";
-    let blockHash =
-      "0000000000005d2e2303e7a20ba2c844aaff6694501ee58d43d2d83e0a88373e";
-    let recieverAddress = "tb1qpad47g0nnswks2sr4zn2c987c8q9f7ykyh7d9j";
-    let paymentAmount = 0.01637724;
-    // let result = await GetTransactionDetails(
-    //   selectedBitcoinNode,
-    //   transactionHash,
-    //   recieverAddress,
-    //   paymentAmount
-    // );
-    // let result = await VerifyTransaction(
-    //   selectedBitcoinNode,
-    //   transactionHash,
-    //   recieverAddress,
-    //   paymentAmount
-    // );
-    // console.log(result);
-    // let blockresult = await GetBlock(selectedBitcoinNode, blockHash);
-    // console.log(blockresult);
-    let txs: string[] = [
-      "fe28050b93faea61fa88c4c630f0e1f0a1c24d0082dd0e10d369e13212128f33",
-    ];
-    const bitcoinMerkleTreeInstance = new BitcoinMerkleTree(txs);
-    const proof = bitcoinMerkleTreeInstance.getInclusionProof(txs[0]);
-    console.log(proof);
-  };
+
   const handleRowClick = async (data: string[7] | ReactNode[]) => {
     if (account == "") {
       showErrorMessage("Please wait ,your account is not connected !");
+      return false;
+    }
+    if (btcWalletData == undefined) {
+      showErrorMessage("Please add the BTC wallet first");
       return false;
     }
     let offerId = data[0] as number;
@@ -790,6 +663,9 @@ const Exchange = (props: Props) => {
         refreshMySwapCompletedListKey={refreshMySwapCompletedListKey}
         setRefreshMySwapCompletedListKey={setRefreshMySwapCompletedListKey}
         selectedBitcoinNode={selectedBitcoinNode}
+        btcWalletData={btcWalletData}
+        setBTCWalletData={setBTCWalletData}
+        getSelectedTokenContractInstance={getSelectedTokenContractInstance}
       />
 
       <div className={styles.overlay}>

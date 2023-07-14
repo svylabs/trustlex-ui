@@ -32,13 +32,13 @@ export function convertAmountNumberToHumanReadableFormat(labelValue: string) {
   // Nine Zeroes for Billions
   let result: any =
     Math.abs(Number(labelValue)) >= 1.0e9
-      ? (Math.abs(Number(labelValue)) / 1.0e9).toFixed(2) + " Billion"
+      ? Math.ceil(Math.abs(Number(labelValue)) / 1.0e9) + " Billion"
       : // Six Zeroes for Millions
       Math.abs(Number(labelValue)) >= 1.0e6
-      ? (Math.abs(Number(labelValue)) / 1.0e6).toFixed(2) + " Million"
+      ? Math.ceil(Math.abs(Number(labelValue)) / 1.0e6) + " Million"
       : // Three Zeroes for Thousands
       Math.abs(Number(labelValue)) >= 1.0e3
-      ? (Math.abs(Number(labelValue)) / 1.0e3).toFixed(2) + " Thousands"
-      : Math.abs(Number(labelValue)).toFixed(2);
+      ? Math.ceil(Math.abs(Number(labelValue)) / 1.0e3) + " Thousands"
+      : Math.ceil(Math.abs(Number(labelValue)));
   return result;
 }

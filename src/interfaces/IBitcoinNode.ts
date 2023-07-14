@@ -9,3 +9,8 @@ export interface IBitcoinPaymentProof {
   index: Number; //
   blockHeight: Number; //Height of the block
 }
+
+export interface HTLCDetail {
+   secret: String;
+   recoveryPubKeyHash: String;
+}

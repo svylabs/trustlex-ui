@@ -43,6 +43,7 @@ export interface IFullfillmentEvent {
   collateralAddedBy: string;
   paymentProofSubmitted: boolean;
   isExpired: boolean;
+  fulfillRequestedTime: number;
 }
 
 export interface IFullfillmentResult {

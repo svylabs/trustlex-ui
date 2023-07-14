@@ -86,7 +86,7 @@ const InstantWallet = ({
     setDownload("loading");
 
     const encryptedDataString = encryptWallet(data, inputData.password);
-
+    // console.log(encryptedDataString);
     setWalletEncryptedData(JSON.parse(encryptedDataString));
     setPaperWalletKey(paperWalletKey + 1);
 

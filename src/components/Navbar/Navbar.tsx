@@ -18,6 +18,14 @@ import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 import NetworkMenu from "./NetworkMenu";
 
 import {
+  Wallet,
+  generateBitcoinWallet,
+  generateTrustlexAddress,
+} from "~/utils/BitcoinUtils";
+import { PaperWalletDownloadedEnum } from "~/interfaces/IExchannge";
+import MyWalletDrawer from "~/components/GenerateWalletDrawer/MyWalletDrawer";
+
+import {
   networks,
   activeExchange,
   currencyObjects,
@@ -47,7 +55,17 @@ const Navbar = (props: Props) => {
     setSelectedBitcoinNode,
     selectedBitcoinNode,
     BTCBalance,
+    btcWalletData,
+    setBTCWalletData,
   } = context;
+
+  /* Start Variables for My wallet */
+  const [myBTCWalletDrawerOpen, setMyBTCWalletDrawerOpen] = useState(false);
+
+  const [paperWalletDownloaded, setPaperWalletDownloaded] =
+    useState<PaperWalletDownloadedEnum>(PaperWalletDownloadedEnum.NotGenerated);
+  const [generateAddress, setGenerateAddress] = useState("");
+  /* End Variables for My wallet */
 
   const handleConnect = async () => {
     if (account !== "" && (account as unknown as boolean) != false) {
@@ -87,11 +105,28 @@ const Navbar = (props: Props) => {
   let contractAddress =
     currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
       ?.orderBookContractAddreess;
-  // console.log(
-  //   selectedNetwork,
-  //   selectedToken,
-  //   currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
-  // );
+
+  /*-----------Start Functions for my wallet-------------------*/
+
+  const myWalletDrawerhandleClose = () => {
+    // if (paperWalletDownloaded == PaperWalletDownloadedEnum.Generated) {
+    //   showErrorMessage(
+    //     "Please download the wallet first. Otherwise you will lost the payment amount! "
+    //   );
+    //   return false;
+    // }
+    setMyBTCWalletDrawerOpen(false);
+  };
+
+  const handleMyWallet = () => {
+    setMyBTCWalletDrawerOpen(true);
+  };
+
+  useEffect(() => {
+    console.log(myBTCWalletDrawerOpen);
+  }, [myBTCWalletDrawerOpen]);
+  /*------------End Functions for my wallet-------------*/
+
   return (
     <nav className={styles.navbar}>
       <div className={styles.left}>
@@ -145,7 +180,25 @@ const Navbar = (props: Props) => {
           />
           {/* Variant1 */}
 
-          <SendBtcBox open={showSendBtcBox} onClose={handleShowSendBtc} />
+          <SendBtcBox
+            open={showSendBtcBox}
+            onClose={handleShowSendBtc}
+            myBTCWalletDrawerOpen={myBTCWalletDrawerOpen}
+            setMyBTCWalletDrawerOpen={setMyBTCWalletDrawerOpen}
+            myWalletDrawerhandleClose={myWalletDrawerhandleClose}
+            handleMyWallet={handleMyWallet}
+          />
+          <div className={styles.overlay}>
+            <MyWalletDrawer
+              onClose={myWalletDrawerhandleClose}
+              open={myBTCWalletDrawerOpen}
+              setMyBTCWalletDrawerOpen={setMyBTCWalletDrawerOpen}
+              setPaperWalletDownloaded={setPaperWalletDownloaded}
+              paperWalletDownloaded={paperWalletDownloaded}
+              btcWalletData={btcWalletData}
+              setBTCWalletData={setBTCWalletData}
+            />
+          </div>
 
           {/* Variant2 */}
           {/* <SendBtcDrawer open={showSendBtcBox} onClose={handleShowSendBtc} /> */}

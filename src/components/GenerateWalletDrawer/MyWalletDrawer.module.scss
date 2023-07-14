@@ -1,0 +1,123 @@
+.generateWalletRoot {
+    padding: 2rem 1.5rem 4rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 2.5rem;
+    height: calc(100vh - 2vh);
+    overflow-y: scroll;
+    overflow-x: hidden;
+    border-radius: 20px;
+    font-family: "Inter", sans-serif;
+    font-style: normal;
+    letter-spacing: 0.5px;
+    color: var(--white);
+  
+    .heading {
+      .headTitle {
+        font-weight: 700;
+        font-size: 22px;
+      }
+      .title {
+        font-weight: 600;
+        font-size: 16px;
+      }
+      .closeIcon {
+        font-size: 2.5rem;
+        color: #616575;
+      }
+    }
+  }
+  
+  .mobileDialogRoot {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100vh;
+    width: 100vw;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(
+      110.35deg,
+      rgba(0, 0, 0, 0.6) 3.31%,
+      rgba(0, 0, 0, 0.48) 101.51%
+    );
+    backdrop-filter: blur(2.5px);
+  
+    .mobileDialogContent {
+      width: 90%;
+      height: 80%;
+      border-radius: 10px;
+      background-color: #1a1b1e;
+    }
+  }
+  @media screen and (max-width: 500px) {
+    .generateWalletRoot {
+      padding: 0 0 1rem 0;
+      gap: 2rem;
+      height: 100%;
+      color: var(--white);
+  
+      .heading {
+        .crossIconBox {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+        }
+        .headTitle {
+          font-weight: 700;
+          font-size: 22px;
+        }
+        .title {
+          font-weight: 600;
+          font-size: 16px;
+        }
+        .closeIcon {
+          font-size: 3.5rem;
+          color: #616575;
+        }
+      }
+    }
+  }
+  
+
+  .instantWalletRoot {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  
+    .generatedAddress {
+      display: flex;
+      gap: 16px;
+      flex-direction: column;
+      width: 100%;
+  
+      >h3 {
+        font-weight: 500;
+        font-size: 14px;
+        line-height: 17px;
+        color: #f8f8f8;
+      }
+  
+      >p {
+        font-weight: 600;
+        font-size: 16px;
+        line-height: 19px;
+        text-decoration: underline;
+        color: #ffffff;
+        text-align: center;
+        overflow-wrap: break-word;
+      }
+    }
+  
+    .subText {
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 17px;
+      color: #8b8b8b;
+    }
+  }

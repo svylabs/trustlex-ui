@@ -13,6 +13,11 @@ export interface Wallet {
   pubkeyHash: Buffer;
 }
 
+export interface IBTCWallet {
+  publicKey: string;
+  pubkeyHash: string;
+}
+
 export interface OfflineWallet {
   address: string;
   publicKey: string;
@@ -37,12 +42,14 @@ export const encryptWallet = (keyPair: Wallet, password: string): string => {
   const { bip38_encrypt } = window;
   // const encryptedKey = bip38.encrypt(keyPair.privateKey, true, password);
   // const encryptedKey = window.bip38_encrypt(keyPair.privateKey, true, password);
-  console.log(keyPair.privateKey.toString());
+  // console.log(keyPair.privateKey.toString());
 
   const encryptedKey = bip38_encrypt(keyPair.privateKey, true, password);
   return JSON.stringify({
-    address: bitcoin.payments.p2wpkh({ pubkey: keyPair.publicKey })?.address,
+    // address: bitcoin.payments.p2wpkh({ pubkey: keyPair.publicKey })?.address,
+    address: generateTrustlexAddress(keyPair.pubkeyHash, "10"),
     publicKey: keyPair.publicKey.toString("hex"),
+    pubkeyHash: keyPair.pubkeyHash.toString("hex"),
     encryptedPrivateKey: encryptedKey,
   });
 };
@@ -84,6 +91,63 @@ export const generateTrustlexAddress = (
   return p2wsh.address;
 };
 
+export const generateSecret = (input: Buffer) => {
+  let secret = bitcoin.crypto.hash256(input);
+  return secret;
+};
+
+export const generateTrustlexAddressWithRecoveryHash = (
+  pubkeyHash: Buffer,
+  shortOrderId: string,
+  secret: Buffer,
+  pubKeyHashSender: string,
+  locktime: number
+): string | undefined => {
+  if (pubkeyHash.length != 20) return undefined;
+  let hashedSecret = bitcoin.crypto.hash256(secret);
+  // const witnessScript = bitcoin.script.compile([
+  //   // Buffer.from(fulfillmentId, "hex"),
+  //   Buffer.from(shortOrderId, "hex"),
+  //   bitcoin.opcodes.OP_DROP,
+  //   bitcoin.opcodes.OP_DUP,
+  //   bitcoin.opcodes.OP_HASH160,
+  //   pubkeyHash,
+  //   bitcoin.opcodes.OP_EQUALVERIFY,
+  //   bitcoin.opcodes.OP_CHECKSIG,
+  // ]);
+
+  let witnessScript2 = bitcoin.script.compile([
+    Buffer.from(shortOrderId, "hex"),
+    bitcoin.opcodes.OP_DROP,
+    bitcoin.opcodes.OP_DUP,
+    bitcoin.opcodes.OP_HASH160,
+    pubkeyHash, // Same as the pubKeyHash that was used before
+    bitcoin.opcodes.OP_EQUAL,
+    bitcoin.opcodes.OP_IF,
+    bitcoin.opcodes.OP_SWAP,
+    bitcoin.opcodes.OP_HASH256,
+    hashedSecret, // Dynamic value -  need to generate a secret = bitcoin.crypto.hash256(publicKey + shortOrderId), hashedSecret = bitcoin.crypto.hash256(secret)
+    bitcoin.opcodes.OP_EQUALVERIFY,
+    bitcoin.opcodes.OP_ELSE,
+    bitcoin.script.number.encode(locktime), // locktime value should be a number based on initiated block timestamp + 7 days in seconds.
+    bitcoin.opcodes.OP_CHECKLOCKTIMEVERIFY,
+    bitcoin.opcodes.OP_DROP,
+    bitcoin.opcodes.OP_DUP,
+    bitcoin.opcodes.OP_HASH160,
+    Buffer.from(pubKeyHashSender, "hex"), // Recovery pubKeyHash
+    bitcoin.opcodes.OP_EQUALVERIFY,
+    bitcoin.opcodes.OP_ENDIF,
+    bitcoin.opcodes.OP_CHECKSIG,
+  ]);
+
+  const p2wsh = bitcoin.payments.p2wsh({
+    redeem: { output: witnessScript2, network },
+    network,
+  });
+  return p2wsh.address;
+};
+
+console.log(bitcoin.crypto.hash256);
 export const tofixedBTC = (amount: number) => {
   return Number(amount.toFixed(BTC_DECIMAL_PLACE));
 };

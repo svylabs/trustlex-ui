@@ -40,8 +40,7 @@ import {
   VerifyTransaction,
   GetBlock,
 } from "~/service/BitcoinService";
-import { QRCodeCanvas } from "qrcode.react";
-import { address } from "bitcoinjs-lib";
+
 import {
   generateTrustlexAddress,
   tofixedBTC,
@@ -61,7 +60,10 @@ import {
   findOrderExpireColor,
   getOfferOrderExpiryDurationInSeconds,
 } from "~/utils/TimeConverter";
-import { DEFAULT_COLLETARAL_FEES } from "~/Context/Constants";
+import {
+  DEFAULT_COLLETARAL_FEES,
+  BTC_REFUND_CLAIM_PERIOD,
+} from "~/Context/Constants";
 
 import {
   IconAdjustments,
@@ -186,11 +188,23 @@ const ExchangeOfferDrawer = ({
     return <>Loading...</>;
   }
 
-  const getParametersForAddress = (contractAddress: string, foundOffer: any, orderTimestamp: any): {
-     shortOrderId: string;
-     secret: Buffer;
-     pubKeyHash: String;
+  const getParametersForAddress = (
+    contractAddress: string,
+    foundOffer: any,
+    orderTimestamp: any,
+    fulfillmentId: string
+  ): {
+    shortOrderId: string;
+    secret: Buffer;
+    pubKeyHash: String;
   } => {
+    console.log([
+      contractAddress,
+      rowOfferId,
+      fulfillmentId,
+      foundOffer.offerDetailsInJson.bitcoinAddress,
+      orderTimestamp,
+    ]);
     const orderId = ethers.utils.keccak256(
       ethers.utils.solidityPack(
         ["address", "uint256", "uint256", "bytes20", "uint256"],
@@ -199,7 +213,7 @@ const ExchangeOfferDrawer = ({
         [
           contractAddress,
           rowOfferId,
-          rowFullFillmentId,
+          fulfillmentId,
           foundOffer.offerDetailsInJson.bitcoinAddress,
           orderTimestamp,
         ]
@@ -208,12 +222,12 @@ const ExchangeOfferDrawer = ({
 
     const shortOrderId = orderId.slice(2, 10);
     let publicKeyCurrentUser = btcWalletData?.publicKey;
-    let pubKeyHash = btcWalletData?.pubkeyHash || '';
+    let pubKeyHash = btcWalletData?.pubkeyHash || "";
     let inputForSecret = publicKeyCurrentUser + shortOrderId;
     let inputForSecretBuffer: Buffer = Buffer.from(inputForSecret, "hex");
     let secret = generateSecret(inputForSecretBuffer);
-    return {shortOrderId, secret, pubKeyHash};
-  }
+    return { shortOrderId, secret, pubKeyHash };
+  };
 
   const { listenedOfferData, listenedOfferDataByNonEvent } = context;
 
@@ -243,7 +257,7 @@ const ExchangeOfferDrawer = ({
         contract,
         rowOfferId
       );
-      console.log(fullfillmentResults, rowFullFillmentId);
+      // console.log(fullfillmentResults, rowFullFillmentId);
       if (!foundOffer || foundOffer === undefined) return;
 
       let countdowntimerTime_ = rowFullFillmentExpiryTime
@@ -350,11 +364,10 @@ const ExchangeOfferDrawer = ({
 
         let fulfillRequestedTime =
           rowFullfillment.fulfillmentRequest.fulfillRequestedTime;
-        console.log(rowFullfillment, fulfillRequestedTime);
 
         // get claim period
         let contractInstance = await getSelectedTokenContractInstance();
-        let claim_period = await getClaimPeriod(contractInstance);
+        // let claim_period = await getClaimPeriod(contractInstance);
         // if (!claim_period) {
         //   showErrorMessage("Failed to connect the contract!");
         //   return false;
@@ -365,18 +378,24 @@ const ExchangeOfferDrawer = ({
         );
         let pubKeyHash = toAddress;
         // console.log(foundOffer.offerDetailsInJson.bitcoinAddress);
-        let fulfillmentId = rowFullFillmentId;
+        let fulfillmentId = rowFullFillmentId.toString();
+        console.log(fulfillmentId);
         setOfferFulfillmentId(fulfillmentId);
-        if (fulfillmentId.length % 2 != 0) {
-          fulfillmentId = "0" + fulfillmentId;
-        }
+        // if (fulfillmentId.length % 2 != 0) {
+        //   fulfillmentId = "0" + fulfillmentId;
+        // }
         let contractAddress =
           currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
             ?.orderBookContractAddreess;
         let orderTimestamp = foundOffer.offerDetailsInJson.orderedTime;
         // console.log(orderTimestamp);
-        const addressParameters = getParametersForAddress(contractAddress || '', foundOffer, orderTimestamp);
-        let locktime = fulfillRequestedTime + 7 * 24 * 60 * 60; //claim_period + fulfillRequestedTime;
+        const addressParameters = getParametersForAddress(
+          contractAddress || "",
+          foundOffer,
+          orderTimestamp,
+          fulfillmentId
+        );
+        let locktime = fulfillRequestedTime + BTC_REFUND_CLAIM_PERIOD; //claim_period + fulfillRequestedTime;
 
         // let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
         let hashAdress = generateTrustlexAddressWithRecoveryHash(
@@ -386,6 +405,14 @@ const ExchangeOfferDrawer = ({
           addressParameters.pubKeyHash as string,
           locktime
         );
+        console.log([
+          pubKeyHash.toString("hex"),
+          addressParameters.shortOrderId,
+          addressParameters.secret.toString("hex"),
+          addressParameters.pubKeyHash as string,
+          locktime,
+          hashAdress,
+        ]);
         setTo(`${hashAdress}`);
         setActiveStep(2);
         // console.log(rowFullFillmentQuantityRequested);
@@ -535,39 +562,44 @@ const ExchangeOfferDrawer = ({
         foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
         "hex"
       );
+      let fulfillmentDetails = await getInitializedFulfillments(context.contract, parseInt(foundOffer.offerDetailsInJson.offerId), fulfillmentId);
       let pubKeyHash = toAddress;
-      if (fulfillmentId.length % 2 != 0) {
-        fulfillmentId = "0" + fulfillmentId;
-      }
+      // if (fulfillmentId.length % 2 != 0) {
+      //   fulfillmentId = "0" + fulfillmentId;
+      // }
       let contractAddress =
         currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
           ?.orderBookContractAddreess;
       let orderTimestamp = foundOffer.offerDetailsInJson.orderedTime;
 
-      const orderId = ethers.utils.keccak256(
-        ethers.utils.solidityPack(
-          ["address", "uint256", "uint256", "bytes20", "uint256"],
-          // To be interpreted as: address of contract, orderId, fulfillmentId, pubKeyHash, orderTimestamp
-          // ["0xFD05beBFEa081f6902bf9ec57DCb50b40BA02510", 0, 0, '0x0000000000000000000000000000000000000000', 0]
-          [
-            contractAddress,
-            foundOffer.offerDetailsInJson.offerId,
-            fulfillmentId,
-            foundOffer.offerDetailsInJson.bitcoinAddress,
-            orderTimestamp,
-          ]
-        )
+      // let hashAdress = generateTrustlexAddress(pubKeyHash, shortOrderId);
+      const addressParameters = getParametersForAddress(
+        contractAddress || "",
+        foundOffer,
+        orderTimestamp,
+        fulfillmentId
       );
 
-      const shortOrderId = orderId.slice(2, 10);
-      let publicKey = btcWalletData?.publicKey;
-      let inputForSecret = publicKey + shortOrderId;
-      console.log(inputForSecret);
-      // console.log(shortOrderId, orderId);
-      // let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
-      let hashAdress = generateTrustlexAddress(pubKeyHash, shortOrderId);
+      let fulfillRequestedTime = fulfillmentDetails.fulfillRequestedTime;
+      let locktime = fulfillRequestedTime + BTC_REFUND_CLAIM_PERIOD; //claim_period + fulfillRequestedTime;
 
       // let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
+      let hashAdress = generateTrustlexAddressWithRecoveryHash(
+        pubKeyHash,
+        addressParameters.shortOrderId,
+        addressParameters.secret,
+        addressParameters.pubKeyHash as string,
+        locktime
+      );
+      console.log([
+        pubKeyHash.toString("hex"),
+        addressParameters.shortOrderId,
+        addressParameters.secret.toString("hex"),
+        addressParameters.pubKeyHash as string,
+        locktime,
+        hashAdress,
+      ]);
+
       setTo(`${hashAdress}`);
       setInitatedata(data);
       setActiveStep(activeStep + 1);
@@ -614,10 +646,15 @@ const ExchangeOfferDrawer = ({
     }
 
     let orderTimestamp = foundOffer?.offerDetailsInJson.orderedTime;
-    const addressParameters = getParametersForAddress(contract?.address || '', foundOffer, orderTimestamp);
+    const addressParameters = getParametersForAddress(
+      contract?.address || "",
+      foundOffer,
+      orderTimestamp,
+      offerFulfillmentId
+    );
     const htlcDetails = {
-       secret: '0x' + addressParameters.secret.toString('hex'),
-       recoveryPubKeyHash: '0x' + addressParameters.pubKeyHash
+      secret: "0x" + addressParameters.secret.toString("hex"),
+      recoveryPubKeyHash: "0x" + addressParameters.pubKeyHash,
     };
 
     let result = await submitPaymentProof(
@@ -1096,8 +1133,7 @@ const ExchangeOfferDrawer = ({
                               fgColor="#7C7C7C"
                             /> */}
                         </div>
-                        QR Code and BTC Address will shown after Step 1
-                        initiation.
+                        QR Code and BTC Address will be shown after initiating your order
                       </>
                     ) : (
                       <>

@@ -35,7 +35,7 @@ const SendBtcBox = ({
         <>
           <div className={styles.sendBtcBox} ref={sendBtcBoxRef}>
             <div className={styles.sendBtcTop}>
-              <span>Send BTC in one click</span>
+              <span>Trustlex Wallet</span>
               <Icon
                 icon="radix-icons:cross-2"
                 onClick={onClose}
@@ -49,6 +49,7 @@ const SendBtcBox = ({
               // rightIcon={<Icon icon="ri:arrow-right-line" fontSize={20} />}
               style={{
                 height: "40px",
+                padding: "10px",
                 backgroundColor: "transparent",
                 marginTop: "16px",
               }}
@@ -75,6 +76,7 @@ const SendBtcBox = ({
                 height: "40px",
                 backgroundColor: "transparent",
                 marginTop: "16px",
+                padding: "10px"
               }}
               fullWidth
               onClick={handleSendBtc}

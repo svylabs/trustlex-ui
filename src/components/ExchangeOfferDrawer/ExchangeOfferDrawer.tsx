@@ -562,6 +562,7 @@ const ExchangeOfferDrawer = ({
         foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
         "hex"
       );
+      let fulfillmentDetails = await getInitializedFulfillments(context.contract, parseInt(foundOffer.offerDetailsInJson.offerId), fulfillmentId);
       let pubKeyHash = toAddress;
       // if (fulfillmentId.length % 2 != 0) {
       //   fulfillmentId = "0" + fulfillmentId;
@@ -579,7 +580,7 @@ const ExchangeOfferDrawer = ({
         fulfillmentId
       );
 
-      let fulfillRequestedTime = getTimeInSeconds();
+      let fulfillRequestedTime = fulfillmentDetails.fulfillRequestedTime;
       let locktime = fulfillRequestedTime + BTC_REFUND_CLAIM_PERIOD; //claim_period + fulfillRequestedTime;
 
       // let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
@@ -1127,8 +1128,7 @@ const ExchangeOfferDrawer = ({
                               fgColor="#7C7C7C"
                             /> */}
                         </div>
-                        QR Code and BTC Address will shown after Step 1
-                        initiation.
+                        QR Code and BTC Address will be shown after initiating your order
                       </>
                     ) : (
                       <>

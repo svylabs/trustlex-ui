@@ -5,11 +5,10 @@ export interface IOfferdata {
   offerValidTill: string;
   orderedTime: string;
   offeredBlockNumber: string;
-  bitcoinAddress: string;
+  pubKeyHash: string;
   satoshisToReceive: string;
   satoshisReceived: string;
   satoshisReserved: string;
-  collateralPer3Hours: string;
   progress?: string;
   offerType?: string;
   fullfillmentRequestId?: string | undefined;
@@ -44,6 +43,20 @@ export interface IFullfillmentEvent {
   paymentProofSubmitted: boolean;
   isExpired: boolean;
   fulfillRequestedTime: number;
+}
+export interface SettlementRequest {
+  settledBy: string;
+  quantityRequested: string;
+  settlementRequestedTime?: number;
+  expiryTime?: number;
+  settledTime?: number;
+  lockTime: number;
+  recoveryPubKeyHash: string;
+  settled?: boolean;
+  isExpired?: boolean;
+  txId: string;
+  scriptOutputHash: string;
+  hashedSecret: string;
 }
 
 export interface IFullfillmentResult {

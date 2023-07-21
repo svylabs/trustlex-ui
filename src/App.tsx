@@ -422,6 +422,7 @@ export default function App() {
           let fromOfferId = totalOffers;
 
           let offersList = await getOffersList(trustlex, fromOfferId);
+          console.log(offersList);
           fromOfferId =
             fromOfferId - PAGE_SIZE > 0 ? fromOfferId - PAGE_SIZE : 0;
           setFromOfferId(fromOfferId);
@@ -452,7 +453,9 @@ export default function App() {
           updateTokenBalance(account, ERC20Address, ERC20ABI);
         }
       } else {
-        showErrorMessage("Unable to connect to Web3 wallet! Please install Metamask to continue");
+        showErrorMessage(
+          "Unable to connect to Web3 wallet! Please install Metamask to continue"
+        );
         setExchangeLoadingText("");
         setMySwapOngoingLoadingText("");
         setMySwapCompletedLoadingText("");

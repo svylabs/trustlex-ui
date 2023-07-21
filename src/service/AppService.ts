@@ -16,6 +16,7 @@ import {
   IOffersResultByNonEvent,
   IFullfillmentResult,
   IListInitiatedFullfillmentDataByNonEvent,
+  SettlementRequest,
 } from "~/interfaces/IOfferdata";
 import axios from "axios";
 import { PAGE_SIZE, currencyObjects } from "~/Context/Constants";
@@ -391,11 +392,10 @@ export const getOffer = async (
       offerValidTill: offer.offerValidTill.toString(),
       orderedTime: offer.orderedTime.toString(),
       offeredBlockNumber: offer.offeredBlockNumber.toString(),
-      bitcoinAddress: offer.bitcoinAddress.toString(),
+      pubKeyHash: offer.pubKeyHash.toString(),
       satoshisToReceive: offer.satoshisToReceive.toString(),
       satoshisReceived: offer.satoshisReceived.toString(),
       satoshisReserved: offer.satoshisReserved.toString(),
-      collateralPer3Hours: offer.collateralPer3Hours.toString(),
       fulfillmentRequests: offer.fulfillmentRequests,
       progress: "",
       offerType: "",
@@ -475,7 +475,7 @@ export const AddOfferWithEth = async (
   data: IAddOfferWithEth,
   sellCurrecny: string
 ) => {
-  const { weieth, satoshis, bitcoinAddress, offerValidTill, account } = data;
+  const { weieth, satoshis, pubKeyHash, offerValidTill, account } = data;
 
   try {
     if (!trustLex) {
@@ -499,7 +499,7 @@ export const AddOfferWithEth = async (
     const addOffer = await trustLex.addOfferWithEth(
       weieth,
       satoshis,
-      "0x" + bitcoinAddress,
+      "0x" + pubKeyHash,
       offerValidTill,
       { value: weieth }
     );
@@ -675,7 +675,7 @@ export const getOffersList = async (
     }
 
     let offersData = await trustLex.getOffers(fromOfferId);
-    // console.log(offersData);
+    console.log(offersData);
     let totalFetchedRecords = offersData.total;
     let records = offersData.result;
 
@@ -691,11 +691,10 @@ export const getOffersList = async (
         offerValidTill: offer.offerValidTill.toString(),
         orderedTime: offer.orderedTime.toString(),
         offeredBlockNumber: offer.offeredBlockNumber.toString(),
-        bitcoinAddress: offer.bitcoinAddress.toString(),
+        pubKeyHash: offer.pubKeyHash.toString(),
         satoshisToReceive: offer.satoshisToReceive.toString(),
         satoshisReceived: offer.satoshisReceived.toString(),
         satoshisReserved: offer.satoshisReserved.toString(),
-        collateralPer3Hours: offer.collateralPer3Hours.toString(),
         fulfillmentRequests: offer.fulfillmentRequests,
         fullfillmentResults: undefined,
         isCanceled: offer.isCanceled,
@@ -757,11 +756,10 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
       offerValidTill: offer.offerValidTill.toString(),
       orderedTime: offer.orderedTime.toString(),
       offeredBlockNumber: offer.offeredBlockNumber.toString(),
-      bitcoinAddress: offer.bitcoinAddress.toString(),
+      pubKeyHash: offer.pubkeyHash?.toString(),
       satoshisToReceive: offer.satoshisToReceive.toString(),
       satoshisReceived: offer.satoshisReceived.toString(),
       satoshisReserved: offer.satoshisReserved.toString(),
-      collateralPer3Hours: offer.collateralPer3Hours.toString(),
       fulfillmentRequests: offer.fulfillmentRequests,
       progress: "",
       offerType: "",
@@ -855,11 +853,10 @@ export const listInitializeFullfillmentCompletedByNonEvent = async (
       offerValidTill: offer.offerValidTill.toString(),
       orderedTime: offer.orderedTime.toString(),
       offeredBlockNumber: offer.offeredBlockNumber.toString(),
-      bitcoinAddress: offer.bitcoinAddress.toString(),
+      pubKeyHash: offer.pubKeyHash.toString(),
       satoshisToReceive: offer.satoshisToReceive.toString(),
       satoshisReceived: offer.satoshisReceived.toString(),
       satoshisReserved: offer.satoshisReserved.toString(),
-      collateralPer3Hours: offer.collateralPer3Hours.toString(),
       fulfillmentRequests: offer.fulfillmentRequests,
       progress: "",
       offerType: "",
@@ -979,28 +976,25 @@ export const getInitializedFulfillmentsByOfferId = async (
   try {
     if (!trustLex) return false;
 
-    let fullfillmentResult = await trustLex.getInitiateFulfillments(offerId);
+    let fullfillmentResult = await trustLex.getInitiatedSettlements(offerId);
     return fullfillmentResult;
   } catch (error) {
     console.log(error);
     return fullfillmentResult;
   }
 };
-export const InitializeFullfillment = async (
+export const initiateSettlement = async (
   trustLex: ethers.Contract | undefined,
   offerId: string,
-  _fulfillment: IFullfillmentEvent,
-  colletarealValue: string
+  _settlement: SettlementRequest,
+  proof: IBitcoinPaymentProof
 ) => {
   try {
     if (!trustLex) return false;
-    const initializeFullfillment = await trustLex.initiateFulfillment(
+    const initializeFullfillment = await trustLex.initiateSettlement(
       offerId,
-      _fulfillment,
-      {
-        value: colletarealValue,
-        gasLimit: 800000,
-      }
+      _settlement,
+      proof
     );
 
     await initializeFullfillment.wait();
@@ -1065,10 +1059,7 @@ export const submitPaymentProof = async (
         bitcoinPaymentProof.index,
         bitcoinPaymentProof.blockHeight,
       ],
-      [
-         htlcDetails.secret,
-         htlcDetails.recoveryPubKeyHash
-      ]
+      [htlcDetails.secret, htlcDetails.recoveryPubKeyHash]
     );
 
     let tx = await transaction.wait();

@@ -257,9 +257,9 @@ const Exchange = (props: Props) => {
   // This function is triggered when click on add offer confirm button
   const handleOfferConfirm = async () => {
     try {
-      // let bitcoinAddress = generatedBitcoinData?.pubkeyHash.toString("hex");
-      let bitcoinAddress = exchangeData?.pubkeyHash;
-      if (bitcoinAddress === undefined) {
+      // let pubkeyHash = generatedBitcoinData?.pubkeyHash.toString("hex");
+      let pubkeyHash = exchangeData?.pubkeyHash;
+      if (pubkeyHash === undefined) {
         showErrorMessage(
           "Address to receive Bitcoin is empty. Please click on Generate in Browser button."
         );
@@ -280,7 +280,7 @@ const Exchange = (props: Props) => {
           satoshis: BtcToSatoshiConverter(
             userInputData.activeExchange[0].value
           ),
-          bitcoinAddress: bitcoinAddress,
+          pubKeyHash: pubkeyHash,
           offerValidTill: TimeToNumber(exchangeData.valid),
           account: account,
         };

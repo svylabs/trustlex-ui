@@ -96,6 +96,10 @@ export const generateSecret = (input: Buffer) => {
   return secret;
 };
 
+export const getHashedSecret = (secret: Buffer) => {
+  let hashedSecret = bitcoin.crypto.hash256(secret);
+  return hashedSecret;
+};
 export const generateTrustlexAddressWithRecoveryHash = (
   pubkeyHash: Buffer,
   shortOrderId: string,
@@ -105,16 +109,6 @@ export const generateTrustlexAddressWithRecoveryHash = (
 ): string | undefined => {
   if (pubkeyHash.length != 20) return undefined;
   let hashedSecret = bitcoin.crypto.hash256(secret);
-  // const witnessScript = bitcoin.script.compile([
-  //   // Buffer.from(fulfillmentId, "hex"),
-  //   Buffer.from(shortOrderId, "hex"),
-  //   bitcoin.opcodes.OP_DROP,
-  //   bitcoin.opcodes.OP_DUP,
-  //   bitcoin.opcodes.OP_HASH160,
-  //   pubkeyHash,
-  //   bitcoin.opcodes.OP_EQUALVERIFY,
-  //   bitcoin.opcodes.OP_CHECKSIG,
-  // ]);
 
   let witnessScript2 = bitcoin.script.compile([
     Buffer.from(shortOrderId, "hex"),

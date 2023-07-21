@@ -23,9 +23,10 @@ import {
   IFullfillmentEvent,
   IFullfillmentResult,
   IOfferdata,
+  SettlementRequest,
 } from "~/interfaces/IOfferdata";
 import {
-  InitializeFullfillment,
+  initiateSettlement,
   showSuccessMessage,
   showErrorMessage,
   getOffer,
@@ -46,6 +47,7 @@ import {
   tofixedBTC,
   generateSecret,
   generateTrustlexAddressWithRecoveryHash,
+  getHashedSecret,
 } from "~/utils/BitcoinUtils";
 import ImageIcon from "../ImageIcon/ImageIcon";
 import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";
@@ -198,13 +200,6 @@ const ExchangeOfferDrawer = ({
     secret: Buffer;
     pubKeyHash: String;
   } => {
-    console.log([
-      contractAddress,
-      rowOfferId,
-      fulfillmentId,
-      foundOffer.offerDetailsInJson.bitcoinAddress,
-      orderTimestamp,
-    ]);
     const orderId = ethers.utils.keccak256(
       ethers.utils.solidityPack(
         ["address", "uint256", "uint256", "bytes20", "uint256"],
@@ -214,7 +209,7 @@ const ExchangeOfferDrawer = ({
           contractAddress,
           rowOfferId,
           fulfillmentId,
-          foundOffer.offerDetailsInJson.bitcoinAddress,
+          foundOffer.offerDetailsInJson.pubKeyHash,
           orderTimestamp,
         ]
       )
@@ -287,20 +282,41 @@ const ExchangeOfferDrawer = ({
         Number(
           ethers.utils.formatEther(offer.offerDetailsInJson.offerQuantity)
         );
-      // const satoshisToReceive = Number(
-      //   offer.offerDetailsInJson.satoshisToReceive
-      // );
-      // let satoshisReserved = Number(offer.offerDetailsInJson.satoshisReserved);
 
-      // const satoshisReceived = Number(
-      //   offer.offerDetailsInJson.satoshisReceived
-      // );
-      // console.log(offerDetails);
       let satoshisToReceive = Number(offerDetails.satoshisToReceive);
       let satoshisReserved = Number(offerDetails.satoshisReserved);
 
       let satoshisReceived = Number(offerDetails.satoshisReceived);
       const offerQuantity = Number(offerDetails.offerQuantity);
+
+      let contractInstance = await getSelectedTokenContractInstance();
+      let contractAddress =
+        currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+          ?.orderBookContractAddreess;
+      let orderTimestamp = offerDetails.orderedTime;
+
+      // Make the btc address to pay
+
+      let pubKeyHash = Buffer.from(offerDetails.pubKeyHash.substring(2), "hex");
+      const addressParameters = getParametersForAddress(
+        contractAddress || "",
+        foundOffer,
+        orderTimestamp,
+        account // in place on fullfillment id
+      );
+
+      let fulfillRequestedTime = getTimeInSeconds();
+      let locktime = fulfillRequestedTime + BTC_REFUND_CLAIM_PERIOD; //claim_period + fulfillRequestedTime;
+      let hashAdress = generateTrustlexAddressWithRecoveryHash(
+        pubKeyHash,
+        addressParameters.shortOrderId,
+        addressParameters.secret,
+        addressParameters.pubKeyHash as string,
+        locktime
+      );
+      // console.log(hashAdress);
+      setTo(hashAdress as string);
+
       fullfillmentResults &&
         fullfillmentResults?.map(
           (value: IFullfillmentResult, index: number) => {
@@ -320,7 +336,6 @@ const ExchangeOfferDrawer = ({
           }
         );
 
-      // console.log(satoshisReserved);
       let left_to_buy =
         Number(
           SatoshiToBtcConverter(
@@ -333,7 +348,7 @@ const ExchangeOfferDrawer = ({
       );
 
       setIsInitating("");
-      setTo("");
+      // setTo("");
       setActiveStep(1);
       setVerified("");
       setConfirmed("");
@@ -365,55 +380,18 @@ const ExchangeOfferDrawer = ({
         let fulfillRequestedTime =
           rowFullfillment.fulfillmentRequest.fulfillRequestedTime;
 
-        // get claim period
-        let contractInstance = await getSelectedTokenContractInstance();
-        // let claim_period = await getClaimPeriod(contractInstance);
-        // if (!claim_period) {
-        //   showErrorMessage("Failed to connect the contract!");
-        //   return false;
-        // }
-        let toAddress = Buffer.from(
-          foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
-          "hex"
-        );
-        let pubKeyHash = toAddress;
-        // console.log(foundOffer.offerDetailsInJson.bitcoinAddress);
         let fulfillmentId = rowFullFillmentId.toString();
         console.log(fulfillmentId);
         setOfferFulfillmentId(fulfillmentId);
         // if (fulfillmentId.length % 2 != 0) {
         //   fulfillmentId = "0" + fulfillmentId;
         // }
-        let contractAddress =
-          currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
-            ?.orderBookContractAddreess;
-        let orderTimestamp = foundOffer.offerDetailsInJson.orderedTime;
+
         // console.log(orderTimestamp);
-        const addressParameters = getParametersForAddress(
-          contractAddress || "",
-          foundOffer,
-          orderTimestamp,
-          fulfillmentId
-        );
-        let locktime = fulfillRequestedTime + BTC_REFUND_CLAIM_PERIOD; //claim_period + fulfillRequestedTime;
 
         // let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
-        let hashAdress = generateTrustlexAddressWithRecoveryHash(
-          pubKeyHash,
-          addressParameters.shortOrderId,
-          addressParameters.secret,
-          addressParameters.pubKeyHash as string,
-          locktime
-        );
-        console.log([
-          pubKeyHash.toString("hex"),
-          addressParameters.shortOrderId,
-          addressParameters.secret.toString("hex"),
-          addressParameters.pubKeyHash as string,
-          locktime,
-          hashAdress,
-        ]);
-        setTo(`${hashAdress}`);
+
+        // setTo(`${hashAdress}`);
         setActiveStep(2);
         // console.log(rowFullFillmentQuantityRequested);
         left_to_buy =
@@ -460,7 +438,7 @@ const ExchangeOfferDrawer = ({
     }
 
     setIsInitating("loading");
-    let result = await initiateFullFillMent();
+    let result = await initiateSettlement();
     if (result == false) {
       setIsInitating("");
     } else {
@@ -471,7 +449,7 @@ const ExchangeOfferDrawer = ({
     // }, 1000 * 120);
   };
 
-  const initiateFullFillMent = async () => {
+  const initiateSettlement = async () => {
     if (!foundOffer || foundOffer === undefined) {
       showErrorMessage("Invalid Offer");
       return false;
@@ -485,56 +463,33 @@ const ExchangeOfferDrawer = ({
       context.contract,
       foundOffer.offerDetailsInJson.offerId
     );
-    let totalCollateralAdded =
-      foundOffer.offerDetailsInJson.collateralPer3Hours;
-    let colletarealValue = "0";
 
-    if (isColletaralNeeded == true) {
-      colletarealValue = getColletaralValue().toLocaleString("fullwide", {
-        useGrouping: false,
-      });
+    let recoveryPubKeyHash = "0x" + btcWalletData?.pubkeyHash || "";
+    let orderTimestamp = foundOffer.offerDetailsInJson.orderedTime;
+    const addressParameters = getParametersForAddress(
+      contract?.address || "",
+      foundOffer,
+      orderTimestamp,
+      offerFulfillmentId
+    );
 
-      totalCollateralAdded = EthtoWei(colletarealValue).toString();
-      // if (selectedToken != "ETH") {
-      //   let tokenAmount = colletarealValue;
-      //   // Allow the contract to get the token
-      //   let allownaceResult = await increaseContractAllownace(
-      //     selectedToken,
-      //     tokenAmount
-      //   );
-      //   if (allownaceResult == false || !allownaceResult) {
-      //     return false;
-      //   }
-      //   // console.log(allownaceResult);
-      // }
-    }
-
-    const _fulfillment: IFullfillmentEvent = {
-      // fulfillmentBy: foundOffer.offerEvent.from,
-      fulfillmentBy: account,
-      // quantityRequested: foundOffer.offerDetailsInJson.satoshisToReceive,
+    let hashedSecret = getHashedSecret(addressParameters.secret);
+    const _settlementRequest: SettlementRequest = {
+      settledBy: account,
       quantityRequested: BtcToSatoshiConverter(getBTCAmount()),
-      allowAnyoneToSubmitPaymentProofForFee: true,
-      allowAnyoneToAddCollateralForFee: true,
-      totalCollateralAdded: totalCollateralAdded.toString(),
-      // expiryTime: foundOffer.offerDetailsInJson.offerValidTill,
-      expiryTime: getTimeInSeconds().toString(),
-      fulfilledTime: 0,
-      fulfillRequestedTime: 0,
-      // collateralAddedBy: foundOffer.offerEvent.from,
-      collateralAddedBy: account,
-      paymentProofSubmitted: false,
-      isExpired: false,
+      lockTime: 0,
+      recoveryPubKeyHash: recoveryPubKeyHash,
+      txId: bitcoinPaymentProof.transaction,
+      scriptOutputHash: "",
+      hashedSecret: "0x" + hashedSecret.toString("hex"),
     };
 
     // console.log(_fulfillment);
 
-    const data = await InitializeFullfillment(
+    const data = await initiateSettlement(
       context.contract,
-      // foundOffer.offerEvent.to,
       foundOffer.offerDetailsInJson.offerId,
-      _fulfillment,
-      totalCollateralAdded
+      _fulfillment
     );
     if (data) {
       console.log(data);
@@ -562,7 +517,11 @@ const ExchangeOfferDrawer = ({
         foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
         "hex"
       );
-      let fulfillmentDetails = await getInitializedFulfillments(context.contract, parseInt(foundOffer.offerDetailsInJson.offerId), fulfillmentId);
+      let fulfillmentDetails = await getInitializedFulfillments(
+        context.contract,
+        parseInt(foundOffer.offerDetailsInJson.offerId),
+        fulfillmentId
+      );
       let pubKeyHash = toAddress;
       // if (fulfillmentId.length % 2 != 0) {
       //   fulfillmentId = "0" + fulfillmentId;
@@ -703,9 +662,13 @@ const ExchangeOfferDrawer = ({
   };
 
   const renderer = ({ days, hours, minutes, seconds, completed }) => {
-      // Render a countdown
-      return <span>{days}d:{hours}h {minutes}m:{seconds}s <br/></span>;
-  }
+    // Render a countdown
+    return (
+      <span>
+        {days}d:{hours}h {minutes}m:{seconds}s <br />
+      </span>
+    );
+  };
 
   const getColletaralValue = () => {
     let inputAmount = Number(ethValue);
@@ -908,8 +871,13 @@ const ExchangeOfferDrawer = ({
                   isOrderExpired == false &&
                   fullFillmentPaymentProofSubmitted == false ? (
                     <>
-                      <span style={{fontSize: "8"}}>Time Left</span>&nbsp;
-                      <span style={{ borderBlockColor: "green", color: countDownTimeColor }}>
+                      <span style={{ fontSize: "8" }}>Time Left</span>&nbsp;
+                      <span
+                        style={{
+                          borderBlockColor: "green",
+                          color: countDownTimeColor,
+                        }}
+                      >
                         <Countdowntimer
                           date={
                             countdowntimerTime
@@ -949,168 +917,6 @@ const ExchangeOfferDrawer = ({
                 </div>
                 <h2 className={styles.stepCount}>Step 1</h2>
               </div>
-
-              <div className={styles.stepsContentsContainer}>
-                <div className={styles.stepContent}>
-                  <div className={styles.spacing} />
-                  {/* Colloerateral section start here */}
-                  {isColletaralNeeded == true ? (
-                    <>
-                      <div className={styles.colletaralTextContainer}>
-                        <span
-                          className={styles.colletaralText}
-                        >{`Colletaral (optional)`}</span>
-                        <span className={styles.colletaralText}>
-                          There is already one offer fullfillment in progress.
-                          Post {getColletaralValue()} {DEFAULT_COLLETARAL_FEES}%{" "}
-                          <ImageIcon
-                            image={getIconFromCurrencyType(CurrencyEnum.ETH)}
-                          />
-                          collateral to increase the payment confirmation time
-                          by 3 more hours
-                        </span>
-                      </div>
-                    </>
-                  ) : (
-                    <></>
-                  )}
-
-                  {/* <div className={styles.actionButton}>
-                    <Button
-                      variant={VariantsEnum.outlinePrimary}
-                      style={{ background: "transparent" }}
-                      radius={10}
-                    >
-                      Add Collateral
-                    </Button>
-                    <span className={styles.rightText}>
-                      5% collateral posted already
-                    </span>
-                  </div> */}
-                  {/* Colloerateral section end here */}
-                  <div
-                    className={`${styles.stepItem} ${
-                      checked === "allow" && styles.activeStepItem
-                    }`}
-                    onClick={() => setChecked("allow")}
-                  >
-                    <div className={styles.checkboxContainer}>
-                      <input
-                        type="radio"
-                        className={styles.checkbox}
-                        checked={checked === "allow" ? true : false}
-                        onChange={() => setChecked("allow")}
-                      />
-                    </div>
-                    <span>
-                      Allow anyone to post payment proof for 0.05% fee
-                    </span>
-                  </div>
-                  <div
-                    className={`${styles.stepItem} ${
-                      checked !== "allow" && styles.activeStepItem
-                    }`}
-                    onClick={() => setChecked("notAllow")}
-                  >
-                    <div className={styles.checkboxContainer}>
-                      <input
-                        type="radio"
-                        className={styles.checkbox}
-                        checked={checked !== "allow" ? true : false}
-                        onChange={() => setChecked("notAllow")}
-                      />
-                    </div>
-                    <span>I'll do it myself(0% transaction fees)</span>
-                  </div>
-                  <div className={styles.spacing} />
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "left",
-                    }}
-                  >
-                    <div className={styles.actionButton}>
-                      {isInitiatng === "initiated" ? (
-                        <Button
-                          variant={VariantsEnum.outline}
-                          radius={10}
-                          style={{
-                            borderColor: "#53C07F",
-                            background: "unset",
-                            color: "#53C07F",
-                          }}
-                          leftIcon={
-                            <Icon icon={"charm:circle-tick"} color="#53C07F" />
-                          }
-                        >
-                          Initiated
-                        </Button>
-                      ) : (
-                        <Button
-                          variant={
-                            isInitiatng === "loading"
-                              ? VariantsEnum.outline
-                              : VariantsEnum.outlinePrimary
-                          }
-                          radius={10}
-                          style={{
-                            backgroundColor:
-                              isInitiatng === "loading"
-                                ? "unset"
-                                : "transparent",
-                          }}
-                          loading={isInitiatng === "loading" ? true : false}
-                          onClick={
-                            isColletaralNeeded == true
-                              ? handleInitate
-                              : handleInitate
-                          }
-                        >
-                          {isInitiatng === "loading" ? (
-                            "Initiating"
-                          ) : (
-                            <>
-                              Initiate{" "}
-                              {isColletaralNeeded == true
-                                ? "with Colletaral"
-                                : ""}
-                            </>
-                          )}
-                        </Button>
-                      )}
-                      {isInitiatng === "loading" ? (
-                        <span className={styles.timer}>
-                          <Countdown />
-                        </span>
-                      ) : (
-                        isInitiatng !== "initiated" && (
-                          <span className={styles.rightText}>
-                            It will take approximately 1-3 mins
-                          </span>
-                        )
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className={styles.step}>
-              <div className={styles.stepTitle}>
-                <div className={styles.svg}>
-                  {activeStep > 2 ? (
-                    <StepSuccessFilledSvg />
-                  ) : activeStep === 2 ? (
-                    <>
-                      <StepFilledSvg />
-                    </>
-                  ) : (
-                    <StepSvg />
-                  )}
-                </div>
-                <h2 className={styles.stepCount}>Step 2</h2>
-                {/* <img src="https://chart.googleapis.com/chart?chs=225x225&chld=L|2&cht=qr&chl=bitcoin:1MoLoCh1srp6jjQgPmwSf5Be5PU98NJHgx?amount=.01%26label=Moloch.net%26message=Donation" /> */}
-              </div>
               <div className={styles.stepsContentsContainer}>
                 <div className={styles.stepContent}>
                   <div className={styles.spacing} />
@@ -1133,7 +939,8 @@ const ExchangeOfferDrawer = ({
                               fgColor="#7C7C7C"
                             /> */}
                         </div>
-                        QR Code and BTC Address will be shown after initiating your order
+                        QR Code and BTC Address will be shown after initiating
+                        your order
                       </>
                     ) : (
                       <>
@@ -1157,14 +964,7 @@ const ExchangeOfferDrawer = ({
                           ) : (
                             <span className={styles.toAddress}>{to}</span>
                           )}
-                          {/* Input the transaction hash */}
-                          {/* <TextInput
-                            type={"text"}
-                            placeholder={"Enter the transaction hash"}
-                            label={"Transaction Hash"}
-                            value={""}
-                            className="TxHashInput"
-                          /> */}
+
                           <Input
                             type={"text"}
                             placeholder={"Enter the Block Hash"}
@@ -1241,6 +1041,157 @@ const ExchangeOfferDrawer = ({
                 </div>
               </div>
             </div>
+
+            <div className={styles.step}>
+              <div className={styles.stepTitle}>
+                <div className={styles.svg}>
+                  {activeStep > 2 ? (
+                    <StepSuccessFilledSvg />
+                  ) : activeStep === 2 ? (
+                    <>
+                      <StepFilledSvg />
+                    </>
+                  ) : (
+                    <StepSvg />
+                  )}
+                </div>
+                <h2 className={styles.stepCount}>Step 2</h2>
+                {/* <img src="https://chart.googleapis.com/chart?chs=225x225&chld=L|2&cht=qr&chl=bitcoin:1MoLoCh1srp6jjQgPmwSf5Be5PU98NJHgx?amount=.01%26label=Moloch.net%26message=Donation" /> */}
+              </div>
+              <div className={styles.stepsContentsContainer}>
+                <div className={styles.stepContent}>
+                  <div className={styles.spacing} />
+                  {/* Colloerateral section start here */}
+                  {isColletaralNeeded == true ? (
+                    <>
+                      <div className={styles.colletaralTextContainer}>
+                        <span
+                          className={styles.colletaralText}
+                        >{`Colletaral (optional)`}</span>
+                        <span className={styles.colletaralText}>
+                          There is already one offer fullfillment in progress.
+                          Post {getColletaralValue()} {DEFAULT_COLLETARAL_FEES}%{" "}
+                          <ImageIcon
+                            image={getIconFromCurrencyType(CurrencyEnum.ETH)}
+                          />
+                          collateral to increase the payment confirmation time
+                          by 3 more hours
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <></>
+                  )}
+
+                  {/* Colloerateral section end here */}
+                  <div
+                    className={`${styles.stepItem} ${
+                      checked === "allow" && styles.activeStepItem
+                    }`}
+                    onClick={() => setChecked("allow")}
+                  >
+                    <div className={styles.checkboxContainer}>
+                      <input
+                        type="radio"
+                        className={styles.checkbox}
+                        checked={checked === "allow" ? true : false}
+                        onChange={() => setChecked("allow")}
+                      />
+                    </div>
+                    <span>
+                      Allow anyone to post payment proof for 0.05% fee
+                    </span>
+                  </div>
+                  <div
+                    className={`${styles.stepItem} ${
+                      checked !== "allow" && styles.activeStepItem
+                    }`}
+                    onClick={() => setChecked("notAllow")}
+                  >
+                    <div className={styles.checkboxContainer}>
+                      <input
+                        type="radio"
+                        className={styles.checkbox}
+                        checked={checked !== "allow" ? true : false}
+                        onChange={() => setChecked("notAllow")}
+                      />
+                    </div>
+                    <span>I'll do it myself(0% transaction fees)</span>
+                  </div>
+                  <div className={styles.spacing} />
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "left",
+                    }}
+                  >
+                    {/* Start here Initiate order button */}
+                    <div className={styles.actionButton}>
+                      {isInitiatng === "initiated" ? (
+                        <Button
+                          variant={VariantsEnum.outline}
+                          radius={10}
+                          style={{
+                            borderColor: "#53C07F",
+                            background: "unset",
+                            color: "#53C07F",
+                          }}
+                          leftIcon={
+                            <Icon icon={"charm:circle-tick"} color="#53C07F" />
+                          }
+                        >
+                          Initiated
+                        </Button>
+                      ) : (
+                        <Button
+                          variant={
+                            isInitiatng === "loading"
+                              ? VariantsEnum.outline
+                              : VariantsEnum.outlinePrimary
+                          }
+                          radius={10}
+                          style={{
+                            backgroundColor:
+                              isInitiatng === "loading"
+                                ? "unset"
+                                : "transparent",
+                          }}
+                          loading={isInitiatng === "loading" ? true : false}
+                          onClick={
+                            isColletaralNeeded == true
+                              ? handleInitate
+                              : handleInitate
+                          }
+                        >
+                          {isInitiatng === "loading" ? (
+                            "Initiating"
+                          ) : (
+                            <>
+                              Initiate{" "}
+                              {isColletaralNeeded == true
+                                ? "with Colletaral"
+                                : ""}
+                            </>
+                          )}
+                        </Button>
+                      )}
+                      {isInitiatng === "loading" ? (
+                        <span className={styles.timer}>
+                          <Countdown />
+                        </span>
+                      ) : (
+                        isInitiatng !== "initiated" && (
+                          <span className={styles.rightText}>
+                            It will take approximately 1-3 mins
+                          </span>
+                        )
+                      )}
+                    </div>
+                    {/* End here Initiate order button */}
+                  </div>
+                </div>
+              </div>
+            </div>
             <div className={styles.step}>
               <div className={styles.stepTitle}>
                 <div className={styles.svg}>
@@ -1265,8 +1216,8 @@ const ExchangeOfferDrawer = ({
                         {TimeToDateFormat(rowFullFillmentExpiryTime)}
                       </strong>{" "}
                       or add more collateral to increase payment confirmation
-                      time in order to have the ability to withdraw {selectedToken} from
-                      smart contract
+                      time in order to have the ability to withdraw{" "}
+                      {selectedToken} from smart contract
                     </p>
                   </div>
                   <div className={styles.spacing} />

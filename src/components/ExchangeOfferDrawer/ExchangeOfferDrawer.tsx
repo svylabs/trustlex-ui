@@ -488,7 +488,7 @@ const ExchangeOfferDrawer = ({
       quantityRequested: BtcToSatoshiConverter(getBTCAmount()),
       lockTime: locktime,
       recoveryPubKeyHash: recoveryPubKeyHash,
-      txId: bitcoinPaymentProof.transaction,
+      txId: "0x0000000000000000000000000000000000000000",
       scriptOutputHash: "0x0000000000000000000000000000000000000000",
       hashedSecret: "0x" + hashedSecret.toString("hex"),
     };

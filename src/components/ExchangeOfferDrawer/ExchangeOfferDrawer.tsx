@@ -26,7 +26,7 @@ import {
   SettlementRequest,
 } from "~/interfaces/IOfferdata";
 import {
-  initiateSettlement,
+  initiateSettlementService,
   showSuccessMessage,
   showErrorMessage,
   getOffer,
@@ -294,7 +294,12 @@ const ExchangeOfferDrawer = ({
         currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
           ?.orderBookContractAddreess;
       let orderTimestamp = offerDetails.orderedTime;
-
+      let offerValidTill = offerDetails.offerValidTill;
+      let locktime =
+        parseInt(offerValidTill) +
+        parseInt(orderTimestamp) +
+        BTC_REFUND_CLAIM_PERIOD;
+      // console.log(locktime);
       // Make the btc address to pay
 
       let pubKeyHash = Buffer.from(offerDetails.pubKeyHash.substring(2), "hex");
@@ -305,8 +310,6 @@ const ExchangeOfferDrawer = ({
         account // in place on fullfillment id
       );
 
-      let fulfillRequestedTime = getTimeInSeconds();
-      let locktime = fulfillRequestedTime + BTC_REFUND_CLAIM_PERIOD; //claim_period + fulfillRequestedTime;
       let hashAdress = generateTrustlexAddressWithRecoveryHash(
         pubKeyHash,
         addressParameters.shortOrderId,
@@ -466,37 +469,50 @@ const ExchangeOfferDrawer = ({
 
     let recoveryPubKeyHash = "0x" + btcWalletData?.pubkeyHash || "";
     let orderTimestamp = foundOffer.offerDetailsInJson.orderedTime;
+    let offerValidTill = foundOffer.offerDetailsInJson.offerValidTill;
+    let locktime =
+      parseInt(offerValidTill) +
+      parseInt(orderTimestamp) +
+      BTC_REFUND_CLAIM_PERIOD;
+
     const addressParameters = getParametersForAddress(
       contract?.address || "",
       foundOffer,
       orderTimestamp,
-      offerFulfillmentId
+      account // in place on fullfillment id
     );
 
     let hashedSecret = getHashedSecret(addressParameters.secret);
     const _settlementRequest: SettlementRequest = {
       settledBy: account,
       quantityRequested: BtcToSatoshiConverter(getBTCAmount()),
-      lockTime: 0,
+      lockTime: locktime,
       recoveryPubKeyHash: recoveryPubKeyHash,
       txId: bitcoinPaymentProof.transaction,
-      scriptOutputHash: "",
+      scriptOutputHash: "0x0000000000000000000000000000000000000000",
       hashedSecret: "0x" + hashedSecret.toString("hex"),
     };
 
     // console.log(_fulfillment);
-
-    const data = await initiateSettlement(
+    console.log([
       context.contract,
       foundOffer.offerDetailsInJson.offerId,
-      _fulfillment
+      _settlementRequest,
+      bitcoinPaymentProof,
+    ]);
+    const data = await initiateSettlementService(
+      context.contract,
+      foundOffer.offerDetailsInJson.offerId,
+      _settlementRequest,
+      bitcoinPaymentProof
     );
+
     if (data) {
       console.log(data);
       let events =
         data?.events &&
         data?.events?.filter((value: any) => {
-          if (value?.event && value?.event == "INITIALIZED_FULFILLMENT") {
+          if (value?.event && value?.event == "INITIALIZED_SETTLEMENT") {
             return true;
           } else {
             return false;
@@ -506,60 +522,19 @@ const ExchangeOfferDrawer = ({
       let event = events[0];
       // let claimedBy = event?.args["claimedBy"];
       // let offerId = event?.args["offerId"]?.toString();
-      let fulfillmentId = event?.args["fulfillmentId"]?.toString();
-      let expiryTime = (
-        parseInt(_fulfillment.expiryTime) +
-        getOfferOrderExpiryDurationInSeconds()
-      ).toString();
+      let settlementId = event?.args["settlementId"]?.toString();
+
       // console.log(event, claimedBy, offerId, fulfillmentId);
-      setOfferFulfillmentId(fulfillmentId);
-      let toAddress = Buffer.from(
-        foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
-        "hex"
-      );
+      setOfferFulfillmentId(settlementId);
+
       let fulfillmentDetails = await getInitializedFulfillments(
         context.contract,
         parseInt(foundOffer.offerDetailsInJson.offerId),
-        fulfillmentId
-      );
-      let pubKeyHash = toAddress;
-      // if (fulfillmentId.length % 2 != 0) {
-      //   fulfillmentId = "0" + fulfillmentId;
-      // }
-      let contractAddress =
-        currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
-          ?.orderBookContractAddreess;
-      let orderTimestamp = foundOffer.offerDetailsInJson.orderedTime;
-
-      // let hashAdress = generateTrustlexAddress(pubKeyHash, shortOrderId);
-      const addressParameters = getParametersForAddress(
-        contractAddress || "",
-        foundOffer,
-        orderTimestamp,
-        fulfillmentId
+        settlementId
       );
 
-      let fulfillRequestedTime = fulfillmentDetails.fulfillRequestedTime;
-      let locktime = fulfillRequestedTime + BTC_REFUND_CLAIM_PERIOD; //claim_period + fulfillRequestedTime;
+      let expiryTime = fulfillmentDetails.expiryTime;
 
-      // let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
-      let hashAdress = generateTrustlexAddressWithRecoveryHash(
-        pubKeyHash,
-        addressParameters.shortOrderId,
-        addressParameters.secret,
-        addressParameters.pubKeyHash as string,
-        locktime
-      );
-      console.log([
-        pubKeyHash.toString("hex"),
-        addressParameters.shortOrderId,
-        addressParameters.secret.toString("hex"),
-        addressParameters.pubKeyHash as string,
-        locktime,
-        hashAdress,
-      ]);
-
-      setTo(`${hashAdress}`);
       setInitatedata(data);
       setActiveStep(activeStep + 1);
       setrowFullFillmentExpiryTime(expiryTime);

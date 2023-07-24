@@ -953,7 +953,7 @@ export const getInitializedFulfillments = async (
   try {
     if (!trustLex) return false;
 
-    let offerData = await trustLex.initializedFulfillments(
+    let offerData = await trustLex.initializedSettlements(
       offerId,
       fulfillmentId
     );
@@ -983,7 +983,7 @@ export const getInitializedFulfillmentsByOfferId = async (
     return fullfillmentResult;
   }
 };
-export const initiateSettlement = async (
+export const initiateSettlementService = async (
   trustLex: ethers.Contract | undefined,
   offerId: string,
   _settlement: SettlementRequest,

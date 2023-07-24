@@ -37,6 +37,7 @@ import {
   IOffersResultByNonEvent,
   OrderBy,
   IListInitiatedFullfillmentDataByNonEvent,
+  IInitiatedOrder,
 } from "./interfaces/IOfferdata";
 import { ethers } from "ethers";
 import { ContractMap } from "./Context/AppConfig";
@@ -178,6 +179,8 @@ export default function App() {
     chainId: 0,
   });
   const userData = get("userInputData", true);
+  const initiatedOrdersLocalStoarge = get("initiatedOrders", false);
+
   const [userInputData, setUserInputData] = useState<IUserInputData>(
     userData
       ? userData
@@ -189,6 +192,14 @@ export default function App() {
           isNativeToken: DEFAULT_IS_NATIVE_TOKEN,
         }
   );
+  let initiatedOrders_ =
+    initiatedOrdersLocalStoarge != "undefined" &&
+    initiatedOrdersLocalStoarge != "false"
+      ? JSON.parse(initiatedOrdersLocalStoarge)
+      : [];
+  const [initiatedOrders, setInitiatedOrders] =
+    useState<IInitiatedOrder[]>(initiatedOrders_);
+
   const [selectedNetwork, setSelectedNetwork] = useState<string>(
     userData.selectedNetwork !== undefined
       ? userData?.selectedNetwork
@@ -251,6 +262,12 @@ export default function App() {
     set("selectedBitcoinNode", selectedBitcoinNode);
     let selectedBitcoinNode_ = get("selectedBitcoinNode", false);
   }, [selectedBitcoinNode]);
+
+  // use Effect for change in user initiated order
+  useEffect(() => {
+    console.log(initiatedOrders);
+    set("initiatedOrders", JSON.stringify(initiatedOrders));
+  }, [initiatedOrders.length]);
 
   // use Effect for setting the bitcoin wallet data in local storage
   useEffect(() => {
@@ -899,6 +916,8 @@ export default function App() {
             //BTC Wallet data variables
             btcWalletData,
             setBTCWalletData,
+            initiatedOrders,
+            setInitiatedOrders,
           }}
         >
           <Layout>

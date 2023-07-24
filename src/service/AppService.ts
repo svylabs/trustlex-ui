@@ -17,6 +17,7 @@ import {
   IFullfillmentResult,
   IListInitiatedFullfillmentDataByNonEvent,
   SettlementRequest,
+  IResultSettlementRequest,
 } from "~/interfaces/IOfferdata";
 import axios from "axios";
 import { PAGE_SIZE, currencyObjects } from "~/Context/Constants";
@@ -130,7 +131,7 @@ export const listOffers = async (
       });
       iterations++;
     } while (estimatedFromBlock > fromBlock && iterations < MAX_ITERATIONS);
-    console.log(offers);
+    // console.log(offers);
     return {
       fromBlock: fromBlock,
       toBlock: toBlock,
@@ -675,7 +676,7 @@ export const getOffersList = async (
     }
 
     let offersData = await trustLex.getOffers(fromOfferId);
-    console.log(offersData);
+    // console.log(offersData);
     let totalFetchedRecords = offersData.total;
     let records = offersData.result;
 
@@ -972,11 +973,12 @@ export const getInitializedFulfillmentsByOfferId = async (
   trustLex: ethers.Contract | undefined,
   offerId: number
 ) => {
-  let fullfillmentResult: IFullfillmentResult[] = [];
+  let fullfillmentResult: IResultSettlementRequest[] = [];
   try {
     if (!trustLex) return false;
 
     let fullfillmentResult = await trustLex.getInitiatedSettlements(offerId);
+    // console.log(fullfillmentResult);
     return fullfillmentResult;
   } catch (error) {
     console.log(error);

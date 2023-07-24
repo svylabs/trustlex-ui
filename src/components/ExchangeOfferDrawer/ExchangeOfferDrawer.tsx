@@ -24,6 +24,7 @@ import {
   IFullfillmentResult,
   IOfferdata,
   SettlementRequest,
+  IInitiatedOrder,
 } from "~/interfaces/IOfferdata";
 import {
   initiateSettlementService,
@@ -224,7 +225,12 @@ const ExchangeOfferDrawer = ({
     return { shortOrderId, secret, pubKeyHash };
   };
 
-  const { listenedOfferData, listenedOfferDataByNonEvent } = context;
+  const {
+    listenedOfferData,
+    listenedOfferDataByNonEvent,
+    initiatedOrders,
+    setInitiatedOrders,
+  } = context;
 
   let foundOffer =
     rowOfferId &&
@@ -246,7 +252,7 @@ const ExchangeOfferDrawer = ({
         rowOfferId
       );
       if (!offerDetails || offerDetails === undefined) return;
-      // console.log(offerDetails);
+      console.log(offerDetails);
       // get the offerfullfillment details
       let fullfillmentResults = await getInitializedFulfillmentsByOfferId(
         contract,
@@ -386,6 +392,12 @@ const ExchangeOfferDrawer = ({
         let fulfillmentId = rowFullFillmentId.toString();
         console.log(fulfillmentId);
         setOfferFulfillmentId(fulfillmentId);
+
+        // let fulfillmentDetails = await getInitializedFulfillments(
+        //   context.contract,
+        //   parseInt(foundOffer.offerDetailsInJson.offerId),
+        //   settlementId
+        // );
         // if (fulfillmentId.length % 2 != 0) {
         //   fulfillmentId = "0" + fulfillmentId;
         // }
@@ -486,10 +498,16 @@ const ExchangeOfferDrawer = ({
     const _settlementRequest: SettlementRequest = {
       settledBy: account,
       quantityRequested: BtcToSatoshiConverter(getBTCAmount()),
+      settlementRequestedTime: 0,
+      expiryTime: 0,
+      settledTime: 0,
       lockTime: locktime,
       recoveryPubKeyHash: recoveryPubKeyHash,
-      txId: "0x0000000000000000000000000000000000000000",
-      scriptOutputHash: "0x0000000000000000000000000000000000000000",
+      settled: false,
+      isExpired: false,
+      txId: "0x0000000000000000000000000000000000000000000000000000000000000000",
+      scriptOutputHash:
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
       hashedSecret: "0x" + hashedSecret.toString("hex"),
     };
 
@@ -622,17 +640,11 @@ const ExchangeOfferDrawer = ({
     }, 2000);
   };
 
-  // useEffect(() => {
-  //   if (!listenedOfferData || listenedOfferData === undefined) return;
-  //   initiateFullFillMent();
-  // }, [listenedOfferData]);
-
   if (!isOpened) return null;
 
   const getBTCAmount = () => {
     let inputAmount = Number(ethValue);
     let BTCAmount = tofixedBTC((inputAmount / planningToSell) * planningToBuy);
-    // console.log(inputAmount, planningToSell, planningToBuy, BTCAmount);
     return BTCAmount;
   };
 
@@ -652,6 +664,7 @@ const ExchangeOfferDrawer = ({
     );
     return colletaralValue;
   };
+
   const handleTxVerification = async () => {
     if (blockHash == "") {
       showErrorMessage("Please enter the block hash");
@@ -717,7 +730,47 @@ const ExchangeOfferDrawer = ({
         index: proofResult.index,
         proof: "0x" + proof_bytes,
       });
+
+      // set the data in local storage
+      let rowOfferId_ = rowOfferId.toString();
+      let userAccount = account.toLowerCase();
+      let initiatedOrders_ = initiatedOrders;
+
+      let initiatedOrderResult: any = getInitiatedOrderDetails();
+
+      if (
+        initiatedOrderResult === false ||
+        initiatedOrderResult === undefined
+      ) {
+        let userIntiatedOrder: IInitiatedOrder = {
+          accountAddress: userAccount,
+          offerId: rowOfferId_,
+          ethAmount: ethValue as string,
+          txHash: transactionHash,
+          blockHash: blockHash,
+        };
+        initiatedOrders_.push(userIntiatedOrder);
+        console.log(initiatedOrders_);
+        setInitiatedOrders(initiatedOrders_);
+      }
     }
+  };
+
+  const getInitiatedOrderDetails = () => {
+    let rowOfferId_ = rowOfferId.toString();
+
+    let initiatedOrders_ = initiatedOrders;
+
+    let initiatedOrderResult =
+      initiatedOrders_ &&
+      initiatedOrders_.find((value: IInitiatedOrder, index: number) => {
+        return (
+          value.accountAddress === account.toLowerCase() &&
+          value.offerId === rowOfferId_
+        );
+      });
+
+    return initiatedOrderResult;
   };
 
   return (

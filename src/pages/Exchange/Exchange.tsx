@@ -78,7 +78,7 @@ import {
   ERC20TokenKey,
   currencyObjects,
 } from "~/Context/Constants";
-import { IFullfillmentResult } from "~/interfaces/IOfferdata";
+import { IResultSettlementRequest } from "~/interfaces/IOfferdata";
 
 type Props = {};
 
@@ -407,42 +407,37 @@ const Exchange = (props: Props) => {
       return false;
     }
     let offerId = data[0] as number;
-
+    console.log(offerId);
     // get the Fulfillments By OfferId
-    let FullfillmentResult: IFullfillmentResult[] =
+    let FullfillmentResult: IResultSettlementRequest[] =
       await getInitializedFulfillmentsByOfferId(contract, offerId);
 
-    let fullfillmentResult: IFullfillmentResult | undefined =
+    let fullfillmentResult: IResultSettlementRequest | undefined =
       FullfillmentResult &&
       FullfillmentResult.find((fullfillmentResult) => {
-        let isExpired = fullfillmentResult.fulfillmentRequest.isExpired;
-        let paymentProofSubmitted =
-          fullfillmentResult.fulfillmentRequest.paymentProofSubmitted;
+        let isExpired = fullfillmentResult.settlementRequest.isExpired;
+        // let paymentProofSubmitted =
+        //   fullfillmentResult.settlementRequest.paymentProofSubmitted;
 
         return (
-          fullfillmentResult.fulfillmentRequest.fulfillmentBy.toLowerCase() ===
-            account.toLowerCase() &&
-          isExpired == false &&
-          paymentProofSubmitted == false
+          fullfillmentResult.settlementRequest.settledBy.toLowerCase() ===
+            account.toLowerCase() && isExpired == false
         );
       });
-    // console.log(
-    //   "fullfillmentResult?.fulfillmentRequest",
-    //   fullfillmentResult?.fulfillmentRequest
-    // );
+    console.log(FullfillmentResult, fullfillmentResult);
     let quantityRequested =
-      fullfillmentResult?.fulfillmentRequest?.quantityRequested.toString();
-    let fullFillmentPaymentProofSubmitted =
-      fullfillmentResult?.fulfillmentRequest?.paymentProofSubmitted;
+      fullfillmentResult?.settlementRequest?.quantityRequested.toString();
+    // let fullFillmentPaymentProofSubmitted =
+    //   fullfillmentResult?.settlementRequest?.paymentProofSubmitted;
 
     setRowOfferId(offerId);
-    setRowFullFillmentId(fullfillmentResult?.fulfillmentRequestId);
+    setRowFullFillmentId(fullfillmentResult?.settlementRequestId);
     setrowFullFillmentExpiryTime(
-      fullfillmentResult?.fulfillmentRequest.expiryTime
+      fullfillmentResult?.settlementRequest.expiryTime
     );
     setRowFullFillmentQuantityRequested(quantityRequested);
     setExchangeOfferDrawerKey(exchangeOfferDrawerKey + 1);
-    setFullFillmentPaymentProofSubmitted(fullFillmentPaymentProofSubmitted);
+    // setFullFillmentPaymentProofSubmitted(fullFillmentPaymentProofSubmitted);
   };
 
   return (

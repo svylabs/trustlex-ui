@@ -123,7 +123,7 @@ const Navbar = (props: Props) => {
   };
 
   useEffect(() => {
-    console.log(myBTCWalletDrawerOpen);
+    // console.log(myBTCWalletDrawerOpen);
   }, [myBTCWalletDrawerOpen]);
   /*------------End Functions for my wallet-------------*/
 

@@ -48,15 +48,27 @@ export interface SettlementRequest {
   settledBy: string;
   quantityRequested: string;
   settlementRequestedTime?: number;
-  expiryTime?: number;
+  expiryTime?: string;
   settledTime?: number;
   lockTime: number;
   recoveryPubKeyHash: string;
   settled?: boolean;
   isExpired?: boolean;
-  txId: string;
-  scriptOutputHash: string;
+  txId?: string;
+  scriptOutputHash?: string;
   hashedSecret: string;
+}
+
+export interface IResultSettlementRequest {
+  settlementRequest: SettlementRequest;
+  settlementRequestId: string;
+}
+export interface IInitiatedOrder {
+  accountAddress: string;
+  offerId: string;
+  ethAmount: string;
+  txHash: string;
+  blockHash: string;
 }
 
 export interface IFullfillmentResult {

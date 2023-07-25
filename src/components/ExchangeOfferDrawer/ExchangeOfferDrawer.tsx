@@ -44,6 +44,7 @@ import {
   GetBlock,
 } from "~/service/BitcoinService";
 
+import { IResultSettlementRequest } from "~/interfaces/IOfferdata";
 import {
   generateTrustlexAddress,
   tofixedBTC,
@@ -254,7 +255,7 @@ const ExchangeOfferDrawer = ({
         rowOfferId
       );
       if (!offerDetails || offerDetails === undefined) return;
-      // console.log(offerDetails);
+      console.log(offerDetails);
       // get the offerfullfillment details
       let fullfillmentResults = await getInitializedFulfillmentsByOfferId(
         contract,
@@ -302,18 +303,19 @@ const ExchangeOfferDrawer = ({
       //-----------------Update satoshisReserved if order is expired ---------------------//
       fullfillmentResults &&
         fullfillmentResults?.map(
-          (value: IFullfillmentResult, index: number) => {
-            let expiryTime = Number(value.fulfillmentRequest.expiryTime) * 1000;
-            let isExpired = value.fulfillmentRequest.isExpired;
-            let paymentProofSubmitted =
-              value.fulfillmentRequest.paymentProofSubmitted;
+          (value: IResultSettlementRequest, index: number) => {
+            let expiryTime = Number(value.settlementRequest.expiryTime) * 1000;
+            let isExpired = value.settlementRequest.isExpired;
+            // let paymentProofSubmitted =
+            //   value.settlementRequest.paymentProofSubmitted;
             if (
               expiryTime < Date.now() &&
-              isExpired == false &&
-              paymentProofSubmitted == false
+              isExpired == false
+              // &&
+              // paymentProofSubmitted == false
             ) {
               satoshisReserved -= Number(
-                value.fulfillmentRequest.quantityRequested
+                value.settlementRequest.quantityRequested
               );
             }
           }
@@ -516,7 +518,7 @@ const ExchangeOfferDrawer = ({
       settledBy: account,
       quantityRequested: BtcToSatoshiConverter(getBTCAmount()),
       settlementRequestedTime: 0,
-      expiryTime: 0,
+      expiryTime: "0",
       settledTime: 0,
       lockTime: locktime,
       recoveryPubKeyHash: recoveryPubKeyHash,
@@ -543,7 +545,7 @@ const ExchangeOfferDrawer = ({
     );
 
     if (data) {
-      console.log(data);
+      // console.log(data);
       let events =
         data?.events &&
         data?.events?.filter((value: any) => {
@@ -553,7 +555,7 @@ const ExchangeOfferDrawer = ({
             return false;
           }
         });
-      console.log(events);
+      // console.log(events);
       let event = events[0];
       // let claimedBy = event?.args["claimedBy"];
       // let offerId = event?.args["offerId"]?.toString();

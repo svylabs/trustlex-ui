@@ -12,7 +12,7 @@ export interface IOfferdata {
   progress?: string;
   offerType?: string;
   fullfillmentRequestId?: string | undefined;
-  fulfillmentRequests?: IFullfillmentEvent;
+  settlementRequests?: SettlementRequest;
   fulfillmentRequestExpiryTime?: string;
   fulfillmentRequestQuantityRequested?: string;
   fulfillmentRequestPaymentProofSubmitted?: boolean;

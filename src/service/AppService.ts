@@ -14,7 +14,6 @@ import {
   IinitiatedFullfillmentResult,
   IListInitiatedFullfillmentData,
   IOffersResultByNonEvent,
-  IFullfillmentResult,
   IListInitiatedFullfillmentDataByNonEvent,
   SettlementRequest,
   IResultSettlementRequest,
@@ -397,7 +396,7 @@ export const getOffer = async (
       satoshisToReceive: offer.satoshisToReceive.toString(),
       satoshisReceived: offer.satoshisReceived.toString(),
       satoshisReserved: offer.satoshisReserved.toString(),
-      fulfillmentRequests: offer.fulfillmentRequests,
+      settlementRequests: offer.settlementRequests,
       progress: "",
       offerType: "",
       fullfillmentRequestId: undefined,
@@ -431,7 +430,7 @@ export const getOffer = async (
       offerDetailsInJson.offerType = "my_offer";
     }
     // get the fullfillment list
-    let FullfillmentResults: IFullfillmentResult[] =
+    let FullfillmentResults: IResultSettlementRequest[] =
       await getInitializedFulfillmentsByOfferId(trustLex, offerId);
 
     let fullfillmentRequestId = undefined;
@@ -439,11 +438,12 @@ export const getOffer = async (
       FullfillmentResults &&
       FullfillmentResults.find((fullfillmentResult, index) => {
         if (
-          fullfillmentResult.fulfillmentRequest.fulfillmentBy.toLowerCase() ===
-            account.toLowerCase() &&
-          fullfillmentResult.fulfillmentRequest.paymentProofSubmitted == false
+          fullfillmentResult.settlementRequest.settledBy.toLowerCase() ===
+          account.toLowerCase()
+          //   &&
+          // fullfillmentResult.settlementRequest.paymentProofSubmitted == false
         ) {
-          fullfillmentRequestId = offer.fulfillmentRequests[index];
+          fullfillmentRequestId = offer.settlementRequests[index];
           return true;
         } else {
           return false;
@@ -452,16 +452,20 @@ export const getOffer = async (
     if (fullfillmentResult) {
       offerDetailsInJson.offerType = "my_order";
       offerDetailsInJson.progress =
-        TimestampTotoNow(fullfillmentResult.fulfillmentRequest.expiryTime) +
+        TimestampTotoNow(
+          fullfillmentResult.settlementRequest.expiryTime as string
+        ) +
         " and " +
-        TimestampfromNow(fullfillmentResult.fulfillmentRequest.expiryTime);
+        TimestampfromNow(
+          fullfillmentResult.settlementRequest.expiryTime as string
+        );
       offerDetailsInJson.fullfillmentRequestId = fullfillmentRequestId;
       offerDetailsInJson.fulfillmentRequestExpiryTime =
-        fullfillmentResult.fulfillmentRequest.expiryTime;
+        fullfillmentResult.settlementRequest.expiryTime;
       offerDetailsInJson.fulfillmentRequestQuantityRequested =
-        fullfillmentResult.fulfillmentRequest.quantityRequested.toString();
-      offerDetailsInJson.fulfillmentRequestPaymentProofSubmitted =
-        fullfillmentResult.fulfillmentRequest.paymentProofSubmitted;
+        fullfillmentResult.settlementRequest.quantityRequested.toString();
+      // offerDetailsInJson.fulfillmentRequestPaymentProofSubmitted =
+      //   fullfillmentResult.settlementRequest.paymentProofSubmitted;
     }
 
     return offerDetailsInJson;
@@ -787,7 +791,7 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
       MyOffersPromises.push({ offerDetailsInJson });
     }
     // get the fullfillment list
-    let FullfillmentResults: IFullfillmentResult[] =
+    let FullfillmentResults: IResultSettlementRequest[] =
       await getInitializedFulfillmentsByOfferId(trustLex, value.offerId);
 
     let fullfillmentRequestId = undefined;
@@ -795,9 +799,10 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
       FullfillmentResults &&
       FullfillmentResults.find((fullfillmentResult, index) => {
         if (
-          fullfillmentResult.fulfillmentRequest.fulfillmentBy.toLowerCase() ===
-            account.toLowerCase() &&
-          fullfillmentResult.fulfillmentRequest.paymentProofSubmitted == false
+          fullfillmentResult.settlementRequest.settledBy.toLowerCase() ===
+          account.toLowerCase()
+          // &&
+          // fullfillmentResult.settlementRequest.paymentProofSubmitted == false
         ) {
           fullfillmentRequestId = offer.fulfillmentRequests[index];
           return true;
@@ -808,16 +813,20 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
     if (fullfillmentResult) {
       offerDetailsInJson.offerType = "my_order";
       offerDetailsInJson.progress =
-        TimestampTotoNow(fullfillmentResult.fulfillmentRequest.expiryTime) +
+        TimestampTotoNow(
+          fullfillmentResult.settlementRequest?.expiryTime as string
+        ) +
         " and " +
-        TimestampfromNow(fullfillmentResult.fulfillmentRequest.expiryTime);
+        TimestampfromNow(
+          fullfillmentResult.settlementRequest?.expiryTime as string
+        );
       offerDetailsInJson.fullfillmentRequestId = fullfillmentRequestId;
       offerDetailsInJson.fulfillmentRequestExpiryTime =
-        fullfillmentResult.fulfillmentRequest.expiryTime;
+        fullfillmentResult.settlementRequest.expiryTime;
       offerDetailsInJson.fulfillmentRequestQuantityRequested =
-        fullfillmentResult.fulfillmentRequest.quantityRequested.toString();
-      offerDetailsInJson.fulfillmentRequestPaymentProofSubmitted =
-        fullfillmentResult.fulfillmentRequest.paymentProofSubmitted;
+        fullfillmentResult.settlementRequest.quantityRequested.toString();
+      // offerDetailsInJson.fulfillmentRequestPaymentProofSubmitted =
+      //   fullfillmentResult.settlementRequest.paymentProofSubmitted;
     }
     fullfillmentResult &&
       MyOffersPromises.push({ offerDetailsInJson: offerDetailsInJson });
@@ -891,7 +900,7 @@ export const listInitializeFullfillmentCompletedByNonEvent = async (
     }
     if (account != "") {
       // get the fullfillment list
-      let FullfillmentResults: IFullfillmentResult[] =
+      let FullfillmentResults: IResultSettlementRequest[] =
         await getInitializedFulfillmentsByOfferId(trustLex, value.offerId);
       if (FullfillmentResults && FullfillmentResults.length > 0) {
         // console.log(FullfillmentResults);
@@ -899,10 +908,11 @@ export const listInitializeFullfillmentCompletedByNonEvent = async (
         let fullfillmentFilteredResult = FullfillmentResults.filter(
           (fullfillmentResult, index) => {
             if (
-              fullfillmentResult.fulfillmentRequest.fulfillmentBy.toLowerCase() ===
-                account.toLowerCase() &&
-              fullfillmentResult.fulfillmentRequest.paymentProofSubmitted ==
-                true
+              fullfillmentResult.settlementRequest.settledBy.toLowerCase() ===
+              account.toLowerCase()
+              //    &&
+              // fullfillmentResult.settlementRequest.paymentProofSubmitted ==
+              //   true
             ) {
               let fullfillmentRequestId = offer.fulfillmentRequests[index];
               fullfillmentRequestIds.push(fullfillmentRequestId);
@@ -917,24 +927,28 @@ export const listInitializeFullfillmentCompletedByNonEvent = async (
           let fullfillmentResult = value;
           let offerDetailsInJson2: IOfferdata = { ...offerDetailsInJson };
           let quantityRequested =
-            fullfillmentResult.fulfillmentRequest.quantityRequested.toString();
+            fullfillmentResult.settlementRequest.quantityRequested.toString();
 
           offerDetailsInJson2.offerType = "my_order";
           offerDetailsInJson2.progress =
-            TimestampTotoNow(fullfillmentResult.fulfillmentRequest.expiryTime) +
+            TimestampTotoNow(
+              fullfillmentResult.settlementRequest.expiryTime as string
+            ) +
             " and " +
-            TimestampfromNow(fullfillmentResult.fulfillmentRequest.expiryTime);
+            TimestampfromNow(
+              fullfillmentResult.settlementRequest.expiryTime as string
+            );
           offerDetailsInJson2.fullfillmentRequestId =
             fullfillmentRequestIds[index];
           offerDetailsInJson2.fulfillmentRequestExpiryTime =
-            fullfillmentResult.fulfillmentRequest.expiryTime;
+            fullfillmentResult.settlementRequest.expiryTime;
           offerDetailsInJson2.fulfillmentRequestQuantityRequested =
             quantityRequested;
 
-          offerDetailsInJson2.fulfillmentRequestPaymentProofSubmitted =
-            fullfillmentResult.fulfillmentRequest.paymentProofSubmitted;
+          // offerDetailsInJson2.fulfillmentRequestPaymentProofSubmitted =
+          //   fullfillmentResult.settlementRequest.paymentProofSubmitted;
           offerDetailsInJson2.fulfillmentRequestfulfilledTime =
-            fullfillmentResult.fulfillmentRequest.fulfilledTime;
+            fullfillmentResult.settlementRequest.settledTime;
 
           MyOffersPromises.push({ offerDetailsInJson: offerDetailsInJson2 });
         });

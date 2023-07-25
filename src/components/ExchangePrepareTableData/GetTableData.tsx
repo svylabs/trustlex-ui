@@ -12,7 +12,10 @@ import {
 } from "~/utils/TimeConverter";
 import { AppContext } from "~/Context/AppContext";
 import { tofixedEther } from "~/utils/Ether.utills";
-import { IFullfillmentResult } from "~/interfaces/IOfferdata";
+import {
+  IFullfillmentResult,
+  IResultSettlementRequest,
+} from "~/interfaces/IOfferdata";
 import { getInitializedFulfillmentsByOfferId } from "~/service/AppService";
 import { tofixedBTC } from "~/utils/BitcoinUtils";
 import { BTC_DECIMAL_PLACE } from "~/Context/Constants";
@@ -75,19 +78,20 @@ const getTableData = (
 
       fullfillmentResults &&
         fullfillmentResults?.map(
-          (value: IFullfillmentResult, index: number) => {
-            let expiryTime = Number(value.fulfillmentRequest.expiryTime) * 1000;
-            let isExpired = value.fulfillmentRequest.isExpired;
-            let paymentProofSubmitted =
-              value.fulfillmentRequest.paymentProofSubmitted;
+          (value: IResultSettlementRequest, index: number) => {
+            let expiryTime = Number(value.settlementRequest.expiryTime) * 1000;
+            let isExpired = value.settlementRequest.isExpired;
+            // let paymentProofSubmitted =
+            //   value.fulfillmentRequest.paymentProofSubmitted;
 
             if (
               expiryTime < Date.now() &&
-              isExpired == false &&
-              paymentProofSubmitted == false
+              isExpired == false
+              // &&
+              // paymentProofSubmitted == false
             ) {
               satoshisReserved -= Number(
-                value.fulfillmentRequest.quantityRequested
+                value.settlementRequest.quantityRequested
               );
             }
           }

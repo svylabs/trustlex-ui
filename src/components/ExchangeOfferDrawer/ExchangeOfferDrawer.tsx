@@ -205,7 +205,7 @@ const ExchangeOfferDrawer = ({
   } => {
     const orderId = ethers.utils.keccak256(
       ethers.utils.solidityPack(
-        ["address", "uint256", "uint256", "bytes20", "uint256"],
+        ["address", "uint256", "address", "bytes20", "uint256"],
         // To be interpreted as: address of contract, orderId, fulfillmentId, pubKeyHash, orderTimestamp
         // ["0xFD05beBFEa081f6902bf9ec57DCb50b40BA02510", 0, 0, '0x0000000000000000000000000000000000000000', 0]
         [

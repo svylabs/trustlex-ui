@@ -19,6 +19,7 @@ import Input from "../Input/Input";
 // import { BitcoinMerkleTree } from "bitcoin-merkle-tree/dist/index";
 import { BitcoinMerkleTree, MerkleProof } from "~/utils/bitcoinmerkletree";
 import { IBitcoinPaymentProof } from "~/interfaces/IBitcoinNode";
+import useLocalstorage from "~/hooks/useLocalstorage";
 import {
   IFullfillmentEvent,
   IFullfillmentResult,
@@ -137,6 +138,7 @@ const ExchangeOfferDrawer = ({
   setBTCWalletData,
   getSelectedTokenContractInstance,
 }: Props) => {
+  const { get, set, remove } = useLocalstorage();
   const { cleanTx } = window;
   const { mobileView } = useWindowDimensions();
   const rootRef = useRef(null);
@@ -252,12 +254,13 @@ const ExchangeOfferDrawer = ({
         rowOfferId
       );
       if (!offerDetails || offerDetails === undefined) return;
-      console.log(offerDetails);
+      // console.log(offerDetails);
       // get the offerfullfillment details
       let fullfillmentResults = await getInitializedFulfillmentsByOfferId(
         contract,
         rowOfferId
       );
+      // getInitiatedOrderDetails
       // console.log(fullfillmentResults, rowFullFillmentId);
       if (!foundOffer || foundOffer === undefined) return;
 
@@ -279,6 +282,7 @@ const ExchangeOfferDrawer = ({
       let planningToSell_ = Number(
         ethers.utils.formatEther(foundOffer.offerDetailsInJson.offerQuantity)
       ); //offerQuantity
+
       let offer = foundOffer;
 
       const price_per_ETH_in_BTC =
@@ -295,37 +299,7 @@ const ExchangeOfferDrawer = ({
       let satoshisReceived = Number(offerDetails.satoshisReceived);
       const offerQuantity = Number(offerDetails.offerQuantity);
 
-      let contractInstance = await getSelectedTokenContractInstance();
-      let contractAddress =
-        currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
-          ?.orderBookContractAddreess;
-      let orderTimestamp = offerDetails.orderedTime;
-      let offerValidTill = offerDetails.offerValidTill;
-      let locktime =
-        parseInt(offerValidTill) +
-        parseInt(orderTimestamp) +
-        BTC_REFUND_CLAIM_PERIOD;
-      // console.log(locktime);
-      // Make the btc address to pay
-
-      let pubKeyHash = Buffer.from(offerDetails.pubKeyHash.substring(2), "hex");
-      const addressParameters = getParametersForAddress(
-        contractAddress || "",
-        foundOffer,
-        orderTimestamp,
-        account // in place on fullfillment id
-      );
-
-      let hashAdress = generateTrustlexAddressWithRecoveryHash(
-        pubKeyHash,
-        addressParameters.shortOrderId,
-        addressParameters.secret,
-        addressParameters.pubKeyHash as string,
-        locktime
-      );
-      // console.log(hashAdress);
-      setTo(hashAdress as string);
-
+      //-----------------Update satoshisReserved if order is expired ---------------------//
       fullfillmentResults &&
         fullfillmentResults?.map(
           (value: IFullfillmentResult, index: number) => {
@@ -344,6 +318,7 @@ const ExchangeOfferDrawer = ({
             }
           }
         );
+      //-----------------End Update satoshisReserved if order is expired ---------------------//
 
       let left_to_buy =
         Number(
@@ -351,20 +326,21 @@ const ExchangeOfferDrawer = ({
             satoshisToReceive - (satoshisReserved + satoshisReceived)
           )
         ) / price_per_ETH_in_BTC;
+      let planningToBuy_ = Number(
+        tofixedBTC(Number(SatoshiToBtcConverter(satoshisToReceive)))
+      );
 
       setPlanningToBuy(
         Number(tofixedBTC(Number(SatoshiToBtcConverter(satoshisToReceive))))
       );
+      setPlanningToSell(planningToSell_);
 
       setIsInitating("");
-      // setTo("");
       setActiveStep(1);
       setVerified("");
       setConfirmed("");
 
-      setPlanningToSell(planningToSell_);
-      // setEthValue(planningToSell_);
-      //if order already initiated
+      //----------------------------------if order already initiated move on step 3 ----------------------//
       let isInitating = false;
       if (
         rowFullFillmentId != undefined &&
@@ -398,15 +374,7 @@ const ExchangeOfferDrawer = ({
         //   parseInt(foundOffer.offerDetailsInJson.offerId),
         //   settlementId
         // );
-        // if (fulfillmentId.length % 2 != 0) {
-        //   fulfillmentId = "0" + fulfillmentId;
-        // }
 
-        // console.log(orderTimestamp);
-
-        // let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
-
-        // setTo(`${hashAdress}`);
         setActiveStep(2);
         // console.log(rowFullFillmentQuantityRequested);
         left_to_buy =
@@ -416,20 +384,69 @@ const ExchangeOfferDrawer = ({
           (Number(ethers.utils.formatEther(offerQuantity)) /
             Number(SatoshiToBtcConverter(satoshisToReceive)));
       }
+      //----------------------------------End if order already initiated ----------------------//
+
+      //-------------------Generate the BTC address for QR Code -----------------------//
+      let contractAddress =
+        currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+          ?.orderBookContractAddreess;
+      let orderTimestamp = offerDetails.orderedTime;
+      let offerValidTill = offerDetails.offerValidTill;
+      let locktime =
+        parseInt(offerValidTill) +
+        parseInt(orderTimestamp) +
+        BTC_REFUND_CLAIM_PERIOD;
+      // console.log(locktime);
+
+      // Make the btc address to pay
+      let pubKeyHash = Buffer.from(offerDetails.pubKeyHash.substring(2), "hex");
+      const addressParameters = getParametersForAddress(
+        contractAddress || "",
+        foundOffer,
+        orderTimestamp,
+        account // in place on fullfillment id
+      );
+
+      let hashAdress = generateTrustlexAddressWithRecoveryHash(
+        pubKeyHash,
+        addressParameters.shortOrderId,
+        addressParameters.secret,
+        addressParameters.pubKeyHash as string,
+        locktime
+      );
+      // console.log(hashAdress);
+      setTo(hashAdress as string);
+
+      //---------- If already payment is done,Autofill the form from local storage ---------//
+      if (isInitating == false) {
+        let initiatedOrderResult: any = getInitiatedOrderDetails();
+
+        if (initiatedOrderResult !== undefined) {
+          // console.log(initiatedOrderResult);
+          left_to_buy = initiatedOrderResult.ethAmount;
+          left_to_buy = tofixedEther(left_to_buy);
+          let blockHash = initiatedOrderResult.blockHash;
+          let txHash = initiatedOrderResult.txHash;
+          setBlockHash(blockHash);
+          setTransactionHash(txHash);
+          await verifyPayment(
+            txHash,
+            blockHash,
+            left_to_buy,
+            planningToBuy_,
+            planningToSell_,
+            hashAdress as string
+          );
+        }
+      }
+      //---------- End If already payment is done,Autofill the form from local storage ---------//
+
       left_to_buy = tofixedEther(left_to_buy);
       // console.log(left_to_buy);
       setLeftToBuy(left_to_buy);
       setEthValue(left_to_buy);
 
-      // update satoshisReserved amount
-      // if (satoshisToReceive == satoshisReserved + satoshisReceived) {
-      // let fullfillmentResults = offer.offerDetailsInJson.fullfillmentResults;
-      let isColletaralNeeded = false;
-
-      // }
-      if (satoshisReserved > 0 && isInitating == false) {
-        setIsColletaralNeeded(true);
-      }
+      //-------------------END Generate the BTC address for QR Code -----------------------//
     })();
   }, [foundOffer?.offerDetailsInJson?.offerId]);
 
@@ -644,6 +661,18 @@ const ExchangeOfferDrawer = ({
 
   const getBTCAmount = () => {
     let inputAmount = Number(ethValue);
+
+    let BTCAmount = tofixedBTC((inputAmount / planningToSell) * planningToBuy);
+
+    return BTCAmount;
+  };
+  const getBTCAmountByInput = (
+    ethAmount: number,
+    planningToBuy: number,
+    planningToSell: number
+  ) => {
+    let inputAmount = ethAmount;
+
     let BTCAmount = tofixedBTC((inputAmount / planningToSell) * planningToBuy);
     return BTCAmount;
   };
@@ -674,21 +703,80 @@ const ExchangeOfferDrawer = ({
       showErrorMessage("Please enter the transaction hash");
       return;
     }
-    setVerified("verifing");
+    await verifyPayment(
+      transactionHash,
+      blockHash,
+      Number(ethValue),
+      planningToBuy,
+      planningToSell,
+      to
+    );
+  };
+
+  const getInitiatedOrderDetails = () => {
+    let rowOfferId_ = rowOfferId.toString();
+
+    let initiatedOrders_ = initiatedOrders;
+
+    let initiatedOrderResult =
+      initiatedOrders_ &&
+      initiatedOrders_.find((value: IInitiatedOrder, index: number) => {
+        return (
+          value.accountAddress === account.toLowerCase() &&
+          value.offerId === rowOfferId_
+        );
+      });
+
+    return initiatedOrderResult;
+  };
+
+  const verifyTxandBlockHash = async (txHash: string, blockHash: string) => {
     // first verify the blockhash
     let blockResult: any = await GetBlock(selectedBitcoinNode, blockHash);
-    if (blockResult.status == false) {
-      showErrorMessage(blockResult.message);
+    if (blockResult.status == false || blockResult.result == undefined) {
+      showErrorMessage(
+        blockResult.message
+          ? blockResult.message
+          : "Unable to verify the blockhash"
+      );
+      return false;
+    }
+    return blockResult;
+  };
+
+  const verifyPayment = async (
+    transactionHash: string,
+    blockHash: string,
+    ethAmount: number,
+    planningToBuy: number,
+    planningToSell: number,
+    to: string
+  ) => {
+    setVerified("verifing");
+    // first verify the blockhash and txHash
+    let blockResult: any = await verifyTxandBlockHash(
+      transactionHash,
+      blockHash
+    );
+    if (blockResult == false) {
       setVerified("");
       return false;
     }
+
     let blockTxs = blockResult.result.tx;
     let blockHeight = blockResult.result.height;
 
     // console.log(blockTxs, blockHeight);
     // now validate the transaction
     let recieverAddress = to;
-    let paymentAmount = getBTCAmount();
+    // console.log(ethAmount, planningToSell, planningToBuy);
+    let paymentAmount = getBTCAmountByInput(
+      ethAmount,
+      planningToBuy,
+      planningToSell
+    );
+    // console.log(paymentAmount);
+
     let result: any = await VerifyTransaction(
       selectedBitcoinNode,
       transactionHash,
@@ -718,9 +806,6 @@ const ExchangeOfferDrawer = ({
           return Buffer.from(hash, "hex").reverse().toString("hex");
         })
         .join("");
-      console.log(proofResult);
-
-      console.log(proofResult, proof);
 
       // create the submit payment proof
       setBitcoinPaymentProof({
@@ -734,14 +819,10 @@ const ExchangeOfferDrawer = ({
       // set the data in local storage
       let rowOfferId_ = rowOfferId.toString();
       let userAccount = account.toLowerCase();
-      let initiatedOrders_ = initiatedOrders;
 
       let initiatedOrderResult: any = getInitiatedOrderDetails();
 
-      if (
-        initiatedOrderResult === false ||
-        initiatedOrderResult === undefined
-      ) {
+      if (initiatedOrderResult === undefined) {
         let userIntiatedOrder: IInitiatedOrder = {
           accountAddress: userAccount,
           offerId: rowOfferId_,
@@ -749,28 +830,9 @@ const ExchangeOfferDrawer = ({
           txHash: transactionHash,
           blockHash: blockHash,
         };
-        initiatedOrders_.push(userIntiatedOrder);
-        console.log(initiatedOrders_);
-        setInitiatedOrders(initiatedOrders_);
+        setInitiatedOrders([...initiatedOrders, userIntiatedOrder]);
       }
     }
-  };
-
-  const getInitiatedOrderDetails = () => {
-    let rowOfferId_ = rowOfferId.toString();
-
-    let initiatedOrders_ = initiatedOrders;
-
-    let initiatedOrderResult =
-      initiatedOrders_ &&
-      initiatedOrders_.find((value: IInitiatedOrder, index: number) => {
-        return (
-          value.accountAddress === account.toLowerCase() &&
-          value.offerId === rowOfferId_
-        );
-      });
-
-    return initiatedOrderResult;
   };
 
   return (
@@ -992,25 +1054,42 @@ const ExchangeOfferDrawer = ({
                           ) : (
                             <span className={styles.toAddress}>{to}</span>
                           )}
-
-                          <Input
-                            type={"text"}
-                            placeholder={"Enter the Block Hash"}
-                            value={blockHash}
-                            onChange={(e) => {
-                              setBlockHash(e.target.value);
-                            }}
-                            className="BlockHashInput"
-                          />
-                          <Input
-                            type={"text"}
-                            placeholder={"Enter the Transaction Hash"}
-                            value={transactionHash}
-                            onChange={(e) => {
-                              setTransactionHash(e.target.value);
-                            }}
-                            className="TxHashInput"
-                          />
+                          {activeStep == 1 ? (
+                            <>
+                              <Input
+                                type={"text"}
+                                placeholder={"Enter the Block Hash"}
+                                value={blockHash}
+                                onChange={(e) => {
+                                  setBlockHash(e.target.value);
+                                }}
+                                className="BlockHashInput"
+                              />
+                              <Input
+                                type={"text"}
+                                placeholder={"Enter the Transaction Hash"}
+                                value={transactionHash}
+                                onChange={(e) => {
+                                  setTransactionHash(e.target.value);
+                                }}
+                                className="TxHashInput"
+                              />
+                            </>
+                          ) : (
+                            <>
+                              <div className={styles.sendTo}>
+                                Block Hash :{" "}
+                                <span className={styles.toAddress}>
+                                  {blockHash}
+                                </span>
+                                <br />
+                                Transaction Hash:{" "}
+                                <span className={styles.toAddress}>
+                                  {transactionHash}
+                                </span>
+                              </div>
+                            </>
+                          )}
                           <div className={styles.actionButton}>
                             {verified === "verified" ? (
                               <Button
@@ -1155,64 +1234,84 @@ const ExchangeOfferDrawer = ({
                   >
                     {/* Start here Initiate order button */}
                     <div className={styles.actionButton}>
-                      {isInitiatng === "initiated" ? (
-                        <Button
-                          variant={VariantsEnum.outline}
-                          radius={10}
-                          style={{
-                            borderColor: "#53C07F",
-                            background: "unset",
-                            color: "#53C07F",
-                          }}
-                          leftIcon={
-                            <Icon icon={"charm:circle-tick"} color="#53C07F" />
-                          }
-                        >
-                          Initiated
-                        </Button>
+                      {activeStep == 1 ? (
+                        <>
+                          <Button
+                            variant={VariantsEnum.outlinePrimary}
+                            radius={10}
+                            style={{
+                              backgroundColor: "transparent",
+                            }}
+                            disabled={true}
+                          >
+                            Initiate{" "}
+                          </Button>
+                        </>
                       ) : (
-                        <Button
-                          variant={
-                            isInitiatng === "loading"
-                              ? VariantsEnum.outline
-                              : VariantsEnum.outlinePrimary
-                          }
-                          radius={10}
-                          style={{
-                            backgroundColor:
-                              isInitiatng === "loading"
-                                ? "unset"
-                                : "transparent",
-                          }}
-                          loading={isInitiatng === "loading" ? true : false}
-                          onClick={
-                            isColletaralNeeded == true
-                              ? handleInitate
-                              : handleInitate
-                          }
-                        >
-                          {isInitiatng === "loading" ? (
-                            "Initiating"
+                        <>
+                          {isInitiatng === "initiated" ? (
+                            <Button
+                              variant={VariantsEnum.outline}
+                              radius={10}
+                              style={{
+                                borderColor: "#53C07F",
+                                background: "unset",
+                                color: "#53C07F",
+                              }}
+                              leftIcon={
+                                <Icon
+                                  icon={"charm:circle-tick"}
+                                  color="#53C07F"
+                                />
+                              }
+                            >
+                              Initiated
+                            </Button>
                           ) : (
-                            <>
-                              Initiate{" "}
-                              {isColletaralNeeded == true
-                                ? "with Colletaral"
-                                : ""}
-                            </>
+                            <Button
+                              variant={
+                                isInitiatng === "loading"
+                                  ? VariantsEnum.outline
+                                  : VariantsEnum.outlinePrimary
+                              }
+                              radius={10}
+                              style={{
+                                backgroundColor:
+                                  isInitiatng === "loading"
+                                    ? "unset"
+                                    : "transparent",
+                              }}
+                              loading={isInitiatng === "loading" ? true : false}
+                              onClick={
+                                isColletaralNeeded == true
+                                  ? handleInitate
+                                  : handleInitate
+                              }
+                            >
+                              {isInitiatng === "loading" ? (
+                                "Initiating"
+                              ) : (
+                                <>
+                                  Initiate{" "}
+                                  {isColletaralNeeded == true
+                                    ? "with Colletaral"
+                                    : ""}
+                                </>
+                              )}
+                            </Button>
                           )}
-                        </Button>
-                      )}
-                      {isInitiatng === "loading" ? (
-                        <span className={styles.timer}>
-                          <Countdown />
-                        </span>
-                      ) : (
-                        isInitiatng !== "initiated" && (
-                          <span className={styles.rightText}>
-                            It will take approximately 1-3 mins
-                          </span>
-                        )
+                          {isInitiatng === "loading" ? (
+                            <span className={styles.timer}>
+                              <Countdown />
+                            </span>
+                          ) : (
+                            isInitiatng !== "initiated" && (
+                              <span className={styles.rightText}>
+                                It will take approximately 1-3 mins
+                              </span>
+                            )
+                          )}
+                        </>
                       )}
                     </div>
                     {/* End here Initiate order button */}

@@ -179,7 +179,6 @@ export default function App() {
     chainId: 0,
   });
   const userData = get("userInputData", true);
-  const initiatedOrdersLocalStoarge = get("initiatedOrders", false);
 
   const [userInputData, setUserInputData] = useState<IUserInputData>(
     userData
@@ -192,9 +191,12 @@ export default function App() {
           isNativeToken: DEFAULT_IS_NATIVE_TOKEN,
         }
   );
+
+  const initiatedOrdersLocalStoarge = get("initiatedOrders", false);
+  // console.log(initiatedOrdersLocalStoarge);
+
   let initiatedOrders_ =
-    initiatedOrdersLocalStoarge != "undefined" &&
-    initiatedOrdersLocalStoarge != "false"
+    initiatedOrdersLocalStoarge != false
       ? JSON.parse(initiatedOrdersLocalStoarge)
       : [];
   const [initiatedOrders, setInitiatedOrders] =
@@ -263,18 +265,18 @@ export default function App() {
     let selectedBitcoinNode_ = get("selectedBitcoinNode", false);
   }, [selectedBitcoinNode]);
 
-  // use Effect for change in user initiated order
-  useEffect(() => {
-    console.log(initiatedOrders);
-    set("initiatedOrders", JSON.stringify(initiatedOrders));
-  }, [initiatedOrders.length]);
-
   // use Effect for setting the bitcoin wallet data in local storage
   useEffect(() => {
     if (btcWalletData) {
       set("btcWalletData", btcWalletData);
     }
   }, [btcWalletData]);
+
+  // use Effect for change in user initiated order
+  useEffect(() => {
+    // console.log(initiatedOrders);
+    set("initiatedOrders", JSON.stringify(initiatedOrders));
+  }, [initiatedOrders]);
 
   //Account change event
   const { ethereum } = window;
@@ -439,7 +441,7 @@ export default function App() {
           let fromOfferId = totalOffers;
 
           let offersList = await getOffersList(trustlex, fromOfferId);
-          console.log(offersList);
+          // console.log(offersList);
           fromOfferId =
             fromOfferId - PAGE_SIZE > 0 ? fromOfferId - PAGE_SIZE : 0;
           setFromOfferId(fromOfferId);

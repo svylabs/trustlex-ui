@@ -407,7 +407,7 @@ const Exchange = (props: Props) => {
       return false;
     }
     let offerId = data[0] as number;
-    console.log(offerId);
+    // console.log(offerId);
     // get the Fulfillments By OfferId
     let FullfillmentResult: IResultSettlementRequest[] =
       await getInitializedFulfillmentsByOfferId(contract, offerId);
@@ -424,7 +424,7 @@ const Exchange = (props: Props) => {
             account.toLowerCase() && isExpired == false
         );
       });
-    console.log(FullfillmentResult, fullfillmentResult);
+    // console.log(FullfillmentResult, fullfillmentResult);
     let quantityRequested =
       fullfillmentResult?.settlementRequest?.quantityRequested.toString();
     // let fullFillmentPaymentProofSubmitted =

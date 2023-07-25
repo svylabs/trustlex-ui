@@ -263,10 +263,12 @@ export const VerifyTransaction = async (
     }
     let tx: any = decodedTransaction?.result;
     tx = tx?.result;
+    // console.log(tx);
 
     let isRecieverAddessMatched = tx?.vout?.find((value: any) => {
       let address: string = value.scriptPubKey.address;
       let paidAmount = value.value;
+
       return (
         address.toLowerCase() === recieverAddress.toLowerCase() &&
         paidAmount >= paymentAmount

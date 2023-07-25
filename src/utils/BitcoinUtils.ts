@@ -141,7 +141,6 @@ export const generateTrustlexAddressWithRecoveryHash = (
   return p2wsh.address;
 };
 
-console.log(bitcoin.crypto.hash256);
 export const tofixedBTC = (amount: number) => {
   return Number(amount.toFixed(BTC_DECIMAL_PLACE));
 };

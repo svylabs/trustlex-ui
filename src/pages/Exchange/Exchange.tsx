@@ -416,15 +416,17 @@ const Exchange = (props: Props) => {
       FullfillmentResult &&
       FullfillmentResult.find((fullfillmentResult) => {
         let isExpired = fullfillmentResult.settlementRequest.isExpired;
-        // let paymentProofSubmitted =
-        //   fullfillmentResult.settlementRequest.paymentProofSubmitted;
+        let settled = fullfillmentResult.settlementRequest.settled;
 
         return (
           fullfillmentResult.settlementRequest.settledBy.toLowerCase() ===
-            account.toLowerCase() && isExpired == false
+            account.toLowerCase() &&
+          isExpired == false &&
+          fullfillmentResult.settlementRequest.settled == false
         );
       });
-    // console.log(FullfillmentResult, fullfillmentResult);
+    console.log(fullfillmentResult);
+
     let quantityRequested =
       fullfillmentResult?.settlementRequest?.quantityRequested.toString();
     // let fullFillmentPaymentProofSubmitted =
@@ -432,6 +434,7 @@ const Exchange = (props: Props) => {
 
     setRowOfferId(offerId);
     setRowFullFillmentId(fullfillmentResult?.settlementRequestId);
+    // console.log(fullfillmentResult?.settlementRequestId.toString());
     setrowFullFillmentExpiryTime(
       fullfillmentResult?.settlementRequest.expiryTime
     );

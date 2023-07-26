@@ -12,5 +12,4 @@ export interface IBitcoinPaymentProof {
 
 export interface HTLCDetail {
   secret: String;
-  recoveryPubKeyHash: String;
 }

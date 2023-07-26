@@ -32,7 +32,7 @@ import {
   showSuccessMessage,
   showErrorMessage,
   getOffer,
-  submitPaymentProof,
+  finalizeSettlement,
   getInitializedFulfillmentsByOfferId,
   getInitializedFulfillments,
   increaseContractAllownace,
@@ -255,14 +255,8 @@ const ExchangeOfferDrawer = ({
         rowOfferId
       );
       if (!offerDetails || offerDetails === undefined) return;
-      console.log(offerDetails);
-      // get the offerfullfillment details
-      let fullfillmentResults = await getInitializedFulfillmentsByOfferId(
-        contract,
-        rowOfferId
-      );
-      // getInitiatedOrderDetails
-      // console.log(fullfillmentResults, rowFullFillmentId);
+      // console.log(offerDetails);
+
       if (!foundOffer || foundOffer === undefined) return;
 
       let countdowntimerTime_ = rowFullFillmentExpiryTime
@@ -279,6 +273,7 @@ const ExchangeOfferDrawer = ({
         isOrderExpired = true;
         setIsOrderExpired(true);
       }
+      // console.log(isOrderExpired);
 
       let planningToSell_ = Number(
         ethers.utils.formatEther(foundOffer.offerDetailsInJson.offerQuantity)
@@ -301,18 +296,20 @@ const ExchangeOfferDrawer = ({
       const offerQuantity = Number(offerDetails.offerQuantity);
 
       //-----------------Update satoshisReserved if order is expired ---------------------//
+      // get the offerfullfillment details
+      let fullfillmentResults: IResultSettlementRequest[] =
+        await getInitializedFulfillmentsByOfferId(contract, rowOfferId);
+
       fullfillmentResults &&
         fullfillmentResults?.map(
           (value: IResultSettlementRequest, index: number) => {
             let expiryTime = Number(value.settlementRequest.expiryTime) * 1000;
             let isExpired = value.settlementRequest.isExpired;
-            // let paymentProofSubmitted =
-            //   value.settlementRequest.paymentProofSubmitted;
+            let settled = value.settlementRequest.settled;
             if (
               expiryTime < Date.now() &&
-              isExpired == false
-              // &&
-              // paymentProofSubmitted == false
+              isExpired == false &&
+              settled == false
             ) {
               satoshisReserved -= Number(
                 value.settlementRequest.quantityRequested
@@ -341,52 +338,6 @@ const ExchangeOfferDrawer = ({
       setActiveStep(1);
       setVerified("");
       setConfirmed("");
-
-      //----------------------------------if order already initiated move on step 3 ----------------------//
-      let isInitating = false;
-      if (
-        rowFullFillmentId != undefined &&
-        isOrderExpired == false &&
-        fullFillmentPaymentProofSubmitted == false
-      ) {
-        isInitating = true;
-        setIsInitating("initiated");
-
-        let rowFullfillment: IFullfillmentResult = fullfillmentResults.find(
-          (value: IFullfillmentResult, index: number) => {
-            let currentFullFillmentId = value.fulfillmentRequestId;
-
-            if (BigInt(rowFullFillmentId) == BigInt(currentFullFillmentId)) {
-              return true;
-            } else {
-              return false;
-            }
-          }
-        );
-
-        let fulfillRequestedTime =
-          rowFullfillment.fulfillmentRequest.fulfillRequestedTime;
-
-        let fulfillmentId = rowFullFillmentId.toString();
-        console.log(fulfillmentId);
-        setOfferFulfillmentId(fulfillmentId);
-
-        // let fulfillmentDetails = await getInitializedFulfillments(
-        //   context.contract,
-        //   parseInt(foundOffer.offerDetailsInJson.offerId),
-        //   settlementId
-        // );
-
-        setActiveStep(2);
-        // console.log(rowFullFillmentQuantityRequested);
-        left_to_buy =
-          Number(
-            SatoshiToBtcConverter(rowFullFillmentQuantityRequested as string)
-          ) *
-          (Number(ethers.utils.formatEther(offerQuantity)) /
-            Number(SatoshiToBtcConverter(satoshisToReceive)));
-      }
-      //----------------------------------End if order already initiated ----------------------//
 
       //-------------------Generate the BTC address for QR Code -----------------------//
       let contractAddress =
@@ -419,36 +370,79 @@ const ExchangeOfferDrawer = ({
       // console.log(hashAdress);
       setTo(hashAdress as string);
 
-      //---------- If already payment is done,Autofill the form from local storage ---------//
-      if (isInitating == false) {
-        let initiatedOrderResult: any = getInitiatedOrderDetails();
+      //-------------------END Generate the BTC address for QR Code -----------------------//
 
-        if (initiatedOrderResult !== undefined) {
-          // console.log(initiatedOrderResult);
-          left_to_buy = initiatedOrderResult.ethAmount;
-          left_to_buy = tofixedEther(left_to_buy);
-          let blockHash = initiatedOrderResult.blockHash;
-          let txHash = initiatedOrderResult.txHash;
-          setBlockHash(blockHash);
-          setTransactionHash(txHash);
-          await verifyPayment(
-            txHash,
-            blockHash,
-            left_to_buy,
-            planningToBuy_,
-            planningToSell_,
-            hashAdress as string
-          );
-        }
+      //---------- If already payment is done,Autofill the form from local storage ---------//
+
+      // if (isInitating == false) {
+      // console.log(isInitating);
+
+      let initiatedOrderResult: IInitiatedOrder | undefined =
+        getInitiatedOrderDetails();
+
+      if (initiatedOrderResult !== undefined) {
+        // console.log(initiatedOrderResult);
+        left_to_buy = Number(initiatedOrderResult.ethAmount);
+        left_to_buy = tofixedEther(left_to_buy);
+        let blockHash = initiatedOrderResult.blockHash;
+        let txHash = initiatedOrderResult.txHash;
+        setBlockHash(blockHash);
+        setTransactionHash(txHash);
+        await verifyPayment(
+          txHash,
+          blockHash,
+          left_to_buy,
+          planningToBuy_,
+          planningToSell_,
+          hashAdress as string
+        );
+        // }
       }
       //---------- End If already payment is done,Autofill the form from local storage ---------//
 
+      //----------------------------------if order already initiated move on step 3 ----------------------//
+      let isInitating = false;
+
+      if (
+        rowFullFillmentId?.toString() !== undefined &&
+        isOrderExpired === false
+        // &&
+        // fullFillmentPaymentProofSubmitted == false
+      ) {
+        isInitating = true;
+        setIsInitating("initiated");
+
+        //--------------------Getting the settlement request details--------------------//
+        let rowFullfillment: IResultSettlementRequest | undefined =
+          fullfillmentResults.find(
+            (value: IResultSettlementRequest, index: number) => {
+              let currentFullFillmentId = value.settlementRequestId;
+
+              if (rowFullFillmentId == currentFullFillmentId) {
+                return true;
+              } else {
+                return false;
+              }
+            }
+          );
+
+        let fulfillmentId = rowFullFillmentId.toString();
+        setOfferFulfillmentId(fulfillmentId);
+
+        setActiveStep(2);
+
+        left_to_buy =
+          Number(
+            SatoshiToBtcConverter(rowFullFillmentQuantityRequested as string)
+          ) *
+          (Number(ethers.utils.formatEther(offerQuantity)) /
+            Number(SatoshiToBtcConverter(satoshisToReceive)));
+      }
+      //----------------------------------End if order already initiated ----------------------//
       left_to_buy = tofixedEther(left_to_buy);
       // console.log(left_to_buy);
       setLeftToBuy(left_to_buy);
       setEthValue(left_to_buy);
-
-      //-------------------END Generate the BTC address for QR Code -----------------------//
     })();
   }, [foundOffer?.offerDetailsInJson?.offerId]);
 
@@ -463,6 +457,13 @@ const ExchangeOfferDrawer = ({
       showErrorMessage(
         `Buy amount can not be greater that offer quanity ${leftToBuy} !`
       );
+      return false;
+    }
+    if (
+      !confirm(
+        "Have you submitted the merkleroot and height in TrustedBitcoinSPVChain contract?"
+      )
+    ) {
       return false;
     }
     let btcAmount = getBTCAmount();
@@ -531,12 +532,12 @@ const ExchangeOfferDrawer = ({
     };
 
     // console.log(_fulfillment);
-    console.log([
-      context.contract,
-      foundOffer.offerDetailsInJson.offerId,
-      _settlementRequest,
-      bitcoinPaymentProof,
-    ]);
+    // console.log([
+    //   context.contract,
+    //   foundOffer.offerDetailsInJson.offerId,
+    //   _settlementRequest,
+    //   bitcoinPaymentProof,
+    // ]);
     const data = await initiateSettlementService(
       context.contract,
       foundOffer.offerDetailsInJson.offerId,
@@ -564,13 +565,14 @@ const ExchangeOfferDrawer = ({
       // console.log(event, claimedBy, offerId, fulfillmentId);
       setOfferFulfillmentId(settlementId);
 
-      let fulfillmentDetails = await getInitializedFulfillments(
-        context.contract,
-        parseInt(foundOffer.offerDetailsInJson.offerId),
-        settlementId
-      );
+      let fulfillmentDetails: SettlementRequest | undefined =
+        await getInitializedFulfillments(
+          context.contract,
+          parseInt(foundOffer.offerDetailsInJson.offerId),
+          settlementId
+        );
 
-      let expiryTime = fulfillmentDetails.expiryTime;
+      let expiryTime = fulfillmentDetails?.expiryTime;
 
       setInitatedata(data);
       setActiveStep(activeStep + 1);
@@ -590,20 +592,15 @@ const ExchangeOfferDrawer = ({
 
   const handleConfirmClick = async () => {
     let offerId = foundOffer?.offerDetailsInJson.offerId;
-    if (offerFulfillmentId == undefined) {
-      return false;
-    }
+
     setConfirmed("loading");
     // fetching the first fullfillment details
     // get the Fulfillments By OfferId
-    let fullfillmentEvent: IFullfillmentEvent =
-      await getInitializedFulfillments(
-        contract,
-        offerId,
-        Number(offerFulfillmentId)
-      );
+    let settlementRequest: SettlementRequest | undefined =
+      await getInitializedFulfillments(contract, offerId, account);
+
     // console.log(fullfillmentEvent);
-    let expiryTime = Number(fullfillmentEvent.expiryTime) * 1000;
+    let expiryTime = Number(settlementRequest?.expiryTime) * 1000;
     // console.log(expiryTime, Date.now(), expiryTime < Date.now());
     if (expiryTime < Date.now()) {
       showErrorMessage("Order has been expired !");
@@ -621,22 +618,28 @@ const ExchangeOfferDrawer = ({
       contract?.address || "",
       foundOffer,
       orderTimestamp,
-      offerFulfillmentId
+      account
     );
+
     const htlcDetails = {
       secret: "0x" + addressParameters.secret.toString("hex"),
-      recoveryPubKeyHash: "0x" + addressParameters.pubKeyHash,
     };
 
-    let result = await submitPaymentProof(
-      contract,
-      offerId,
-      offerFulfillmentId.toString(),
-      bitcoinPaymentProof,
-      htlcDetails
-    );
-    console.log(bitcoinPaymentProof, htlcDetails, result);
+    let result = await finalizeSettlement(contract, offerId, htlcDetails);
+    console.log(htlcDetails, result);
     if (result) {
+      // Clear the data from localstorage
+      let initiatedOrderResultIndex: number = getInitiatedOrderDetailsIndex();
+      console.log(initiatedOrderResultIndex);
+      if (initiatedOrderResultIndex > -1) {
+        let initiatedOrders_ = initiatedOrders;
+        initiatedOrders_ = initiatedOrders_.filter(
+          (initiatedOrder_) =>
+            Number(initiatedOrder_.offerId) !== Number(offerId)
+        );
+        setInitiatedOrders(initiatedOrders_);
+      }
+
       setSubmitPaymentProofTxHash(result.transactionHash);
       setConfirmed("confirmed");
       showSuccessMessage("Proof has been submitted successfully !");
@@ -720,14 +723,30 @@ const ExchangeOfferDrawer = ({
 
     let initiatedOrders_ = initiatedOrders;
 
-    let initiatedOrderResult =
-      initiatedOrders_ &&
-      initiatedOrders_.find((value: IInitiatedOrder, index: number) => {
+    let initiatedOrderResult = initiatedOrders_.find(
+      (value: IInitiatedOrder, index: number) => {
         return (
           value.accountAddress === account.toLowerCase() &&
           value.offerId === rowOfferId_
         );
-      });
+      }
+    );
+
+    return initiatedOrderResult;
+  };
+  const getInitiatedOrderDetailsIndex = () => {
+    let rowOfferId_ = rowOfferId.toString();
+
+    let initiatedOrders_ = initiatedOrders;
+
+    let initiatedOrderResult = initiatedOrders_.findIndex(
+      (value: IInitiatedOrder, index: number) => {
+        return (
+          value.accountAddress === account.toLowerCase() &&
+          value.offerId === rowOfferId_
+        );
+      }
+    );
 
     return initiatedOrderResult;
   };
@@ -777,7 +796,12 @@ const ExchangeOfferDrawer = ({
       planningToBuy,
       planningToSell
     );
-    // console.log(paymentAmount);
+    console.log(
+      selectedBitcoinNode,
+      transactionHash,
+      recieverAddress,
+      paymentAmount
+    );
 
     let result: any = await VerifyTransaction(
       selectedBitcoinNode,
@@ -822,8 +846,9 @@ const ExchangeOfferDrawer = ({
       let rowOfferId_ = rowOfferId.toString();
       let userAccount = account.toLowerCase();
 
-      let initiatedOrderResult: any = getInitiatedOrderDetails();
-
+      let initiatedOrderResult: IInitiatedOrder | undefined =
+        getInitiatedOrderDetails();
+      // console.log(initiatedOrderResult);
       if (initiatedOrderResult === undefined) {
         let userIntiatedOrder: IInitiatedOrder = {
           accountAddress: userAccount,

@@ -239,6 +239,7 @@ export const VerifyTransaction = async (
   };
   try {
     let result = await GetRawTransaction(selectedBitcoinNode, transactionHash);
+
     if (result?.status == false) {
       resp = {
         status: false,
@@ -253,6 +254,7 @@ export const VerifyTransaction = async (
       selectedBitcoinNode,
       transactionHex
     );
+    console.log(decodedTransaction);
     if (decodedTransaction?.status == false) {
       resp = {
         status: false,

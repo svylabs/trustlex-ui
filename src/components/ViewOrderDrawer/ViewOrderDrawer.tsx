@@ -18,6 +18,7 @@ import { ethers } from "ethers";
 import { useState } from "react";
 import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
 import { IFullfillmentResult } from "~/interfaces/IOfferdata";
+import { currencyObjects, BTC_REFUND_CLAIM_PERIOD } from "~/Context/Constants";
 import {
   getInitializedFulfillmentsByOfferId,
   extendOffer,
@@ -28,11 +29,15 @@ import {
 } from "~/service/AppService";
 import { EthtoWei, WeitoEth, tofixedEther } from "~/utils/Ether.utills";
 import { TimestampTotoNow, TimestampfromNow } from "~/utils/TimeConverter";
-import { tofixedBTC } from "~/utils/BitcoinUtils";
+import {
+  tofixedBTC,
+  generateTrustlexAddressWithRecoveryHash,
+  generateSecret,
+} from "~/utils/BitcoinUtils";
 import ExtendOffer from "~/components/ExtendOffer/ExtendOffer";
 import { TimeToNumber } from "~/utils/TimeConverter";
 import { AppContext } from "~/Context/AppContext";
-import { IOfferdata } from "~/interfaces/IOfferdata";
+import { IOfferdata, IResultSettlementRequest } from "~/interfaces/IOfferdata";
 // ES6 Modules or TypeScript
 import Swal from "sweetalert2";
 // import "sweetalert2/src/sweetalert2.scss";
@@ -68,6 +73,9 @@ const ViewOrderDrawer = ({
     setRefreshMySwapOngoingListKey,
     refreshMySwapCompletedListKey,
     setRefreshMySwapCompletedListKey,
+    selectedNetwork,
+    selectedToken,
+    btcWalletData,
   } = context;
 
   const { width } = useWindowDimensions();
@@ -79,7 +87,7 @@ const ViewOrderDrawer = ({
   const [hashAddress, setHashAddress] = useState<string>("");
   const [offerExpiry, setOfferExpiry] = useState<string>("");
   const [fullfillmentResult, setFullfillmentResult] = useState<
-    IFullfillmentResult[]
+    IResultSettlementRequest[]
   >([]);
   const [
     viewOrderDrawerHistoryTableData2,
@@ -127,7 +135,7 @@ const ViewOrderDrawer = ({
 
       if (offerData?.offerDetailsInJson) {
         let toAddress = Buffer.from(
-          offerData.offerDetailsInJson.bitcoinAddress.substring(2),
+          offerData.offerDetailsInJson.pubKeyHash.substring(2),
           "hex"
         );
         let offerId = offerId_;
@@ -153,7 +161,7 @@ const ViewOrderDrawer = ({
         );
         (async () => {
           // get the Fulfillments By OfferId
-          let FullfillmentResult: IFullfillmentResult[] =
+          let FullfillmentResult: IResultSettlementRequest[] =
             await getInitializedFulfillmentsByOfferId(
               contract,
               offerId_ as number
@@ -165,21 +173,88 @@ const ViewOrderDrawer = ({
     })();
   }, [offerData?.offerDetailsInJson.offerId]);
 
+  const getParametersForAddress = (
+    rowOfferId: string,
+    contractAddress: string,
+    foundOffer: any,
+    orderTimestamp: any,
+    fulfillmentId: string
+  ): {
+    shortOrderId: string;
+    secret: Buffer;
+    pubKeyHash: String;
+  } => {
+    const orderId = ethers.utils.keccak256(
+      ethers.utils.solidityPack(
+        ["address", "uint256", "address", "bytes20", "uint256"],
+        // To be interpreted as: address of contract, orderId, fulfillmentId, pubKeyHash, orderTimestamp
+        // ["0xFD05beBFEa081f6902bf9ec57DCb50b40BA02510", 0, 0, '0x0000000000000000000000000000000000000000', 0]
+        [
+          contractAddress,
+          rowOfferId,
+          fulfillmentId,
+          offerData?.offerDetailsInJson.pubKeyHash,
+          orderTimestamp,
+        ]
+      )
+    );
+
+    const shortOrderId = orderId.slice(2, 10);
+    let publicKeyCurrentUser = btcWalletData?.publicKey;
+    let pubKeyHash = btcWalletData?.pubkeyHash || "";
+    let inputForSecret = publicKeyCurrentUser + shortOrderId;
+    let inputForSecretBuffer: Buffer = Buffer.from(inputForSecret, "hex");
+    let secret = generateSecret(inputForSecretBuffer);
+    return { shortOrderId, secret, pubKeyHash };
+  };
+
   useEffect(() => {
+    let contractAddress =
+      currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+        ?.orderBookContractAddreess;
+    let offerDetails = offerData?.offerDetailsInJson;
+    let orderTimestamp = offerDetails?.orderedTime as string;
+    let offerValidTill = offerDetails?.offerValidTill as string;
+
+    let locktime =
+      parseInt(offerValidTill) +
+      parseInt(orderTimestamp) +
+      BTC_REFUND_CLAIM_PERIOD;
+
+    if (offerDetails?.pubKeyHash) {
+      let pubKeyHash = Buffer.from(offerDetails.pubKeyHash.substring(2), "hex");
+      const addressParameters = getParametersForAddress(
+        offerDetails?.offerId as string,
+        contractAddress || "",
+        offerDetails,
+        orderTimestamp,
+        account // in place on fullfillment id
+      );
+      let hashAdress = generateTrustlexAddressWithRecoveryHash(
+        pubKeyHash,
+        addressParameters.shortOrderId,
+        addressParameters.secret,
+        addressParameters.pubKeyHash as string,
+        locktime
+      );
+    }
+
     let viewOrderDrawerHistoryTableData2_ = fullfillmentResult
       ? fullfillmentResult.map((value, index) => {
-          let fulfillmentRequest = value.fulfillmentRequest;
-          let fulfillmentRequestId = value.fulfillmentRequestId;
+          let fulfillmentRequest = value.settlementRequest;
+          let fulfillmentRequestId = value.settlementRequestId;
           let ETHAmountPricePerBTC: string = (
             Number(fulfillmentRequest?.quantityRequested?.toString()) *
             (Number(offerData?.offerDetailsInJson.offerQuantity) /
               Number(offerData?.offerDetailsInJson.satoshisToReceive))
           ).toString();
           let ETHAmount = tofixedEther(Number(WeitoEth(ETHAmountPricePerBTC)));
-          let expiryTime = TimestampTotoNow(fulfillmentRequest.expiryTime);
+          let expiryTime = TimestampTotoNow(
+            fulfillmentRequest.expiryTime as string
+          );
 
           let row = {
-            orderNumber: fulfillmentRequestId.toString(),
+            orderNumber: 0, //fulfillmentRequestId.toString(),
             planningToSell: {
               amount: ETHAmount,
               // type: CurrencyEnum.ETH,

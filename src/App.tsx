@@ -619,7 +619,7 @@ export default function App() {
           account,
           fromOfferMySwapOngoingId
         );
-
+      console.log(InitializeFullfillmentDataByNonEvent);
       setlistenedOngoinMySwapOnGoingDataByNonEvent(
         InitializeFullfillmentDataByNonEvent
       );

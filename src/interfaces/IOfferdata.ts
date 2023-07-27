@@ -12,13 +12,18 @@ export interface IOfferdata {
   progress?: string;
   offerType?: string;
   fullfillmentRequestId?: string | undefined;
-  settlementRequests?: SettlementRequest;
+  settlementRequests: [];
   fulfillmentRequestExpiryTime?: string;
   fulfillmentRequestQuantityRequested?: string;
-  fulfillmentRequestPaymentProofSubmitted?: boolean;
+  fulfillmentRequestSettled?: boolean;
   fulfillmentRequestfulfilledTime?: any;
-  fullfillmentResults?: IFullfillmentResult;
+  settlementRequestResults?: IResultSettlementRequest;
   isCanceled: boolean;
+}
+
+export interface IResultOffer {
+  offerId: string;
+  offer: IOfferdata;
 }
 
 export interface INewOfferEvent {
@@ -31,6 +36,8 @@ export interface IInitilizedFullfillmentEvent {
   offerId: string;
   fulfillmentId: string;
 }
+
+// No longer will be in used
 export interface IFullfillmentEvent {
   fulfillmentBy: string;
   quantityRequested: string;
@@ -47,7 +54,7 @@ export interface IFullfillmentEvent {
 export interface SettlementRequest {
   settledBy: string;
   quantityRequested: string;
-  settlementRequestedTime?: number;
+  settlementRequestedTime: number;
   expiryTime?: string;
   settledTime?: number;
   lockTime: number;

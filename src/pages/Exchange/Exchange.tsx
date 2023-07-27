@@ -425,7 +425,7 @@ const Exchange = (props: Props) => {
           fullfillmentResult.settlementRequest.settled == false
         );
       });
-    console.log(fullfillmentResult);
+    // console.log(fullfillmentResult);
 
     let quantityRequested =
       fullfillmentResult?.settlementRequest?.quantityRequested.toString();

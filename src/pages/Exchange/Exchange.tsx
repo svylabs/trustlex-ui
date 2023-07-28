@@ -38,27 +38,16 @@ import {
 } from "~/service/BitcoinService";
 import {
   AddOfferWithEth,
-  InitializeFullfillment,
-  connect,
-  getOffers,
-  listOffers,
-  getTotalOffers,
   getOffersList,
   showErrorMessage,
   showSuccessMessage,
   addOfferWithToken,
-  getOffer,
   getInitializedFulfillmentsByOfferId,
 } from "~/service/AppService";
 import BtcToSatoshiConverter from "~/utils/BtcToSatoshiConverter";
 import { IListenedOfferData } from "~/interfaces/IOfferdata";
 import { PaperWalletDownloadedEnum } from "~/interfaces/IExchannge";
-import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
-import {
-  NumberToTime,
-  TimeToNumber,
-  TimeToDateFormat,
-} from "~/utils/TimeConverter";
+import { TimeToNumber } from "~/utils/TimeConverter";
 import { ethers } from "ethers";
 import {
   Wallet,
@@ -66,18 +55,10 @@ import {
   generateTrustlexAddress,
 } from "~/utils/BitcoinUtils";
 
-import { showNewTransactions } from "~/utils/BitcoinRPCJS";
-
 import GenerateWalletDrawer from "~/components/GenerateWalletDrawer/GenerateWalletDrawer";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 import MainLayout from "~/components/MainLayout/MainLayout";
-import {
-  MAX_BLOCKS_TO_QUERY,
-  MAX_ITERATIONS,
-  PAGE_SIZE,
-  ERC20TokenKey,
-  currencyObjects,
-} from "~/Context/Constants";
+import { PAGE_SIZE, currencyObjects } from "~/Context/Constants";
 import { IResultSettlementRequest } from "~/interfaces/IOfferdata";
 
 type Props = {};

@@ -17,7 +17,7 @@ export interface IOfferdata {
   fulfillmentRequestQuantityRequested?: string;
   fulfillmentRequestSettled?: boolean;
   fulfillmentRequestfulfilledTime?: any;
-  settlementRequestResults?: IResultSettlementRequest;
+  settlementRequestResults?: IResultSettlementRequest[];
   isCanceled: boolean;
 }
 
@@ -84,7 +84,7 @@ export interface IFullfillmentResult {
 }
 
 export interface IListenedOfferData {
-  offerEvent: INewOfferEvent;
+  // offerEvent: INewOfferEvent;
   offerDetailsInJson: IOfferdata;
 }
 

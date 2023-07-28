@@ -170,10 +170,11 @@ export const getEventData = async (
       }
 
       let PAYMENT_SUCCESSFUL_EVENTS = await ContractInstance.queryFilter(
-        "PAYMENT_SUCCESSFUL",
+        "SETTLEMENT_SUCCESSFUL",
         estimatedFromBlock,
         toBlock
       );
+      console.log(PAYMENT_SUCCESSFUL_EVENTS);
       let total_quantityRequested = 0;
       // console.log(PAYMENT_SUCCESSFUL_EVENTS);
       if (receivedByAddress != "") {
@@ -196,7 +197,7 @@ export const getEventData = async (
         let txHash = args.txHash;
         let outputHash = args.outputHash;
 
-        let compactFulfillmentDetail = BigInt(args.compactFulfillmentDetail);
+        let compactFulfillmentDetail = BigInt(args.compactSettlementDetail);
         let fulfillmentId = Number(compactFulfillmentDetail >> BigInt(8 * 8));
         let quantityRequested = Number(
           compactFulfillmentDetail & ((BigInt(1) << BigInt(8 * 8)) - BigInt(1))

@@ -178,8 +178,8 @@ const Navbar = (props: Props) => {
             title={`${BTCBalance} BTC`}
             handleNavButtonClick={handleShowSendBtc}
           />
-          {/* Variant1 */}
 
+          {/* Variant1 */}
           <SendBtcBox
             open={showSendBtcBox}
             onClose={handleShowSendBtc}
@@ -199,7 +199,6 @@ const Navbar = (props: Props) => {
               setBTCWalletData={setBTCWalletData}
             />
           </div>
-
           {/* Variant2 */}
           {/* <SendBtcDrawer open={showSendBtcBox} onClose={handleShowSendBtc} /> */}
         </div>

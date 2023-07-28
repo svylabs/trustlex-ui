@@ -166,7 +166,7 @@ const Home = (props: Props) => {
         total_locked_amounts
       );
 
-      console.log(total_locked_amounts);
+      // console.log(total_locked_amounts);
       setTotalLockedAmount(total_locked_amounts);
       let contractInstance = await getSelectedTokenContractInstance();
       // console.log(contractInstance);

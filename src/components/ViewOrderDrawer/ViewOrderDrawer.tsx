@@ -134,17 +134,18 @@ const ViewOrderDrawer = ({
       }
 
       if (offerData?.offerDetailsInJson) {
-        let toAddress = Buffer.from(
-          offerData.offerDetailsInJson.pubKeyHash.substring(2),
-          "hex"
-        );
+        // let toAddress = Buffer.from(
+        //   offerData.offerDetailsInJson.pubKeyHash.substring(2),
+        //   "hex"
+        // );
+        let toAddress = offerData.offerDetailsInJson.pubKeyHash;
         let offerId = offerId_;
         offerId_ = Number(offerId_);
         if (offerId.length % 2 != 0) {
           offerId = "0" + offerId;
         }
-        let hashAddress = generateTrustlexAddress(toAddress, offerId);
-        setHashAddress(hashAddress as string);
+        // let hashAddress = generateTrustlexAddress(toAddress, offerId);
+        setHashAddress(toAddress as string);
         let planningToSell_ = Number(
           ethers.utils.formatEther(offerData.offerDetailsInJson.offerQuantity)
         ); //offerQuantity
@@ -166,7 +167,7 @@ const ViewOrderDrawer = ({
               contract,
               offerId_ as number
             );
-          console.log(FullfillmentResult);
+          // console.log(FullfillmentResult);
           setFullfillmentResult(FullfillmentResult);
         })();
       }
@@ -249,12 +250,12 @@ const ViewOrderDrawer = ({
               Number(offerData?.offerDetailsInJson.satoshisToReceive))
           ).toString();
           let ETHAmount = tofixedEther(Number(WeitoEth(ETHAmountPricePerBTC)));
-          let expiryTime = TimestampTotoNow(
+          let expiryTime = TimestampfromNow(
             fulfillmentRequest.expiryTime as string
           );
 
           let row = {
-            orderNumber: 0, //fulfillmentRequestId.toString(),
+            orderNumber: fulfillmentRequestId.toString().slice(0, 6),
             planningToSell: {
               amount: ETHAmount,
               // type: CurrencyEnum.ETH,
@@ -347,7 +348,7 @@ const ViewOrderDrawer = ({
         if (contractInstance == false) {
           return;
         }
-        console.log(offerId_);
+        // console.log(offerId_);
         let result = await cancelOfferService(
           contractInstance,
           offerId_ as string
@@ -480,7 +481,7 @@ const ViewOrderDrawer = ({
               </Box>
             </Grid.Col>
             <Grid.Col span={"content"} className={styles.button}>
-              <Button
+              {/* <Button
                 radius={10}
                 variant={
                   openExtendOferSection == false
@@ -493,7 +494,7 @@ const ViewOrderDrawer = ({
                 onClick={handleExtendOffer}
               >
                 Extend offer
-              </Button>
+              </Button> */}
             </Grid.Col>
           </Grid>
           {openExtendOferSection == true ? (

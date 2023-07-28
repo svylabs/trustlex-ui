@@ -11,9 +11,6 @@ import {
   connect,
   findMetaMaskAccount,
   getBalance,
-  // listOffers,
-  InitializeFullfillment,
-  // listInitializeFullfillment,
   getOffersList,
   getTotalOffers,
   getERC20TokenBalance,
@@ -943,6 +940,7 @@ export default function App() {
               <Route path="/exchange" element={<Exchange />} />
               <Route path="/recent" element={<Recent />} />
               <Route path="/earn" element={<Earn />} />
+
               <Route path="/protocol" element={<ProtocolDocs />} />
             </Routes>
           </Layout>

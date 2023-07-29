@@ -157,3 +157,17 @@ export const generateTrustlexAddressWithRecoveryHash = (
 export const tofixedBTC = (amount: number) => {
   return Number(amount.toFixed(BTC_DECIMAL_PLACE));
 };
+
+export const deriveRecoveryPubKeyHash = (extendedPubKey: string, orderId: number): Buffer => {
+  const hdwallet = bip32.BIP32Factory(tinysecp);
+  const node = hdwallet.fromBase58(extendedPubKey);
+  const child = node.derive(orderId);
+  return child.identifier;
+}
+
+export const deriveSecret = (extendedPubKey: string, orderId: number): Buffer => {
+  const hdwallet = bip32.BIP32Factory(tinysecp);
+  const node = hdwallet.fromBase58(extendedPubKey);
+  const child = node.derive(orderId);
+  return bitcoin.crypto.sha256(child.publicKey);
+}

@@ -42,6 +42,8 @@ const InstantWallet = ({
       address: "",
       publicKey: "",
       encryptedPrivateKey: "",
+      extendedPublicKeyRecovery: "",
+      extendedPublicKeySecret: ""
     }
   );
   const [paperWalletKey, setPaperWalletKey] = useState<number>(1);

@@ -43,6 +43,8 @@ const InstantWalletWithGenerateButton = ({
       address: "",
       publicKey: "",
       encryptedPrivateKey: "",
+      extendedPublicKeyRecovery: "",
+      extendedPublicKeySecret: ""
     }
   );
   const [paperWalletKey, setPaperWalletKey] = useState<number>(1);
@@ -126,6 +128,8 @@ const InstantWalletWithGenerateButton = ({
     setBTCWalletData({
       publicKey: generatedBitcoinData.publicKey.toString("hex"),
       pubkeyHash: generatedBitcoinData.pubkeyHash.toString("hex"),
+      extendedPublicKeyRecovery: generatedBitcoinData.extendedPublicKeyRecovery,
+      extendedPublicKeySecret: generatedBitcoinData.extendedPublicKeySecret
     });
     showSuccessMessage("Your wallet is successfully created.");
 

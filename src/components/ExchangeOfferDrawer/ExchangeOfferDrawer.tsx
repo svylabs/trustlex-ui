@@ -172,6 +172,7 @@ const ExchangeOfferDrawer = ({
     useState<string>("inherit");
   const [clickedOnInitiateButton, setClickedOnInitiateButton] =
     useState<boolean>(false);
+  const [buyAmountErrorMessage, setBuyAmountErrorMessage] = useState("");
   const [isColletaralNeeded, setIsColletaralNeeded] = useState<boolean>(false);
   const { scrollDirection } = useDetectScrollUpDown();
   // console.log(selectedNetwork, selectedToken);
@@ -405,9 +406,8 @@ const ExchangeOfferDrawer = ({
 
       if (
         rowFullFillmentId?.toString() !== undefined &&
-        isOrderExpired === false
-        // &&
-        // fullFillmentPaymentProofSubmitted == false
+        isOrderExpired === false &&
+        fullFillmentPaymentProofSubmitted == false
       ) {
         isInitating = true;
         setIsInitating("initiated");
@@ -417,14 +417,25 @@ const ExchangeOfferDrawer = ({
           fullfillmentResults.find(
             (value: IResultSettlementRequest, index: number) => {
               let currentFullFillmentId = value.settlementRequestId;
-
-              if (rowFullFillmentId == currentFullFillmentId) {
+              console.log(
+                Number(rowFullFillmentId),
+                Number(currentFullFillmentId)
+              );
+              if (Number(rowFullFillmentId) == Number(currentFullFillmentId)) {
                 return true;
               } else {
                 return false;
               }
             }
           );
+
+        let quantityRequestedSatoshi = Number(
+          rowFullfillment?.settlementRequest?.quantityRequested
+        );
+        let txId = rowFullfillment?.settlementRequest?.txId;
+
+        transactionHash != "" ? "" : setTransactionHash(txId as string);
+        setVerified("verified");
 
         let fulfillmentId = rowFullFillmentId.toString();
         setOfferFulfillmentId(fulfillmentId);
@@ -447,18 +458,18 @@ const ExchangeOfferDrawer = ({
   }, [foundOffer?.offerDetailsInJson?.offerId]);
 
   const handleInitate = async () => {
-    // validate the eth value
-    let buyAmount: number = ethValue as number;
+    // // validate the eth value
+    // let buyAmount: number = ethValue as number;
 
-    if (buyAmount <= 0) {
-      showErrorMessage("Please enter buy amount greater than 0 !");
-      return false;
-    } else if (buyAmount > leftToBuy) {
-      showErrorMessage(
-        `Buy amount can not be greater that offer quanity ${leftToBuy} !`
-      );
-      return false;
-    }
+    // if (buyAmount <= 0) {
+    //   showErrorMessage("Please enter buy amount greater than 0 !");
+    //   return false;
+    // } else if (buyAmount > leftToBuy) {
+    //   showErrorMessage(
+    //     `Buy amount can not be greater that offer quanity ${leftToBuy} !`
+    //   );
+    //   return false;
+    // }
     if (
       !confirm(
         "Have you submitted the merkleroot and height in TrustedBitcoinSPVChain contract?"
@@ -700,6 +711,19 @@ const ExchangeOfferDrawer = ({
   };
 
   const handleTxVerification = async () => {
+    // validate the eth value
+    let buyAmount: number = ethValue as number;
+
+    if (buyAmount <= 0) {
+      showErrorMessage("Please enter buy amount greater than 0 !");
+      return false;
+    } else if (buyAmount > leftToBuy) {
+      showErrorMessage(
+        `Buy amount can not be greater that offer quanity ${leftToBuy} !`
+      );
+      return false;
+    }
+
     if (blockHash == "") {
       showErrorMessage("Please enter the block hash");
       return;
@@ -1056,8 +1080,7 @@ const ExchangeOfferDrawer = ({
                               fgColor="#7C7C7C"
                             /> */}
                         </div>
-                        QR Code and BTC Address will be shown after initiating
-                        your order
+                        <>Please enter the valid Buy amount</>
                       </>
                     ) : (
                       <>
@@ -1081,6 +1104,8 @@ const ExchangeOfferDrawer = ({
                           ) : (
                             <span className={styles.toAddress}>{to}</span>
                           )}
+                        </div>
+                        <div className={styles.sendTo}>
                           {activeStep == 1 ? (
                             <>
                               <Input
@@ -1105,11 +1130,15 @@ const ExchangeOfferDrawer = ({
                           ) : (
                             <>
                               <div className={styles.sendTo}>
-                                Block Hash :{" "}
-                                <span className={styles.toAddress}>
-                                  {blockHash}
-                                </span>
-                                <br />
+                                {blockHash != "" && (
+                                  <>
+                                    Block Hash :{" "}
+                                    <span className={styles.toAddress}>
+                                      {blockHash}
+                                    </span>
+                                    <br />
+                                  </>
+                                )}
                                 Transaction Hash:{" "}
                                 <span className={styles.toAddress}>
                                   {transactionHash}

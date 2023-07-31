@@ -327,7 +327,7 @@ function MySwaps() {
         quantityRequested:
           value.offerDetailsInJson?.fulfillmentRequestQuantityRequested,
         paymentProofSubmitted:
-          value.offerDetailsInJson?.fulfillmentRequestPaymentProofSubmitted,
+          value.offerDetailsInJson.fulfillmentRequestSettled,
         offerData: value,
         isCanceled: value.offerDetailsInJson?.isCanceled,
       };

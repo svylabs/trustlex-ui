@@ -410,8 +410,8 @@ const Exchange = (props: Props) => {
 
     let quantityRequested =
       fullfillmentResult?.settlementRequest?.quantityRequested.toString();
-    // let fullFillmentPaymentProofSubmitted =
-    //   fullfillmentResult?.settlementRequest?.paymentProofSubmitted;
+    let fullFillmentPaymentProofSubmitted =
+      fullfillmentResult?.settlementRequest?.settled;
 
     setRowOfferId(offerId);
     setRowFullFillmentId(fullfillmentResult?.settlementRequestId);
@@ -421,7 +421,7 @@ const Exchange = (props: Props) => {
     );
     setRowFullFillmentQuantityRequested(quantityRequested);
     setExchangeOfferDrawerKey(exchangeOfferDrawerKey + 1);
-    // setFullFillmentPaymentProofSubmitted(fullFillmentPaymentProofSubmitted);
+    setFullFillmentPaymentProofSubmitted(fullFillmentPaymentProofSubmitted);
   };
 
   return (

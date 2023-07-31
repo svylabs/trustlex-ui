@@ -65,7 +65,9 @@ function Demo({ btcWalletData, setBTCWalletData }: IInstantWallet) {
         !(
           "address" in fileData &&
           "publicKey" in fileData &&
-          "pubkeyHash" in fileData
+          "pubkeyHash" in fileData &&
+          "extendedPublicKeyRecovery" in fileData &&
+          "extendedPublicKeySecret" in fileData
         )
       ) {
         showErrorMessage("invalid file format");
@@ -82,6 +84,8 @@ function Demo({ btcWalletData, setBTCWalletData }: IInstantWallet) {
       setBTCWalletData({
         publicKey: publicKeyString,
         pubkeyHash: pubkeyHashString,
+        extendedPublicKeyRecovery: fileData?.extendedPublicKeyRecovery,
+        extendedPublicKeySecret: fileData?.extendedPublicKeySecret
       });
       showSuccessMessage("You wallet is successfully imported.");
     };

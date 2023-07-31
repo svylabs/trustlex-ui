@@ -51,6 +51,8 @@ import {
   generateSecret,
   generateTrustlexAddressWithRecoveryHash,
   getHashedSecret,
+  deriveRecoveryPubKeyHash,
+  deriveSecret,
 } from "~/utils/BitcoinUtils";
 import ImageIcon from "../ImageIcon/ImageIcon";
 import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";
@@ -221,11 +223,14 @@ const ExchangeOfferDrawer = ({
     );
 
     const shortOrderId = orderId.slice(2, 10);
-    let publicKeyCurrentUser = btcWalletData?.publicKey;
-    let pubKeyHash = btcWalletData?.pubkeyHash || "";
-    let inputForSecret = publicKeyCurrentUser + shortOrderId;
-    let inputForSecretBuffer: Buffer = Buffer.from(inputForSecret, "hex");
-    let secret = generateSecret(inputForSecretBuffer);
+    //let publicKeyCurrentUser = btcWalletData?.extendd;
+    //let pubKeyHash = btcWalletData?.pubkeyHash || "";
+    //let inputForSecret = publicKeyCurrentUser + shortOrderId;
+    //let inputForSecretBuffer: Buffer = Buffer.from(inputForSecret, "hex");
+    let extendedPublicKeyRecovery = btcWalletData?.extendedPublicKeyRecovery;
+    let extendedPublicKeySecret = btcWalletData?.extendedPublicKeySecret;
+    let pubKeyHash = deriveRecoveryPubKeyHash(extendedPublicKeyRecovery || '', rowOfferId || 0).toString('hex');
+    let secret = deriveSecret(extendedPublicKeySecret || '', rowOfferId || 0);
     return { shortOrderId, secret, pubKeyHash };
   };
 

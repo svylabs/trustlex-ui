@@ -5,21 +5,25 @@ export interface IOfferdata {
   offerValidTill: string;
   orderedTime: string;
   offeredBlockNumber: string;
-  bitcoinAddress: string;
+  pubKeyHash: string;
   satoshisToReceive: string;
   satoshisReceived: string;
   satoshisReserved: string;
-  collateralPer3Hours: string;
   progress?: string;
   offerType?: string;
   fullfillmentRequestId?: string | undefined;
-  fulfillmentRequests?: IFullfillmentEvent;
+  settlementRequests: [];
   fulfillmentRequestExpiryTime?: string;
   fulfillmentRequestQuantityRequested?: string;
-  fulfillmentRequestPaymentProofSubmitted?: boolean;
+  fulfillmentRequestSettled?: boolean;
   fulfillmentRequestfulfilledTime?: any;
-  fullfillmentResults?: IFullfillmentResult;
+  settlementRequestResults?: IResultSettlementRequest[];
   isCanceled: boolean;
+}
+
+export interface IResultOffer {
+  offerId: string;
+  offer: IOfferdata;
 }
 
 export interface INewOfferEvent {
@@ -32,6 +36,8 @@ export interface IInitilizedFullfillmentEvent {
   offerId: string;
   fulfillmentId: string;
 }
+
+// No longer will be in used
 export interface IFullfillmentEvent {
   fulfillmentBy: string;
   quantityRequested: string;
@@ -45,6 +51,32 @@ export interface IFullfillmentEvent {
   isExpired: boolean;
   fulfillRequestedTime: number;
 }
+export interface SettlementRequest {
+  settledBy: string;
+  quantityRequested: string;
+  settlementRequestedTime: number;
+  expiryTime?: string;
+  settledTime?: number;
+  lockTime: number;
+  recoveryPubKeyHash: string;
+  settled?: boolean;
+  isExpired?: boolean;
+  txId?: string;
+  scriptOutputHash?: string;
+  hashedSecret: string;
+}
+
+export interface IResultSettlementRequest {
+  settlementRequest: SettlementRequest;
+  settlementRequestId: string;
+}
+export interface IInitiatedOrder {
+  accountAddress: string;
+  offerId: string;
+  ethAmount: string;
+  txHash: string;
+  blockHash: string;
+}
 
 export interface IFullfillmentResult {
   fulfillmentRequest: IFullfillmentEvent;
@@ -52,7 +84,7 @@ export interface IFullfillmentResult {
 }
 
 export interface IListenedOfferData {
-  offerEvent: INewOfferEvent;
+  // offerEvent: INewOfferEvent;
   offerDetailsInJson: IOfferdata;
 }
 

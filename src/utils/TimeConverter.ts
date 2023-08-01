@@ -1,6 +1,6 @@
 import React from "react";
 import moment from "moment";
-import { OFFER_ORDER_EXPIRY_DIRATION } from "~/Context/Constants";
+import { SETTLEMENT_COMPLETION_WINDOW } from "~/Context/Constants";
 
 export const TimeToNumber = (time: string) => {
   // return time === "1d"
@@ -77,7 +77,7 @@ export const getTimeInSeconds = () => {
   return Math.floor(time / 1000);
 };
 export const getOfferOrderExpiryDurationInSeconds = () => {
-  return OFFER_ORDER_EXPIRY_DIRATION;
+  return SETTLEMENT_COMPLETION_WINDOW;
 };
 
 export const calculateTimeDiiference = (timeInSeconds: number) => {

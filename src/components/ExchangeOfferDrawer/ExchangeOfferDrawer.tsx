@@ -19,17 +19,20 @@ import Input from "../Input/Input";
 // import { BitcoinMerkleTree } from "bitcoin-merkle-tree/dist/index";
 import { BitcoinMerkleTree, MerkleProof } from "~/utils/bitcoinmerkletree";
 import { IBitcoinPaymentProof } from "~/interfaces/IBitcoinNode";
+import useLocalstorage from "~/hooks/useLocalstorage";
 import {
   IFullfillmentEvent,
   IFullfillmentResult,
   IOfferdata,
+  SettlementRequest,
+  IInitiatedOrder,
 } from "~/interfaces/IOfferdata";
 import {
-  InitializeFullfillment,
+  initiateSettlementService,
   showSuccessMessage,
   showErrorMessage,
   getOffer,
-  submitPaymentProof,
+  finalizeSettlement,
   getInitializedFulfillmentsByOfferId,
   getInitializedFulfillments,
   increaseContractAllownace,
@@ -41,11 +44,15 @@ import {
   GetBlock,
 } from "~/service/BitcoinService";
 
+import { IResultSettlementRequest } from "~/interfaces/IOfferdata";
 import {
   generateTrustlexAddress,
   tofixedBTC,
   generateSecret,
   generateTrustlexAddressWithRecoveryHash,
+  getHashedSecret,
+  deriveRecoveryPubKeyHash,
+  deriveSecret,
 } from "~/utils/BitcoinUtils";
 import ImageIcon from "../ImageIcon/ImageIcon";
 import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";
@@ -134,6 +141,7 @@ const ExchangeOfferDrawer = ({
   setBTCWalletData,
   getSelectedTokenContractInstance,
 }: Props) => {
+  const { get, set, remove } = useLocalstorage();
   const { cleanTx } = window;
   const { mobileView } = useWindowDimensions();
   const rootRef = useRef(null);
@@ -166,6 +174,7 @@ const ExchangeOfferDrawer = ({
     useState<string>("inherit");
   const [clickedOnInitiateButton, setClickedOnInitiateButton] =
     useState<boolean>(false);
+  const [buyAmountErrorMessage, setBuyAmountErrorMessage] = useState("");
   const [isColletaralNeeded, setIsColletaralNeeded] = useState<boolean>(false);
   const { scrollDirection } = useDetectScrollUpDown();
   // console.log(selectedNetwork, selectedToken);
@@ -198,38 +207,39 @@ const ExchangeOfferDrawer = ({
     secret: Buffer;
     pubKeyHash: String;
   } => {
-    console.log([
-      contractAddress,
-      rowOfferId,
-      fulfillmentId,
-      foundOffer.offerDetailsInJson.bitcoinAddress,
-      orderTimestamp,
-    ]);
     const orderId = ethers.utils.keccak256(
       ethers.utils.solidityPack(
-        ["address", "uint256", "uint256", "bytes20", "uint256"],
+        ["address", "uint256", "address", "bytes20", "uint256"],
         // To be interpreted as: address of contract, orderId, fulfillmentId, pubKeyHash, orderTimestamp
         // ["0xFD05beBFEa081f6902bf9ec57DCb50b40BA02510", 0, 0, '0x0000000000000000000000000000000000000000', 0]
         [
           contractAddress,
           rowOfferId,
           fulfillmentId,
-          foundOffer.offerDetailsInJson.bitcoinAddress,
+          foundOffer.offerDetailsInJson.pubKeyHash,
           orderTimestamp,
         ]
       )
     );
 
     const shortOrderId = orderId.slice(2, 10);
-    let publicKeyCurrentUser = btcWalletData?.publicKey;
-    let pubKeyHash = btcWalletData?.pubkeyHash || "";
-    let inputForSecret = publicKeyCurrentUser + shortOrderId;
-    let inputForSecretBuffer: Buffer = Buffer.from(inputForSecret, "hex");
-    let secret = generateSecret(inputForSecretBuffer);
+    //let publicKeyCurrentUser = btcWalletData?.extendd;
+    //let pubKeyHash = btcWalletData?.pubkeyHash || "";
+    //let inputForSecret = publicKeyCurrentUser + shortOrderId;
+    //let inputForSecretBuffer: Buffer = Buffer.from(inputForSecret, "hex");
+    let extendedPublicKeyRecovery = btcWalletData?.extendedPublicKeyRecovery;
+    let extendedPublicKeySecret = btcWalletData?.extendedPublicKeySecret;
+    let pubKeyHash = deriveRecoveryPubKeyHash(extendedPublicKeyRecovery || '', rowOfferId || 0).toString('hex');
+    let secret = deriveSecret(extendedPublicKeySecret || '', rowOfferId || 0);
     return { shortOrderId, secret, pubKeyHash };
   };
 
-  const { listenedOfferData, listenedOfferDataByNonEvent } = context;
+  const {
+    listenedOfferData,
+    listenedOfferDataByNonEvent,
+    initiatedOrders,
+    setInitiatedOrders,
+  } = context;
 
   let foundOffer =
     rowOfferId &&
@@ -252,12 +262,7 @@ const ExchangeOfferDrawer = ({
       );
       if (!offerDetails || offerDetails === undefined) return;
       // console.log(offerDetails);
-      // get the offerfullfillment details
-      let fullfillmentResults = await getInitializedFulfillmentsByOfferId(
-        contract,
-        rowOfferId
-      );
-      // console.log(fullfillmentResults, rowFullFillmentId);
+
       if (!foundOffer || foundOffer === undefined) return;
 
       let countdowntimerTime_ = rowFullFillmentExpiryTime
@@ -274,10 +279,12 @@ const ExchangeOfferDrawer = ({
         isOrderExpired = true;
         setIsOrderExpired(true);
       }
+      // console.log(isOrderExpired);
 
       let planningToSell_ = Number(
         ethers.utils.formatEther(foundOffer.offerDetailsInJson.offerQuantity)
       ); //offerQuantity
+
       let offer = foundOffer;
 
       const price_per_ETH_in_BTC =
@@ -287,135 +294,159 @@ const ExchangeOfferDrawer = ({
         Number(
           ethers.utils.formatEther(offer.offerDetailsInJson.offerQuantity)
         );
-      // const satoshisToReceive = Number(
-      //   offer.offerDetailsInJson.satoshisToReceive
-      // );
-      // let satoshisReserved = Number(offer.offerDetailsInJson.satoshisReserved);
 
-      // const satoshisReceived = Number(
-      //   offer.offerDetailsInJson.satoshisReceived
-      // );
-      // console.log(offerDetails);
       let satoshisToReceive = Number(offerDetails.satoshisToReceive);
       let satoshisReserved = Number(offerDetails.satoshisReserved);
 
       let satoshisReceived = Number(offerDetails.satoshisReceived);
       const offerQuantity = Number(offerDetails.offerQuantity);
+
+      //-----------------Update satoshisReserved if order is expired ---------------------//
+      // get the offerfullfillment details
+      let fullfillmentResults: IResultSettlementRequest[] =
+        await getInitializedFulfillmentsByOfferId(contract, rowOfferId);
+
       fullfillmentResults &&
         fullfillmentResults?.map(
-          (value: IFullfillmentResult, index: number) => {
-            let expiryTime = Number(value.fulfillmentRequest.expiryTime) * 1000;
-            let isExpired = value.fulfillmentRequest.isExpired;
-            let paymentProofSubmitted =
-              value.fulfillmentRequest.paymentProofSubmitted;
+          (value: IResultSettlementRequest, index: number) => {
+            let expiryTime = Number(value.settlementRequest.expiryTime) * 1000;
+            let isExpired = value.settlementRequest.isExpired;
+            let settled = value.settlementRequest.settled;
             if (
               expiryTime < Date.now() &&
               isExpired == false &&
-              paymentProofSubmitted == false
+              settled == false
             ) {
               satoshisReserved -= Number(
-                value.fulfillmentRequest.quantityRequested
+                value.settlementRequest.quantityRequested
               );
             }
           }
         );
+      //-----------------End Update satoshisReserved if order is expired ---------------------//
 
-      // console.log(satoshisReserved);
       let left_to_buy =
         Number(
           SatoshiToBtcConverter(
             satoshisToReceive - (satoshisReserved + satoshisReceived)
           )
         ) / price_per_ETH_in_BTC;
+      let planningToBuy_ = Number(
+        tofixedBTC(Number(SatoshiToBtcConverter(satoshisToReceive)))
+      );
 
       setPlanningToBuy(
         Number(tofixedBTC(Number(SatoshiToBtcConverter(satoshisToReceive))))
       );
+      setPlanningToSell(planningToSell_);
 
       setIsInitating("");
-      setTo("");
       setActiveStep(1);
       setVerified("");
       setConfirmed("");
 
-      setPlanningToSell(planningToSell_);
-      // setEthValue(planningToSell_);
-      //if order already initiated
+      //-------------------Generate the BTC address for QR Code -----------------------//
+      let contractAddress =
+        currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+          ?.orderBookContractAddreess;
+      let orderTimestamp = offerDetails.orderedTime;
+      let offerValidTill = offerDetails.offerValidTill;
+      let locktime =
+        parseInt(offerValidTill) +
+        parseInt(orderTimestamp) +
+        BTC_REFUND_CLAIM_PERIOD;
+      // console.log(locktime);
+
+      // Make the btc address to pay
+      let pubKeyHash = Buffer.from(offerDetails.pubKeyHash.substring(2), "hex");
+      const addressParameters = getParametersForAddress(
+        contractAddress || "",
+        foundOffer,
+        orderTimestamp,
+        account // in place on fullfillment id
+      );
+
+      let hashAdress = generateTrustlexAddressWithRecoveryHash(
+        pubKeyHash,
+        addressParameters.shortOrderId,
+        addressParameters.secret,
+        addressParameters.pubKeyHash as string,
+        locktime
+      );
+      // console.log(hashAdress);
+      setTo(hashAdress as string);
+
+      //-------------------END Generate the BTC address for QR Code -----------------------//
+
+      //---------- If already payment is done,Autofill the form from local storage ---------//
+
+      // if (isInitating == false) {
+      // console.log(isInitating);
+
+      let initiatedOrderResult: IInitiatedOrder | undefined =
+        getInitiatedOrderDetails();
+
+      if (initiatedOrderResult !== undefined) {
+        // console.log(initiatedOrderResult);
+        left_to_buy = Number(initiatedOrderResult.ethAmount);
+        left_to_buy = tofixedEther(left_to_buy);
+        let blockHash = initiatedOrderResult.blockHash;
+        let txHash = initiatedOrderResult.txHash;
+        setBlockHash(blockHash);
+        setTransactionHash(txHash);
+        await verifyPayment(
+          txHash,
+          blockHash,
+          left_to_buy,
+          planningToBuy_,
+          planningToSell_,
+          hashAdress as string
+        );
+        // }
+      }
+      //---------- End If already payment is done,Autofill the form from local storage ---------//
+
+      //----------------------------------if order already initiated move on step 3 ----------------------//
       let isInitating = false;
+
       if (
-        rowFullFillmentId != undefined &&
-        isOrderExpired == false &&
+        rowFullFillmentId?.toString() !== undefined &&
+        isOrderExpired === false &&
         fullFillmentPaymentProofSubmitted == false
       ) {
         isInitating = true;
         setIsInitating("initiated");
 
-        let rowFullfillment: IFullfillmentResult = fullfillmentResults.find(
-          (value: IFullfillmentResult, index: number) => {
-            let currentFullFillmentId = value.fulfillmentRequestId;
-
-            if (BigInt(rowFullFillmentId) == BigInt(currentFullFillmentId)) {
-              return true;
-            } else {
-              return false;
+        //--------------------Getting the settlement request details--------------------//
+        let rowFullfillment: IResultSettlementRequest | undefined =
+          fullfillmentResults.find(
+            (value: IResultSettlementRequest, index: number) => {
+              let currentFullFillmentId = value.settlementRequestId;
+              console.log(
+                Number(rowFullFillmentId),
+                Number(currentFullFillmentId)
+              );
+              if (Number(rowFullFillmentId) == Number(currentFullFillmentId)) {
+                return true;
+              } else {
+                return false;
+              }
             }
-          }
-        );
+          );
 
-        let fulfillRequestedTime =
-          rowFullfillment.fulfillmentRequest.fulfillRequestedTime;
-
-        // get claim period
-        let contractInstance = await getSelectedTokenContractInstance();
-        // let claim_period = await getClaimPeriod(contractInstance);
-        // if (!claim_period) {
-        //   showErrorMessage("Failed to connect the contract!");
-        //   return false;
-        // }
-        let toAddress = Buffer.from(
-          foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
-          "hex"
+        let quantityRequestedSatoshi = Number(
+          rowFullfillment?.settlementRequest?.quantityRequested
         );
-        let pubKeyHash = toAddress;
-        // console.log(foundOffer.offerDetailsInJson.bitcoinAddress);
+        let txId = rowFullfillment?.settlementRequest?.txId;
+
+        transactionHash != "" ? "" : setTransactionHash(txId as string);
+        setVerified("verified");
+
         let fulfillmentId = rowFullFillmentId.toString();
-        console.log(fulfillmentId);
         setOfferFulfillmentId(fulfillmentId);
-        // if (fulfillmentId.length % 2 != 0) {
-        //   fulfillmentId = "0" + fulfillmentId;
-        // }
-        let contractAddress =
-          currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
-            ?.orderBookContractAddreess;
-        let orderTimestamp = foundOffer.offerDetailsInJson.orderedTime;
-        // console.log(orderTimestamp);
-        const addressParameters = getParametersForAddress(
-          contractAddress || "",
-          foundOffer,
-          orderTimestamp,
-          fulfillmentId
-        );
-        let locktime = fulfillRequestedTime + BTC_REFUND_CLAIM_PERIOD; //claim_period + fulfillRequestedTime;
 
-        // let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
-        let hashAdress = generateTrustlexAddressWithRecoveryHash(
-          pubKeyHash,
-          addressParameters.shortOrderId,
-          addressParameters.secret,
-          addressParameters.pubKeyHash as string,
-          locktime
-        );
-        console.log([
-          pubKeyHash.toString("hex"),
-          addressParameters.shortOrderId,
-          addressParameters.secret.toString("hex"),
-          addressParameters.pubKeyHash as string,
-          locktime,
-          hashAdress,
-        ]);
-        setTo(`${hashAdress}`);
         setActiveStep(2);
-        // console.log(rowFullFillmentQuantityRequested);
+
         left_to_buy =
           Number(
             SatoshiToBtcConverter(rowFullFillmentQuantityRequested as string)
@@ -423,34 +454,32 @@ const ExchangeOfferDrawer = ({
           (Number(ethers.utils.formatEther(offerQuantity)) /
             Number(SatoshiToBtcConverter(satoshisToReceive)));
       }
+      //----------------------------------End if order already initiated ----------------------//
       left_to_buy = tofixedEther(left_to_buy);
       // console.log(left_to_buy);
       setLeftToBuy(left_to_buy);
       setEthValue(left_to_buy);
-
-      // update satoshisReserved amount
-      // if (satoshisToReceive == satoshisReserved + satoshisReceived) {
-      // let fullfillmentResults = offer.offerDetailsInJson.fullfillmentResults;
-      let isColletaralNeeded = false;
-
-      // }
-      if (satoshisReserved > 0 && isInitating == false) {
-        setIsColletaralNeeded(true);
-      }
     })();
   }, [foundOffer?.offerDetailsInJson?.offerId]);
 
   const handleInitate = async () => {
-    // validate the eth value
-    let buyAmount: number = ethValue as number;
+    // // validate the eth value
+    // let buyAmount: number = ethValue as number;
 
-    if (buyAmount <= 0) {
-      showErrorMessage("Please enter buy amount greater than 0 !");
-      return false;
-    } else if (buyAmount > leftToBuy) {
-      showErrorMessage(
-        `Buy amount can not be greater that offer quanity ${leftToBuy} !`
-      );
+    // if (buyAmount <= 0) {
+    //   showErrorMessage("Please enter buy amount greater than 0 !");
+    //   return false;
+    // } else if (buyAmount > leftToBuy) {
+    //   showErrorMessage(
+    //     `Buy amount can not be greater that offer quanity ${leftToBuy} !`
+    //   );
+    //   return false;
+    // }
+    if (
+      !confirm(
+        "Have you submitted the merkleroot and height in TrustedBitcoinSPVChain contract?"
+      )
+    ) {
       return false;
     }
     let btcAmount = getBTCAmount();
@@ -460,7 +489,7 @@ const ExchangeOfferDrawer = ({
     }
 
     setIsInitating("loading");
-    let result = await initiateFullFillMent();
+    let result = await initiateSettlement();
     if (result == false) {
       setIsInitating("");
     } else {
@@ -471,7 +500,7 @@ const ExchangeOfferDrawer = ({
     // }, 1000 * 120);
   };
 
-  const initiateFullFillMent = async () => {
+  const initiateSettlement = async () => {
     if (!foundOffer || foundOffer === undefined) {
       showErrorMessage("Invalid Offer");
       return false;
@@ -485,122 +514,82 @@ const ExchangeOfferDrawer = ({
       context.contract,
       foundOffer.offerDetailsInJson.offerId
     );
-    let totalCollateralAdded =
-      foundOffer.offerDetailsInJson.collateralPer3Hours;
-    let colletarealValue = "0";
 
-    if (isColletaralNeeded == true) {
-      colletarealValue = getColletaralValue().toLocaleString("fullwide", {
-        useGrouping: false,
-      });
+    let recoveryPubKeyHash = "0x" + btcWalletData?.pubkeyHash || "";
+    let orderTimestamp = foundOffer.offerDetailsInJson.orderedTime;
+    let offerValidTill = foundOffer.offerDetailsInJson.offerValidTill;
+    let locktime =
+      parseInt(offerValidTill) +
+      parseInt(orderTimestamp) +
+      BTC_REFUND_CLAIM_PERIOD;
 
-      totalCollateralAdded = EthtoWei(colletarealValue).toString();
-      // if (selectedToken != "ETH") {
-      //   let tokenAmount = colletarealValue;
-      //   // Allow the contract to get the token
-      //   let allownaceResult = await increaseContractAllownace(
-      //     selectedToken,
-      //     tokenAmount
-      //   );
-      //   if (allownaceResult == false || !allownaceResult) {
-      //     return false;
-      //   }
-      //   // console.log(allownaceResult);
-      // }
-    }
+    const addressParameters = getParametersForAddress(
+      contract?.address || "",
+      foundOffer,
+      orderTimestamp,
+      account // in place on fullfillment id
+    );
 
-    const _fulfillment: IFullfillmentEvent = {
-      // fulfillmentBy: foundOffer.offerEvent.from,
-      fulfillmentBy: account,
-      // quantityRequested: foundOffer.offerDetailsInJson.satoshisToReceive,
+    let hashedSecret = getHashedSecret(addressParameters.secret);
+    const _settlementRequest: SettlementRequest = {
+      settledBy: account,
       quantityRequested: BtcToSatoshiConverter(getBTCAmount()),
-      allowAnyoneToSubmitPaymentProofForFee: true,
-      allowAnyoneToAddCollateralForFee: true,
-      totalCollateralAdded: totalCollateralAdded.toString(),
-      // expiryTime: foundOffer.offerDetailsInJson.offerValidTill,
-      expiryTime: getTimeInSeconds().toString(),
-      fulfilledTime: 0,
-      fulfillRequestedTime: 0,
-      // collateralAddedBy: foundOffer.offerEvent.from,
-      collateralAddedBy: account,
-      paymentProofSubmitted: false,
+      settlementRequestedTime: 0,
+      expiryTime: "0",
+      settledTime: 0,
+      lockTime: locktime,
+      recoveryPubKeyHash: recoveryPubKeyHash,
+      settled: false,
       isExpired: false,
+      txId: "0x0000000000000000000000000000000000000000000000000000000000000000",
+      scriptOutputHash:
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
+      hashedSecret: "0x" + hashedSecret.toString("hex"),
     };
 
     // console.log(_fulfillment);
-
-    const data = await InitializeFullfillment(
+    // console.log([
+    //   context.contract,
+    //   foundOffer.offerDetailsInJson.offerId,
+    //   _settlementRequest,
+    //   bitcoinPaymentProof,
+    // ]);
+    const data = await initiateSettlementService(
       context.contract,
-      // foundOffer.offerEvent.to,
       foundOffer.offerDetailsInJson.offerId,
-      _fulfillment,
-      totalCollateralAdded
+      _settlementRequest,
+      bitcoinPaymentProof
     );
+
     if (data) {
-      console.log(data);
+      // console.log(data);
       let events =
         data?.events &&
         data?.events?.filter((value: any) => {
-          if (value?.event && value?.event == "INITIALIZED_FULFILLMENT") {
+          if (value?.event && value?.event == "INITIALIZED_SETTLEMENT") {
             return true;
           } else {
             return false;
           }
         });
-      console.log(events);
+      // console.log(events);
       let event = events[0];
       // let claimedBy = event?.args["claimedBy"];
       // let offerId = event?.args["offerId"]?.toString();
-      let fulfillmentId = event?.args["fulfillmentId"]?.toString();
-      let expiryTime = (
-        parseInt(_fulfillment.expiryTime) +
-        getOfferOrderExpiryDurationInSeconds()
-      ).toString();
+      let settlementId = event?.args["settlementId"]?.toString();
+
       // console.log(event, claimedBy, offerId, fulfillmentId);
-      setOfferFulfillmentId(fulfillmentId);
-      let toAddress = Buffer.from(
-        foundOffer.offerDetailsInJson.bitcoinAddress.substring(2),
-        "hex"
-      );
-      let fulfillmentDetails = await getInitializedFulfillments(context.contract, parseInt(foundOffer.offerDetailsInJson.offerId), fulfillmentId);
-      let pubKeyHash = toAddress;
-      // if (fulfillmentId.length % 2 != 0) {
-      //   fulfillmentId = "0" + fulfillmentId;
-      // }
-      let contractAddress =
-        currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
-          ?.orderBookContractAddreess;
-      let orderTimestamp = foundOffer.offerDetailsInJson.orderedTime;
+      setOfferFulfillmentId(settlementId);
 
-      // let hashAdress = generateTrustlexAddress(pubKeyHash, shortOrderId);
-      const addressParameters = getParametersForAddress(
-        contractAddress || "",
-        foundOffer,
-        orderTimestamp,
-        fulfillmentId
-      );
+      let fulfillmentDetails: SettlementRequest | undefined =
+        await getInitializedFulfillments(
+          context.contract,
+          parseInt(foundOffer.offerDetailsInJson.offerId),
+          settlementId
+        );
 
-      let fulfillRequestedTime = fulfillmentDetails.fulfillRequestedTime;
-      let locktime = fulfillRequestedTime + BTC_REFUND_CLAIM_PERIOD; //claim_period + fulfillRequestedTime;
+      let expiryTime = fulfillmentDetails?.expiryTime;
 
-      // let hashAdress = generateTrustlexAddress(toAddress, fulfillmentId);
-      let hashAdress = generateTrustlexAddressWithRecoveryHash(
-        pubKeyHash,
-        addressParameters.shortOrderId,
-        addressParameters.secret,
-        addressParameters.pubKeyHash as string,
-        locktime
-      );
-      console.log([
-        pubKeyHash.toString("hex"),
-        addressParameters.shortOrderId,
-        addressParameters.secret.toString("hex"),
-        addressParameters.pubKeyHash as string,
-        locktime,
-        hashAdress,
-      ]);
-
-      setTo(`${hashAdress}`);
       setInitatedata(data);
       setActiveStep(activeStep + 1);
       setrowFullFillmentExpiryTime(expiryTime);
@@ -619,20 +608,15 @@ const ExchangeOfferDrawer = ({
 
   const handleConfirmClick = async () => {
     let offerId = foundOffer?.offerDetailsInJson.offerId;
-    if (offerFulfillmentId == undefined) {
-      return false;
-    }
+
     setConfirmed("loading");
     // fetching the first fullfillment details
     // get the Fulfillments By OfferId
-    let fullfillmentEvent: IFullfillmentEvent =
-      await getInitializedFulfillments(
-        contract,
-        offerId,
-        Number(offerFulfillmentId)
-      );
+    let settlementRequest: SettlementRequest | undefined =
+      await getInitializedFulfillments(contract, offerId, account);
+
     // console.log(fullfillmentEvent);
-    let expiryTime = Number(fullfillmentEvent.expiryTime) * 1000;
+    let expiryTime = Number(settlementRequest?.expiryTime) * 1000;
     // console.log(expiryTime, Date.now(), expiryTime < Date.now());
     if (expiryTime < Date.now()) {
       showErrorMessage("Order has been expired !");
@@ -650,22 +634,28 @@ const ExchangeOfferDrawer = ({
       contract?.address || "",
       foundOffer,
       orderTimestamp,
-      offerFulfillmentId
+      account
     );
+
     const htlcDetails = {
       secret: "0x" + addressParameters.secret.toString("hex"),
-      recoveryPubKeyHash: "0x" + addressParameters.pubKeyHash,
     };
 
-    let result = await submitPaymentProof(
-      contract,
-      offerId,
-      offerFulfillmentId.toString(),
-      bitcoinPaymentProof,
-      htlcDetails
-    );
-    console.log(bitcoinPaymentProof, htlcDetails, result);
+    let result = await finalizeSettlement(contract, offerId, htlcDetails);
+    console.log(htlcDetails, result);
     if (result) {
+      // Clear the data from localstorage
+      let initiatedOrderResultIndex: number = getInitiatedOrderDetailsIndex();
+      console.log(initiatedOrderResultIndex);
+      if (initiatedOrderResultIndex > -1) {
+        let initiatedOrders_ = initiatedOrders;
+        initiatedOrders_ = initiatedOrders_.filter(
+          (initiatedOrder_) =>
+            Number(initiatedOrder_.offerId) !== Number(offerId)
+        );
+        setInitiatedOrders(initiatedOrders_);
+      }
+
       setSubmitPaymentProofTxHash(result.transactionHash);
       setConfirmed("confirmed");
       showSuccessMessage("Proof has been submitted successfully !");
@@ -688,24 +678,34 @@ const ExchangeOfferDrawer = ({
     }, 2000);
   };
 
-  // useEffect(() => {
-  //   if (!listenedOfferData || listenedOfferData === undefined) return;
-  //   initiateFullFillMent();
-  // }, [listenedOfferData]);
-
   if (!isOpened) return null;
 
   const getBTCAmount = () => {
     let inputAmount = Number(ethValue);
+
     let BTCAmount = tofixedBTC((inputAmount / planningToSell) * planningToBuy);
-    // console.log(inputAmount, planningToSell, planningToBuy, BTCAmount);
+
+    return BTCAmount;
+  };
+  const getBTCAmountByInput = (
+    ethAmount: number,
+    planningToBuy: number,
+    planningToSell: number
+  ) => {
+    let inputAmount = ethAmount;
+
+    let BTCAmount = tofixedBTC((inputAmount / planningToSell) * planningToBuy);
     return BTCAmount;
   };
 
   const renderer = ({ days, hours, minutes, seconds, completed }) => {
-      // Render a countdown
-      return <span>{days}d:{hours}h {minutes}m:{seconds}s <br/></span>;
-  }
+    // Render a countdown
+    return (
+      <span>
+        {days}d:{hours}h {minutes}m:{seconds}s <br />
+      </span>
+    );
+  };
 
   const getColletaralValue = () => {
     let inputAmount = Number(ethValue);
@@ -714,7 +714,21 @@ const ExchangeOfferDrawer = ({
     );
     return colletaralValue;
   };
+
   const handleTxVerification = async () => {
+    // validate the eth value
+    let buyAmount: number = ethValue as number;
+
+    if (buyAmount <= 0) {
+      showErrorMessage("Please enter buy amount greater than 0 !");
+      return false;
+    } else if (buyAmount > leftToBuy) {
+      showErrorMessage(
+        `Buy amount can not be greater that offer quanity ${leftToBuy} !`
+      );
+      return false;
+    }
+
     if (blockHash == "") {
       showErrorMessage("Please enter the block hash");
       return;
@@ -723,21 +737,101 @@ const ExchangeOfferDrawer = ({
       showErrorMessage("Please enter the transaction hash");
       return;
     }
-    setVerified("verifing");
+    await verifyPayment(
+      transactionHash,
+      blockHash,
+      Number(ethValue),
+      planningToBuy,
+      planningToSell,
+      to
+    );
+  };
+
+  const getInitiatedOrderDetails = () => {
+    let rowOfferId_ = rowOfferId.toString();
+
+    let initiatedOrders_ = initiatedOrders;
+
+    let initiatedOrderResult = initiatedOrders_.find(
+      (value: IInitiatedOrder, index: number) => {
+        return (
+          value.accountAddress === account.toLowerCase() &&
+          value.offerId === rowOfferId_
+        );
+      }
+    );
+
+    return initiatedOrderResult;
+  };
+  const getInitiatedOrderDetailsIndex = () => {
+    let rowOfferId_ = rowOfferId.toString();
+
+    let initiatedOrders_ = initiatedOrders;
+
+    let initiatedOrderResult = initiatedOrders_.findIndex(
+      (value: IInitiatedOrder, index: number) => {
+        return (
+          value.accountAddress === account.toLowerCase() &&
+          value.offerId === rowOfferId_
+        );
+      }
+    );
+
+    return initiatedOrderResult;
+  };
+
+  const verifyTxandBlockHash = async (txHash: string, blockHash: string) => {
     // first verify the blockhash
     let blockResult: any = await GetBlock(selectedBitcoinNode, blockHash);
-    if (blockResult.status == false) {
-      showErrorMessage(blockResult.message);
+    if (blockResult.status == false || blockResult.result == undefined) {
+      showErrorMessage(
+        blockResult.message
+          ? blockResult.message
+          : "Unable to verify the blockhash"
+      );
+      return false;
+    }
+    return blockResult;
+  };
+
+  const verifyPayment = async (
+    transactionHash: string,
+    blockHash: string,
+    ethAmount: number,
+    planningToBuy: number,
+    planningToSell: number,
+    to: string
+  ) => {
+    setVerified("verifing");
+    // first verify the blockhash and txHash
+    let blockResult: any = await verifyTxandBlockHash(
+      transactionHash,
+      blockHash
+    );
+    if (blockResult == false) {
       setVerified("");
       return false;
     }
+
     let blockTxs = blockResult.result.tx;
     let blockHeight = blockResult.result.height;
 
     // console.log(blockTxs, blockHeight);
     // now validate the transaction
     let recieverAddress = to;
-    let paymentAmount = getBTCAmount();
+    // console.log(ethAmount, planningToSell, planningToBuy);
+    let paymentAmount = getBTCAmountByInput(
+      ethAmount,
+      planningToBuy,
+      planningToSell
+    );
+    console.log(
+      selectedBitcoinNode,
+      transactionHash,
+      recieverAddress,
+      paymentAmount
+    );
+
     let result: any = await VerifyTransaction(
       selectedBitcoinNode,
       transactionHash,
@@ -767,9 +861,6 @@ const ExchangeOfferDrawer = ({
           return Buffer.from(hash, "hex").reverse().toString("hex");
         })
         .join("");
-      console.log(proofResult);
-
-      console.log(proofResult, proof);
 
       // create the submit payment proof
       setBitcoinPaymentProof({
@@ -779,6 +870,24 @@ const ExchangeOfferDrawer = ({
         index: proofResult.index,
         proof: "0x" + proof_bytes,
       });
+
+      // set the data in local storage
+      let rowOfferId_ = rowOfferId.toString();
+      let userAccount = account.toLowerCase();
+
+      let initiatedOrderResult: IInitiatedOrder | undefined =
+        getInitiatedOrderDetails();
+      // console.log(initiatedOrderResult);
+      if (initiatedOrderResult === undefined) {
+        let userIntiatedOrder: IInitiatedOrder = {
+          accountAddress: userAccount,
+          offerId: rowOfferId_,
+          ethAmount: ethValue as string,
+          txHash: transactionHash,
+          blockHash: blockHash,
+        };
+        setInitiatedOrders([...initiatedOrders, userIntiatedOrder]);
+      }
     }
   };
 
@@ -908,8 +1017,13 @@ const ExchangeOfferDrawer = ({
                   isOrderExpired == false &&
                   fullFillmentPaymentProofSubmitted == false ? (
                     <>
-                      <span style={{fontSize: "8"}}>Time Left</span>&nbsp;
-                      <span style={{ borderBlockColor: "green", color: countDownTimeColor }}>
+                      <span style={{ fontSize: "8" }}>Time Left</span>&nbsp;
+                      <span
+                        style={{
+                          borderBlockColor: "green",
+                          color: countDownTimeColor,
+                        }}
+                      >
                         <Countdowntimer
                           date={
                             countdowntimerTime
@@ -949,168 +1063,6 @@ const ExchangeOfferDrawer = ({
                 </div>
                 <h2 className={styles.stepCount}>Step 1</h2>
               </div>
-
-              <div className={styles.stepsContentsContainer}>
-                <div className={styles.stepContent}>
-                  <div className={styles.spacing} />
-                  {/* Colloerateral section start here */}
-                  {isColletaralNeeded == true ? (
-                    <>
-                      <div className={styles.colletaralTextContainer}>
-                        <span
-                          className={styles.colletaralText}
-                        >{`Colletaral (optional)`}</span>
-                        <span className={styles.colletaralText}>
-                          There is already one offer fullfillment in progress.
-                          Post {getColletaralValue()} {DEFAULT_COLLETARAL_FEES}%{" "}
-                          <ImageIcon
-                            image={getIconFromCurrencyType(CurrencyEnum.ETH)}
-                          />
-                          collateral to increase the payment confirmation time
-                          by 3 more hours
-                        </span>
-                      </div>
-                    </>
-                  ) : (
-                    <></>
-                  )}
-
-                  {/* <div className={styles.actionButton}>
-                    <Button
-                      variant={VariantsEnum.outlinePrimary}
-                      style={{ background: "transparent" }}
-                      radius={10}
-                    >
-                      Add Collateral
-                    </Button>
-                    <span className={styles.rightText}>
-                      5% collateral posted already
-                    </span>
-                  </div> */}
-                  {/* Colloerateral section end here */}
-                  <div
-                    className={`${styles.stepItem} ${
-                      checked === "allow" && styles.activeStepItem
-                    }`}
-                    onClick={() => setChecked("allow")}
-                  >
-                    <div className={styles.checkboxContainer}>
-                      <input
-                        type="radio"
-                        className={styles.checkbox}
-                        checked={checked === "allow" ? true : false}
-                        onChange={() => setChecked("allow")}
-                      />
-                    </div>
-                    <span>
-                      Allow anyone to post payment proof for 0.05% fee
-                    </span>
-                  </div>
-                  <div
-                    className={`${styles.stepItem} ${
-                      checked !== "allow" && styles.activeStepItem
-                    }`}
-                    onClick={() => setChecked("notAllow")}
-                  >
-                    <div className={styles.checkboxContainer}>
-                      <input
-                        type="radio"
-                        className={styles.checkbox}
-                        checked={checked !== "allow" ? true : false}
-                        onChange={() => setChecked("notAllow")}
-                      />
-                    </div>
-                    <span>I'll do it myself(0% transaction fees)</span>
-                  </div>
-                  <div className={styles.spacing} />
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "left",
-                    }}
-                  >
-                    <div className={styles.actionButton}>
-                      {isInitiatng === "initiated" ? (
-                        <Button
-                          variant={VariantsEnum.outline}
-                          radius={10}
-                          style={{
-                            borderColor: "#53C07F",
-                            background: "unset",
-                            color: "#53C07F",
-                          }}
-                          leftIcon={
-                            <Icon icon={"charm:circle-tick"} color="#53C07F" />
-                          }
-                        >
-                          Initiated
-                        </Button>
-                      ) : (
-                        <Button
-                          variant={
-                            isInitiatng === "loading"
-                              ? VariantsEnum.outline
-                              : VariantsEnum.outlinePrimary
-                          }
-                          radius={10}
-                          style={{
-                            backgroundColor:
-                              isInitiatng === "loading"
-                                ? "unset"
-                                : "transparent",
-                          }}
-                          loading={isInitiatng === "loading" ? true : false}
-                          onClick={
-                            isColletaralNeeded == true
-                              ? handleInitate
-                              : handleInitate
-                          }
-                        >
-                          {isInitiatng === "loading" ? (
-                            "Initiating"
-                          ) : (
-                            <>
-                              Initiate{" "}
-                              {isColletaralNeeded == true
-                                ? "with Colletaral"
-                                : ""}
-                            </>
-                          )}
-                        </Button>
-                      )}
-                      {isInitiatng === "loading" ? (
-                        <span className={styles.timer}>
-                          <Countdown />
-                        </span>
-                      ) : (
-                        isInitiatng !== "initiated" && (
-                          <span className={styles.rightText}>
-                            It will take approximately 1-3 mins
-                          </span>
-                        )
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className={styles.step}>
-              <div className={styles.stepTitle}>
-                <div className={styles.svg}>
-                  {activeStep > 2 ? (
-                    <StepSuccessFilledSvg />
-                  ) : activeStep === 2 ? (
-                    <>
-                      <StepFilledSvg />
-                    </>
-                  ) : (
-                    <StepSvg />
-                  )}
-                </div>
-                <h2 className={styles.stepCount}>Step 2</h2>
-                {/* <img src="https://chart.googleapis.com/chart?chs=225x225&chld=L|2&cht=qr&chl=bitcoin:1MoLoCh1srp6jjQgPmwSf5Be5PU98NJHgx?amount=.01%26label=Moloch.net%26message=Donation" /> */}
-              </div>
               <div className={styles.stepsContentsContainer}>
                 <div className={styles.stepContent}>
                   <div className={styles.spacing} />
@@ -1133,7 +1085,7 @@ const ExchangeOfferDrawer = ({
                               fgColor="#7C7C7C"
                             /> */}
                         </div>
-                        QR Code and BTC Address will be shown after initiating your order
+                        <>Please enter the valid Buy amount</>
                       </>
                     ) : (
                       <>
@@ -1157,32 +1109,48 @@ const ExchangeOfferDrawer = ({
                           ) : (
                             <span className={styles.toAddress}>{to}</span>
                           )}
-                          {/* Input the transaction hash */}
-                          {/* <TextInput
-                            type={"text"}
-                            placeholder={"Enter the transaction hash"}
-                            label={"Transaction Hash"}
-                            value={""}
-                            className="TxHashInput"
-                          /> */}
-                          <Input
-                            type={"text"}
-                            placeholder={"Enter the Block Hash"}
-                            value={blockHash}
-                            onChange={(e) => {
-                              setBlockHash(e.target.value);
-                            }}
-                            className="BlockHashInput"
-                          />
-                          <Input
-                            type={"text"}
-                            placeholder={"Enter the Transaction Hash"}
-                            value={transactionHash}
-                            onChange={(e) => {
-                              setTransactionHash(e.target.value);
-                            }}
-                            className="TxHashInput"
-                          />
+                        </div>
+                        <div className={styles.sendTo}>
+                          {activeStep == 1 ? (
+                            <>
+                              <Input
+                                type={"text"}
+                                placeholder={"Enter the Block Hash"}
+                                value={blockHash}
+                                onChange={(e) => {
+                                  setBlockHash(e.target.value);
+                                }}
+                                className="BlockHashInput"
+                              />
+                              <Input
+                                type={"text"}
+                                placeholder={"Enter the Transaction Hash"}
+                                value={transactionHash}
+                                onChange={(e) => {
+                                  setTransactionHash(e.target.value);
+                                }}
+                                className="TxHashInput"
+                              />
+                            </>
+                          ) : (
+                            <>
+                              <div className={styles.sendTo}>
+                                {blockHash != "" && (
+                                  <>
+                                    Block Hash :{" "}
+                                    <span className={styles.toAddress}>
+                                      {blockHash}
+                                    </span>
+                                    <br />
+                                  </>
+                                )}
+                                Transaction Hash:{" "}
+                                <span className={styles.toAddress}>
+                                  {transactionHash}
+                                </span>
+                              </div>
+                            </>
+                          )}
                           <div className={styles.actionButton}>
                             {verified === "verified" ? (
                               <Button
@@ -1241,6 +1209,177 @@ const ExchangeOfferDrawer = ({
                 </div>
               </div>
             </div>
+
+            <div className={styles.step}>
+              <div className={styles.stepTitle}>
+                <div className={styles.svg}>
+                  {activeStep > 2 ? (
+                    <StepSuccessFilledSvg />
+                  ) : activeStep === 2 ? (
+                    <>
+                      <StepFilledSvg />
+                    </>
+                  ) : (
+                    <StepSvg />
+                  )}
+                </div>
+                <h2 className={styles.stepCount}>Step 2</h2>
+                {/* <img src="https://chart.googleapis.com/chart?chs=225x225&chld=L|2&cht=qr&chl=bitcoin:1MoLoCh1srp6jjQgPmwSf5Be5PU98NJHgx?amount=.01%26label=Moloch.net%26message=Donation" /> */}
+              </div>
+              <div className={styles.stepsContentsContainer}>
+                <div className={styles.stepContent}>
+                  <div className={styles.spacing} />
+                  {/* Colloerateral section start here */}
+                  {isColletaralNeeded == true ? (
+                    <>
+                      <div className={styles.colletaralTextContainer}>
+                        <span
+                          className={styles.colletaralText}
+                        >{`Colletaral (optional)`}</span>
+                        <span className={styles.colletaralText}>
+                          There is already one offer fullfillment in progress.
+                          Post {getColletaralValue()} {DEFAULT_COLLETARAL_FEES}%{" "}
+                          <ImageIcon
+                            image={getIconFromCurrencyType(CurrencyEnum.ETH)}
+                          />
+                          collateral to increase the payment confirmation time
+                          by 3 more hours
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <></>
+                  )}
+
+                  {/* Colloerateral section end here */}
+                  <div
+                    className={`${styles.stepItem} ${
+                      checked === "allow" && styles.activeStepItem
+                    }`}
+                    onClick={() => setChecked("allow")}
+                  >
+                    <div className={styles.checkboxContainer}>
+                      <input
+                        type="radio"
+                        className={styles.checkbox}
+                        checked={checked === "allow" ? true : false}
+                        onChange={() => setChecked("allow")}
+                      />
+                    </div>
+                    <span>
+                      Allow anyone to post payment proof for 0.05% fee
+                    </span>
+                  </div>
+                  <div
+                    className={`${styles.stepItem} ${
+                      checked !== "allow" && styles.activeStepItem
+                    }`}
+                    onClick={() => setChecked("notAllow")}
+                  >
+                    <div className={styles.checkboxContainer}>
+                      <input
+                        type="radio"
+                        className={styles.checkbox}
+                        checked={checked !== "allow" ? true : false}
+                        onChange={() => setChecked("notAllow")}
+                      />
+                    </div>
+                    <span>I'll do it myself(0% transaction fees)</span>
+                  </div>
+                  <div className={styles.spacing} />
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "left",
+                    }}
+                  >
+                    {/* Start here Initiate order button */}
+                    <div className={styles.actionButton}>
+                      {activeStep == 1 ? (
+                        <>
+                          <Button
+                            variant={VariantsEnum.outlinePrimary}
+                            radius={10}
+                            style={{
+                              backgroundColor: "transparent",
+                            }}
+                            disabled={true}
+                          >
+                            Initiate{" "}
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          {isInitiatng === "initiated" ? (
+                            <Button
+                              variant={VariantsEnum.outline}
+                              radius={10}
+                              style={{
+                                borderColor: "#53C07F",
+                                background: "unset",
+                                color: "#53C07F",
+                              }}
+                              leftIcon={
+                                <Icon
+                                  icon={"charm:circle-tick"}
+                                  color="#53C07F"
+                                />
+                              }
+                            >
+                              Initiated
+                            </Button>
+                          ) : (
+                            <Button
+                              variant={
+                                isInitiatng === "loading"
+                                  ? VariantsEnum.outline
+                                  : VariantsEnum.outlinePrimary
+                              }
+                              radius={10}
+                              style={{
+                                backgroundColor:
+                                  isInitiatng === "loading"
+                                    ? "unset"
+                                    : "transparent",
+                              }}
+                              loading={isInitiatng === "loading" ? true : false}
+                              onClick={
+                                isColletaralNeeded == true
+                                  ? handleInitate
+                                  : handleInitate
+                              }
+                            >
+                              {isInitiatng === "loading" ? (
+                                "Initiating"
+                              ) : (
+                                <>
+                                  Initiate{" "}
+                                  {isColletaralNeeded == true
+                                    ? "with Colletaral"
+                                    : ""}
+                                </>
+                              )}
+                            </Button>
+                          )}
+                          {isInitiatng === "loading" ? (
+                            <span className={styles.timer}>
+                              <Countdown />
+                            </span>
+                          ) : (
+                            isInitiatng !== "initiated" && (
+                              <span className={styles.rightText}>
+                                It will take approximately 1-3 mins
+                              </span>
+                            )
+                          )}
+                        </>
+                      )}
+                    </div>
+                    {/* End here Initiate order button */}
+                  </div>
+                </div>
+              </div>
+            </div>
             <div className={styles.step}>
               <div className={styles.stepTitle}>
                 <div className={styles.svg}>
@@ -1265,8 +1404,8 @@ const ExchangeOfferDrawer = ({
                         {TimeToDateFormat(rowFullFillmentExpiryTime)}
                       </strong>{" "}
                       or add more collateral to increase payment confirmation
-                      time in order to have the ability to withdraw {selectedToken} from
-                      smart contract
+                      time in order to have the ability to withdraw{" "}
+                      {selectedToken} from smart contract
                     </p>
                   </div>
                   <div className={styles.spacing} />

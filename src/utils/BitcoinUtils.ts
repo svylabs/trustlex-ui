@@ -1,7 +1,7 @@
 import * as tinysecp from "tiny-secp256k1";
 import * as bitcoin from "bitcoinjs-lib";
 import { ECPairFactory, ECPairAPI, networks } from "ecpair";
-import * as bip38 from "bip38";
+import * as bip32 from "bip32";
 import { BTC_DECIMAL_PLACE, PRODUCTION_MODE } from "~/Context/Constants";
 
 export const network =
@@ -11,17 +11,23 @@ export interface Wallet {
   privateKey: Buffer;
   publicKey: Buffer;
   pubkeyHash: Buffer;
+  extendedPublicKeyRecovery: string;
+  extendedPublicKeySecret: string;
 }
 
 export interface IBTCWallet {
   publicKey: string;
   pubkeyHash: string;
+  extendedPublicKeyRecovery: string;
+  extendedPublicKeySecret: string;
 }
 
 export interface OfflineWallet {
   address: string;
   publicKey: string;
   encryptedPrivateKey: string;
+  extendedPublicKeyRecovery: string;
+  extendedPublicKeySecret: string;
 }
 
 export const generateBitcoinWallet = (): Wallet => {
@@ -30,11 +36,16 @@ export const generateBitcoinWallet = (): Wallet => {
     compressed: true,
     network: network,
   });
-
+  const hdwallet = bip32.BIP32Factory(tinysecp);
+  const node = hdwallet.fromSeed(keypair.privateKey || Buffer.from(""));
+  const extendedPublicKeyRecovery = node.derivePath("m/84'/120'/0'/0");
+  const extendedPublicKeySecret = node.derivePath("m/84'/121'/0'/0");
   return {
     privateKey: keypair.privateKey || Buffer.from(""),
     publicKey: keypair.publicKey,
     pubkeyHash: bitcoin.crypto.hash160(keypair.publicKey),
+    extendedPublicKeyRecovery: extendedPublicKeyRecovery.neutered().toBase58(),
+    extendedPublicKeySecret: extendedPublicKeySecret.neutered().toBase58()
   };
 };
 
@@ -65,6 +76,8 @@ export const decryptWallet = (walletJSON: string, password: string): Wallet => {
     privateKey: decryptedKey.privateKey,
     publicKey: Buffer.from(wallet.publicKey, "hex"),
     pubkeyHash: bitcoin.crypto.hash160(Buffer.from(wallet.publicKey, "hex")),
+    extendedPublicKeyRecovery: wallet.extendedPublicKeyRecovery,
+    extendedPublicKeySecret: wallet.extendedPublicKeySecret
   };
 };
 
@@ -96,6 +109,10 @@ export const generateSecret = (input: Buffer) => {
   return secret;
 };
 
+export const getHashedSecret = (secret: Buffer) => {
+  let hashedSecret = bitcoin.crypto.hash256(secret);
+  return hashedSecret;
+};
 export const generateTrustlexAddressWithRecoveryHash = (
   pubkeyHash: Buffer,
   shortOrderId: string,
@@ -105,16 +122,6 @@ export const generateTrustlexAddressWithRecoveryHash = (
 ): string | undefined => {
   if (pubkeyHash.length != 20) return undefined;
   let hashedSecret = bitcoin.crypto.hash256(secret);
-  // const witnessScript = bitcoin.script.compile([
-  //   // Buffer.from(fulfillmentId, "hex"),
-  //   Buffer.from(shortOrderId, "hex"),
-  //   bitcoin.opcodes.OP_DROP,
-  //   bitcoin.opcodes.OP_DUP,
-  //   bitcoin.opcodes.OP_HASH160,
-  //   pubkeyHash,
-  //   bitcoin.opcodes.OP_EQUALVERIFY,
-  //   bitcoin.opcodes.OP_CHECKSIG,
-  // ]);
 
   let witnessScript2 = bitcoin.script.compile([
     Buffer.from(shortOrderId, "hex"),
@@ -147,7 +154,20 @@ export const generateTrustlexAddressWithRecoveryHash = (
   return p2wsh.address;
 };
 
-console.log(bitcoin.crypto.hash256);
 export const tofixedBTC = (amount: number) => {
   return Number(amount.toFixed(BTC_DECIMAL_PLACE));
 };
+
+export const deriveRecoveryPubKeyHash = (extendedPubKey: string, orderId: number): Buffer => {
+  const hdwallet = bip32.BIP32Factory(tinysecp);
+  const node = hdwallet.fromBase58(extendedPubKey);
+  const child = node.derive(orderId);
+  return child.identifier;
+}
+
+export const deriveSecret = (extendedPubKey: string, orderId: number): Buffer => {
+  const hdwallet = bip32.BIP32Factory(tinysecp);
+  const node = hdwallet.fromBase58(extendedPubKey);
+  const child = node.derive(orderId);
+  return bitcoin.crypto.sha256(child.publicKey);
+}

@@ -17,32 +17,6 @@
       "type": "constructor"
     },
     {
-      "inputs": [
-        {
-          "internalType": "uint64",
-          "name": "satoshisToReceive",
-          "type": "uint64"
-        },
-        {
-          "internalType": "uint64",
-          "name": "satoshisReserved",
-          "type": "uint64"
-        },
-        {
-          "internalType": "uint64",
-          "name": "satoshisReceived",
-          "type": "uint64"
-        },
-        {
-          "internalType": "uint64",
-          "name": "quantityRequested",
-          "type": "uint64"
-        }
-      ],
-      "name": "ValidateOfferQuantity",
-      "type": "error"
-    },
-    {
       "anonymous": false,
       "inputs": [
         {
@@ -60,11 +34,11 @@
         {
           "indexed": true,
           "internalType": "uint256",
-          "name": "fulfillmentId",
+          "name": "settlementId",
           "type": "uint256"
         }
       ],
-      "name": "INITIALIZED_FULFILLMENT",
+      "name": "INITIALIZED_SETTLEMENT",
       "type": "event"
     },
     {
@@ -142,7 +116,7 @@
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "compactFulfillmentDetail",
+          "name": "compactSettlementDetail",
           "type": "uint256"
         },
         {
@@ -164,8 +138,21 @@
           "type": "bytes32"
         }
       ],
-      "name": "PAYMENT_SUCCESSFUL",
+      "name": "SETTLEMENT_SUCCESSFUL",
       "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "BTC_RECOVERY_PERIOD_START",
+      "outputs": [
+        {
+          "internalType": "uint32",
+          "name": "",
+          "type": "uint32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     },
     {
       "inputs": [],
@@ -195,6 +182,19 @@
     },
     {
       "inputs": [],
+      "name": "SETTLEMENT_COMPLETION_WINDOW",
+      "outputs": [
+        {
+          "internalType": "uint32",
+          "name": "",
+          "type": "uint32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "addEthCollateral",
       "outputs": [],
       "stateMutability": "payable",
@@ -214,7 +214,7 @@
         },
         {
           "internalType": "bytes20",
-          "name": "bitcoinAddress",
+          "name": "pubKeyHash",
           "type": "bytes20"
         },
         {
@@ -242,7 +242,7 @@
         },
         {
           "internalType": "bytes20",
-          "name": "bitcoinAddress",
+          "name": "pubKeyHash",
           "type": "bytes20"
         },
         {
@@ -293,7 +293,7 @@
               "type": "uint32"
             }
           ],
-          "internalType": "struct TrustlexPerAssetOrderBook.CompactMetadata",
+          "internalType": "struct TrustlexPerAssetOrderBookExchange.CompactMetadata",
           "name": "result",
           "type": "tuple"
         }
@@ -320,16 +320,28 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "fullFillmentExpiryTime",
-      "outputs": [
+      "inputs": [
         {
-          "internalType": "uint32",
-          "name": "",
-          "type": "uint32"
+          "internalType": "uint256",
+          "name": "offerId",
+          "type": "uint256"
+        },
+        {
+          "components": [
+            {
+              "internalType": "bytes32",
+              "name": "secret",
+              "type": "bytes32"
+            }
+          ],
+          "internalType": "struct TrustlexPerAssetOrderBookExchange.HTLCReveal",
+          "name": "htlcDetail",
+          "type": "tuple"
         }
       ],
-      "stateMutability": "view",
+      "name": "finalizeSettlement",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -353,7 +365,7 @@
           "type": "uint256"
         }
       ],
-      "name": "getInitiateFulfillments",
+      "name": "getInitiatedSettlements",
       "outputs": [
         {
           "components": [
@@ -361,7 +373,7 @@
               "components": [
                 {
                   "internalType": "address",
-                  "name": "fulfillmentBy",
+                  "name": "settledBy",
                   "type": "address"
                 },
                 {
@@ -371,61 +383,66 @@
                 },
                 {
                   "internalType": "uint32",
+                  "name": "settlementRequestedTime",
+                  "type": "uint32"
+                },
+                {
+                  "internalType": "uint32",
                   "name": "expiryTime",
                   "type": "uint32"
                 },
                 {
-                  "internalType": "uint256",
-                  "name": "totalCollateralAdded",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "address",
-                  "name": "collateralAddedBy",
-                  "type": "address"
-                },
-                {
                   "internalType": "uint32",
-                  "name": "fulfilledTime",
+                  "name": "settledTime",
                   "type": "uint32"
                 },
                 {
                   "internalType": "uint32",
-                  "name": "fulfillRequestedTime",
+                  "name": "lockTime",
                   "type": "uint32"
                 },
                 {
-                  "internalType": "bool",
-                  "name": "allowAnyoneToSubmitPaymentProofForFee",
-                  "type": "bool"
+                  "internalType": "bytes20",
+                  "name": "recoveryPubKeyHash",
+                  "type": "bytes20"
                 },
                 {
                   "internalType": "bool",
-                  "name": "allowAnyoneToAddCollateralForFee",
-                  "type": "bool"
-                },
-                {
-                  "internalType": "bool",
-                  "name": "paymentProofSubmitted",
+                  "name": "settled",
                   "type": "bool"
                 },
                 {
                   "internalType": "bool",
                   "name": "isExpired",
                   "type": "bool"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "txId",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "scriptOutputHash",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "hashedSecret",
+                  "type": "bytes32"
                 }
               ],
-              "internalType": "struct TrustlexPerAssetOrderBook.FulfillmentRequest",
-              "name": "fulfillmentRequest",
+              "internalType": "struct TrustlexPerAssetOrderBookExchange.SettlementRequest",
+              "name": "settlementRequest",
               "type": "tuple"
             },
             {
               "internalType": "uint256",
-              "name": "fulfillmentRequestId",
+              "name": "settlementRequestId",
               "type": "uint256"
             }
           ],
-          "internalType": "struct TrustlexPerAssetOrderBook.ResultFulfillmentRequest[]",
+          "internalType": "struct TrustlexPerAssetOrderBookExchange.ResultSettlementRequest[]",
           "name": "",
           "type": "tuple[]"
         }
@@ -472,7 +489,7 @@
             },
             {
               "internalType": "bytes20",
-              "name": "bitcoinAddress",
+              "name": "pubKeyHash",
               "type": "bytes20"
             },
             {
@@ -491,13 +508,8 @@
               "type": "uint64"
             },
             {
-              "internalType": "uint8",
-              "name": "collateralPer3Hours",
-              "type": "uint8"
-            },
-            {
               "internalType": "uint256[]",
-              "name": "fulfillmentRequests",
+              "name": "settlementRequests",
               "type": "uint256[]"
             },
             {
@@ -506,7 +518,7 @@
               "type": "bool"
             }
           ],
-          "internalType": "struct TrustlexPerAssetOrderBook.Offer",
+          "internalType": "struct TrustlexPerAssetOrderBookExchange.Offer",
           "name": "offer",
           "type": "tuple"
         }
@@ -560,7 +572,7 @@
                 },
                 {
                   "internalType": "bytes20",
-                  "name": "bitcoinAddress",
+                  "name": "pubKeyHash",
                   "type": "bytes20"
                 },
                 {
@@ -579,13 +591,8 @@
                   "type": "uint64"
                 },
                 {
-                  "internalType": "uint8",
-                  "name": "collateralPer3Hours",
-                  "type": "uint8"
-                },
-                {
                   "internalType": "uint256[]",
-                  "name": "fulfillmentRequests",
+                  "name": "settlementRequests",
                   "type": "uint256[]"
                 },
                 {
@@ -594,12 +601,12 @@
                   "type": "bool"
                 }
               ],
-              "internalType": "struct TrustlexPerAssetOrderBook.Offer",
+              "internalType": "struct TrustlexPerAssetOrderBookExchange.Offer",
               "name": "offer",
               "type": "tuple"
             }
           ],
-          "internalType": "struct TrustlexPerAssetOrderBook.ResultOffer[50]",
+          "internalType": "struct TrustlexPerAssetOrderBookExchange.ResultOffer[50]",
           "name": "result",
           "type": "tuple[50]"
         },
@@ -638,11 +645,11 @@
           "type": "uint256"
         }
       ],
-      "name": "initializedFulfillments",
+      "name": "initializedSettlements",
       "outputs": [
         {
           "internalType": "address",
-          "name": "fulfillmentBy",
+          "name": "settledBy",
           "type": "address"
         },
         {
@@ -652,48 +659,53 @@
         },
         {
           "internalType": "uint32",
+          "name": "settlementRequestedTime",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint32",
           "name": "expiryTime",
           "type": "uint32"
         },
         {
-          "internalType": "uint256",
-          "name": "totalCollateralAdded",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "collateralAddedBy",
-          "type": "address"
-        },
-        {
           "internalType": "uint32",
-          "name": "fulfilledTime",
+          "name": "settledTime",
           "type": "uint32"
         },
         {
           "internalType": "uint32",
-          "name": "fulfillRequestedTime",
+          "name": "lockTime",
           "type": "uint32"
         },
         {
-          "internalType": "bool",
-          "name": "allowAnyoneToSubmitPaymentProofForFee",
-          "type": "bool"
+          "internalType": "bytes20",
+          "name": "recoveryPubKeyHash",
+          "type": "bytes20"
         },
         {
           "internalType": "bool",
-          "name": "allowAnyoneToAddCollateralForFee",
-          "type": "bool"
-        },
-        {
-          "internalType": "bool",
-          "name": "paymentProofSubmitted",
+          "name": "settled",
           "type": "bool"
         },
         {
           "internalType": "bool",
           "name": "isExpired",
           "type": "bool"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "txId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "scriptOutputHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "hashedSecret",
+          "type": "bytes32"
         }
       ],
       "stateMutability": "view",
@@ -710,7 +722,7 @@
           "components": [
             {
               "internalType": "address",
-              "name": "fulfillmentBy",
+              "name": "settledBy",
               "type": "address"
             },
             {
@@ -720,56 +732,88 @@
             },
             {
               "internalType": "uint32",
+              "name": "settlementRequestedTime",
+              "type": "uint32"
+            },
+            {
+              "internalType": "uint32",
               "name": "expiryTime",
               "type": "uint32"
             },
             {
-              "internalType": "uint256",
-              "name": "totalCollateralAdded",
-              "type": "uint256"
-            },
-            {
-              "internalType": "address",
-              "name": "collateralAddedBy",
-              "type": "address"
-            },
-            {
               "internalType": "uint32",
-              "name": "fulfilledTime",
+              "name": "settledTime",
               "type": "uint32"
             },
             {
               "internalType": "uint32",
-              "name": "fulfillRequestedTime",
+              "name": "lockTime",
               "type": "uint32"
             },
             {
-              "internalType": "bool",
-              "name": "allowAnyoneToSubmitPaymentProofForFee",
-              "type": "bool"
+              "internalType": "bytes20",
+              "name": "recoveryPubKeyHash",
+              "type": "bytes20"
             },
             {
               "internalType": "bool",
-              "name": "allowAnyoneToAddCollateralForFee",
-              "type": "bool"
-            },
-            {
-              "internalType": "bool",
-              "name": "paymentProofSubmitted",
+              "name": "settled",
               "type": "bool"
             },
             {
               "internalType": "bool",
               "name": "isExpired",
               "type": "bool"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "txId",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "scriptOutputHash",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "hashedSecret",
+              "type": "bytes32"
             }
           ],
-          "internalType": "struct TrustlexPerAssetOrderBook.FulfillmentRequest",
-          "name": "_fulfillment",
+          "internalType": "struct TrustlexPerAssetOrderBookExchange.SettlementRequest",
+          "name": "_settlement",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "bytes",
+              "name": "transaction",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "proof",
+              "type": "bytes"
+            },
+            {
+              "internalType": "uint32",
+              "name": "index",
+              "type": "uint32"
+            },
+            {
+              "internalType": "uint32",
+              "name": "blockHeight",
+              "type": "uint32"
+            }
+          ],
+          "internalType": "struct TrustlexPerAssetOrderBookExchange.PaymentProof",
+          "name": "proof",
           "type": "tuple"
         }
       ],
-      "name": "initiateFulfillment",
+      "name": "initiateSettlement",
       "outputs": [],
       "stateMutability": "payable",
       "type": "function"
@@ -818,7 +862,7 @@
         },
         {
           "internalType": "bytes20",
-          "name": "bitcoinAddress",
+          "name": "pubKeyHash",
           "type": "bytes20"
         },
         {
@@ -835,11 +879,6 @@
           "internalType": "uint64",
           "name": "satoshisReserved",
           "type": "uint64"
-        },
-        {
-          "internalType": "uint8",
-          "name": "collateralPer3Hours",
-          "type": "uint8"
         },
         {
           "internalType": "bool",
@@ -861,81 +900,6 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint32",
-          "name": "expiryTime",
-          "type": "uint32"
-        }
-      ],
-      "name": "setFullFillmentExpiryTime",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "offerId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "fulfillmentId",
-          "type": "uint256"
-        },
-        {
-          "components": [
-            {
-              "internalType": "bytes",
-              "name": "transaction",
-              "type": "bytes"
-            },
-            {
-              "internalType": "bytes",
-              "name": "proof",
-              "type": "bytes"
-            },
-            {
-              "internalType": "uint32",
-              "name": "index",
-              "type": "uint32"
-            },
-            {
-              "internalType": "uint32",
-              "name": "blockHeight",
-              "type": "uint32"
-            }
-          ],
-          "internalType": "struct TrustlexPerAssetOrderBook.PaymentProof",
-          "name": "proof",
-          "type": "tuple"
-        },
-        {
-          "components": [
-            {
-              "internalType": "bytes32",
-              "name": "secret",
-              "type": "bytes32"
-            },
-            {
-              "internalType": "bytes20",
-              "name": "recoveryPubKeyHash",
-              "type": "bytes20"
-            }
-          ],
-          "internalType": "struct TrustlexPerAssetOrderBook.HTLCReveal",
-          "name": "htlcDetail",
-          "type": "tuple"
-        }
-      ],
-      "name": "submitPaymentProof",
-      "outputs": [],
-      "stateMutability": "nonpayable",
       "type": "function"
     },
     {

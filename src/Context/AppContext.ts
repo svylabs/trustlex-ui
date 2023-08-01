@@ -5,6 +5,7 @@ import {
   IinitiatedFullfillmentResult,
   IOffersResultByNonEvent,
   IListInitiatedFullfillmentDataByNonEvent,
+  IInitiatedOrder,
 } from "~/interfaces/IOfferdata";
 import { ethers } from "ethers";
 
@@ -114,4 +115,6 @@ export const AppContext = createContext<null | {
 
   btcWalletData: IBTCWallet | undefined;
   setBTCWalletData: (btcWalletData: IBTCWallet | undefined) => void;
+  initiatedOrders: IInitiatedOrder[];
+  setInitiatedOrders: (initiatedOrders: IInitiatedOrder[]) => void;
 }>(null);

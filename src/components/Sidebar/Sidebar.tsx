@@ -1,8 +1,10 @@
 import styles from "./Sidebar.module.scss";
 import { NavLink } from "react-router-dom";
-import { Avatar, clsx, Image } from "@mantine/core";
+import { Avatar, clsx, Image, Indicator } from "@mantine/core";
 import { INavItem } from "~/interfaces/INavItem";
 import BrandLogo from "~/components/BrandLogo/BrandLogo";
+import { Badge } from "@mantine/core";
+
 type Props = {};
 
 const Sidebar = (props: Props) => {
@@ -23,7 +25,17 @@ const Sidebar = (props: Props) => {
           Recent
         </NavItem>
         <NavItem icon={"/icons/earn.png"} to="/earn">
-          Earn
+          <>
+            <Indicator
+              inline
+              label="Coming Soon"
+              size={16}
+              color="#ec8c69"
+              position="top-end"
+            >
+              Earn{" "}
+            </Indicator>
+          </>
         </NavItem>
         <NavItem icon={"/icons/protocol.png"} to="/protocol">
           Protocol
@@ -50,6 +62,12 @@ function NavItem({ icon, to, children }: INavItem) {
         className={({ isActive }) =>
           isActive ? clsx(styles.active, styles.navLink) : styles.navLink
         }
+        onClick={(e) => {
+          console.log(to);
+          if (to == "/earn") {
+            e.preventDefault();
+          }
+        }}
       >
         <Image alt={children} src={icon} className={styles.icon} />
         <span className={styles.navItem}>{children}</span>

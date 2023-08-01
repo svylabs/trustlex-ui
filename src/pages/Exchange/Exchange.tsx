@@ -38,27 +38,16 @@ import {
 } from "~/service/BitcoinService";
 import {
   AddOfferWithEth,
-  InitializeFullfillment,
-  connect,
-  getOffers,
-  listOffers,
-  getTotalOffers,
   getOffersList,
   showErrorMessage,
   showSuccessMessage,
   addOfferWithToken,
-  getOffer,
   getInitializedFulfillmentsByOfferId,
 } from "~/service/AppService";
 import BtcToSatoshiConverter from "~/utils/BtcToSatoshiConverter";
 import { IListenedOfferData } from "~/interfaces/IOfferdata";
 import { PaperWalletDownloadedEnum } from "~/interfaces/IExchannge";
-import SatoshiToBtcConverter from "~/utils/SatoshiToBtcConverter";
-import {
-  NumberToTime,
-  TimeToNumber,
-  TimeToDateFormat,
-} from "~/utils/TimeConverter";
+import { TimeToNumber } from "~/utils/TimeConverter";
 import { ethers } from "ethers";
 import {
   Wallet,
@@ -66,19 +55,11 @@ import {
   generateTrustlexAddress,
 } from "~/utils/BitcoinUtils";
 
-import { showNewTransactions } from "~/utils/BitcoinRPCJS";
-
 import GenerateWalletDrawer from "~/components/GenerateWalletDrawer/GenerateWalletDrawer";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 import MainLayout from "~/components/MainLayout/MainLayout";
-import {
-  MAX_BLOCKS_TO_QUERY,
-  MAX_ITERATIONS,
-  PAGE_SIZE,
-  ERC20TokenKey,
-  currencyObjects,
-} from "~/Context/Constants";
-import { IFullfillmentResult } from "~/interfaces/IOfferdata";
+import { PAGE_SIZE, currencyObjects } from "~/Context/Constants";
+import { IResultSettlementRequest } from "~/interfaces/IOfferdata";
 
 type Props = {};
 
@@ -257,9 +238,9 @@ const Exchange = (props: Props) => {
   // This function is triggered when click on add offer confirm button
   const handleOfferConfirm = async () => {
     try {
-      // let bitcoinAddress = generatedBitcoinData?.pubkeyHash.toString("hex");
-      let bitcoinAddress = exchangeData?.pubkeyHash;
-      if (bitcoinAddress === undefined) {
+      // let pubkeyHash = generatedBitcoinData?.pubkeyHash.toString("hex");
+      let pubkeyHash = exchangeData?.pubkeyHash;
+      if (pubkeyHash === undefined) {
         showErrorMessage(
           "Address to receive Bitcoin is empty. Please click on Generate in Browser button."
         );
@@ -280,7 +261,7 @@ const Exchange = (props: Props) => {
           satoshis: BtcToSatoshiConverter(
             userInputData.activeExchange[0].value
           ),
-          bitcoinAddress: bitcoinAddress,
+          pubKeyHash: pubkeyHash,
           offerValidTill: TimeToNumber(exchangeData.valid),
           account: account,
         };
@@ -407,38 +388,36 @@ const Exchange = (props: Props) => {
       return false;
     }
     let offerId = data[0] as number;
-
+    // console.log(offerId);
     // get the Fulfillments By OfferId
-    let FullfillmentResult: IFullfillmentResult[] =
+    let FullfillmentResult: IResultSettlementRequest[] =
       await getInitializedFulfillmentsByOfferId(contract, offerId);
 
-    let fullfillmentResult: IFullfillmentResult | undefined =
+    let fullfillmentResult: IResultSettlementRequest | undefined =
       FullfillmentResult &&
       FullfillmentResult.find((fullfillmentResult) => {
-        let isExpired = fullfillmentResult.fulfillmentRequest.isExpired;
-        let paymentProofSubmitted =
-          fullfillmentResult.fulfillmentRequest.paymentProofSubmitted;
+        let isExpired = fullfillmentResult.settlementRequest.isExpired;
+        let settled = fullfillmentResult.settlementRequest.settled;
 
         return (
-          fullfillmentResult.fulfillmentRequest.fulfillmentBy.toLowerCase() ===
+          fullfillmentResult.settlementRequest.settledBy.toLowerCase() ===
             account.toLowerCase() &&
           isExpired == false &&
-          paymentProofSubmitted == false
+          fullfillmentResult.settlementRequest.settled == false
         );
       });
-    // console.log(
-    //   "fullfillmentResult?.fulfillmentRequest",
-    //   fullfillmentResult?.fulfillmentRequest
-    // );
+    // console.log(fullfillmentResult);
+
     let quantityRequested =
-      fullfillmentResult?.fulfillmentRequest?.quantityRequested.toString();
+      fullfillmentResult?.settlementRequest?.quantityRequested.toString();
     let fullFillmentPaymentProofSubmitted =
-      fullfillmentResult?.fulfillmentRequest?.paymentProofSubmitted;
+      fullfillmentResult?.settlementRequest?.settled;
 
     setRowOfferId(offerId);
-    setRowFullFillmentId(fullfillmentResult?.fulfillmentRequestId);
+    setRowFullFillmentId(fullfillmentResult?.settlementRequestId);
+    // console.log(fullfillmentResult?.settlementRequestId.toString());
     setrowFullFillmentExpiryTime(
-      fullfillmentResult?.fulfillmentRequest.expiryTime
+      fullfillmentResult?.settlementRequest.expiryTime
     );
     setRowFullFillmentQuantityRequested(quantityRequested);
     setExchangeOfferDrawerKey(exchangeOfferDrawerKey + 1);

@@ -1,7 +1,7 @@
 export interface IAddOfferWithEth {
   weieth: string;
   satoshis: number | string;
-  bitcoinAddress: any;
+  pubKeyHash: any;
   offerValidTill: number;
   account: string;
 }

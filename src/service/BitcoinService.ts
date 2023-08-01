@@ -239,6 +239,7 @@ export const VerifyTransaction = async (
   };
   try {
     let result = await GetRawTransaction(selectedBitcoinNode, transactionHash);
+
     if (result?.status == false) {
       resp = {
         status: false,
@@ -253,6 +254,7 @@ export const VerifyTransaction = async (
       selectedBitcoinNode,
       transactionHex
     );
+    console.log(decodedTransaction);
     if (decodedTransaction?.status == false) {
       resp = {
         status: false,
@@ -263,10 +265,12 @@ export const VerifyTransaction = async (
     }
     let tx: any = decodedTransaction?.result;
     tx = tx?.result;
+    // console.log(tx);
 
     let isRecieverAddessMatched = tx?.vout?.find((value: any) => {
       let address: string = value.scriptPubKey.address;
       let paidAmount = value.value;
+
       return (
         address.toLowerCase() === recieverAddress.toLowerCase() &&
         paidAmount >= paymentAmount

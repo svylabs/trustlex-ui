@@ -14,8 +14,10 @@ import {
   IinitiatedFullfillmentResult,
   IListInitiatedFullfillmentData,
   IOffersResultByNonEvent,
-  IFullfillmentResult,
   IListInitiatedFullfillmentDataByNonEvent,
+  SettlementRequest,
+  IResultSettlementRequest,
+  IResultOffer,
 } from "~/interfaces/IOfferdata";
 import axios from "axios";
 import { PAGE_SIZE, currencyObjects } from "~/Context/Constants";
@@ -129,7 +131,7 @@ export const listOffers = async (
       });
       iterations++;
     } while (estimatedFromBlock > fromBlock && iterations < MAX_ITERATIONS);
-    console.log(offers);
+    // console.log(offers);
     return {
       fromBlock: fromBlock,
       toBlock: toBlock,
@@ -168,10 +170,11 @@ export const getEventData = async (
       }
 
       let PAYMENT_SUCCESSFUL_EVENTS = await ContractInstance.queryFilter(
-        "PAYMENT_SUCCESSFUL",
+        "SETTLEMENT_SUCCESSFUL",
         estimatedFromBlock,
         toBlock
       );
+      console.log(PAYMENT_SUCCESSFUL_EVENTS);
       let total_quantityRequested = 0;
       // console.log(PAYMENT_SUCCESSFUL_EVENTS);
       if (receivedByAddress != "") {
@@ -194,7 +197,7 @@ export const getEventData = async (
         let txHash = args.txHash;
         let outputHash = args.outputHash;
 
-        let compactFulfillmentDetail = BigInt(args.compactFulfillmentDetail);
+        let compactFulfillmentDetail = BigInt(args.compactSettlementDetail);
         let fulfillmentId = Number(compactFulfillmentDetail >> BigInt(8 * 8));
         let quantityRequested = Number(
           compactFulfillmentDetail & ((BigInt(1) << BigInt(8 * 8)) - BigInt(1))
@@ -391,12 +394,11 @@ export const getOffer = async (
       offerValidTill: offer.offerValidTill.toString(),
       orderedTime: offer.orderedTime.toString(),
       offeredBlockNumber: offer.offeredBlockNumber.toString(),
-      bitcoinAddress: offer.bitcoinAddress.toString(),
+      pubKeyHash: offer.pubKeyHash.toString(),
       satoshisToReceive: offer.satoshisToReceive.toString(),
       satoshisReceived: offer.satoshisReceived.toString(),
       satoshisReserved: offer.satoshisReserved.toString(),
-      collateralPer3Hours: offer.collateralPer3Hours.toString(),
-      fulfillmentRequests: offer.fulfillmentRequests,
+      settlementRequests: offer.settlementRequests,
       progress: "",
       offerType: "",
       fullfillmentRequestId: undefined,
@@ -430,7 +432,7 @@ export const getOffer = async (
       offerDetailsInJson.offerType = "my_offer";
     }
     // get the fullfillment list
-    let FullfillmentResults: IFullfillmentResult[] =
+    let FullfillmentResults: IResultSettlementRequest[] =
       await getInitializedFulfillmentsByOfferId(trustLex, offerId);
 
     let fullfillmentRequestId = undefined;
@@ -438,11 +440,12 @@ export const getOffer = async (
       FullfillmentResults &&
       FullfillmentResults.find((fullfillmentResult, index) => {
         if (
-          fullfillmentResult.fulfillmentRequest.fulfillmentBy.toLowerCase() ===
-            account.toLowerCase() &&
-          fullfillmentResult.fulfillmentRequest.paymentProofSubmitted == false
+          fullfillmentResult.settlementRequest.settledBy.toLowerCase() ===
+          account.toLowerCase()
+          //   &&
+          // fullfillmentResult.settlementRequest.settled == false
         ) {
-          fullfillmentRequestId = offer.fulfillmentRequests[index];
+          fullfillmentRequestId = offer.settlementRequests[index];
           return true;
         } else {
           return false;
@@ -451,16 +454,20 @@ export const getOffer = async (
     if (fullfillmentResult) {
       offerDetailsInJson.offerType = "my_order";
       offerDetailsInJson.progress =
-        TimestampTotoNow(fullfillmentResult.fulfillmentRequest.expiryTime) +
+        TimestampTotoNow(
+          fullfillmentResult.settlementRequest.expiryTime as string
+        ) +
         " and " +
-        TimestampfromNow(fullfillmentResult.fulfillmentRequest.expiryTime);
+        TimestampfromNow(
+          fullfillmentResult.settlementRequest.expiryTime as string
+        );
       offerDetailsInJson.fullfillmentRequestId = fullfillmentRequestId;
       offerDetailsInJson.fulfillmentRequestExpiryTime =
-        fullfillmentResult.fulfillmentRequest.expiryTime;
+        fullfillmentResult.settlementRequest.expiryTime;
       offerDetailsInJson.fulfillmentRequestQuantityRequested =
-        fullfillmentResult.fulfillmentRequest.quantityRequested.toString();
-      offerDetailsInJson.fulfillmentRequestPaymentProofSubmitted =
-        fullfillmentResult.fulfillmentRequest.paymentProofSubmitted;
+        fullfillmentResult.settlementRequest.quantityRequested.toString();
+      // offerDetailsInJson.fulfillmentRequestsettled =
+      //   fullfillmentResult.settlementRequest.settled;
     }
 
     return offerDetailsInJson;
@@ -475,7 +482,7 @@ export const AddOfferWithEth = async (
   data: IAddOfferWithEth,
   sellCurrecny: string
 ) => {
-  const { weieth, satoshis, bitcoinAddress, offerValidTill, account } = data;
+  const { weieth, satoshis, pubKeyHash, offerValidTill, account } = data;
 
   try {
     if (!trustLex) {
@@ -499,7 +506,7 @@ export const AddOfferWithEth = async (
     const addOffer = await trustLex.addOfferWithEth(
       weieth,
       satoshis,
-      "0x" + bitcoinAddress,
+      "0x" + pubKeyHash,
       offerValidTill,
       { value: weieth }
     );
@@ -539,7 +546,7 @@ export const addOfferWithToken = async (
         currencyObjects[selectedNetwork][sellCurrecny.toLowerCase()].ERC20ABI;
       let accountOwnerBal: number = await getERC20TokenBalance(
         accounts[0],
-        contractAddress,
+        contractAddress as string,
         contractABI
       );
       if (accountOwnerBal < Number(inputTokens)) {
@@ -691,13 +698,12 @@ export const getOffersList = async (
         offerValidTill: offer.offerValidTill.toString(),
         orderedTime: offer.orderedTime.toString(),
         offeredBlockNumber: offer.offeredBlockNumber.toString(),
-        bitcoinAddress: offer.bitcoinAddress.toString(),
+        pubKeyHash: offer.pubKeyHash.toString(),
         satoshisToReceive: offer.satoshisToReceive.toString(),
         satoshisReceived: offer.satoshisReceived.toString(),
         satoshisReserved: offer.satoshisReserved.toString(),
-        collateralPer3Hours: offer.collateralPer3Hours.toString(),
-        fulfillmentRequests: offer.fulfillmentRequests,
-        fullfillmentResults: undefined,
+        settlementRequests: offer.settlementRequests,
+        settlementRequestResults: undefined,
         isCanceled: offer.isCanceled,
       };
 
@@ -712,7 +718,7 @@ export const getOffersList = async (
         trustLex,
         offerDetailsInJson.offerId
       );
-      offerDetailsInJson.fullfillmentResults = allFullfillments;
+      offerDetailsInJson.settlementRequestResults = allFullfillments;
 
       // }
       // console.log(offerDetailsInJson);
@@ -741,14 +747,14 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
   let offersData = await trustLex.getOffers(fromOfferId);
 
   let totalFetchedRecords = offersData.total;
-  let offers = offersData.result;
+  let offers: IResultOffer[] = offersData.result;
   let MyOngoingOrdersPromises = [];
   const MyOffersPromises = [];
   for (let i = 0; i < totalFetchedRecords; i++) {
     let value = offers[i];
     let offer = value.offer;
+
     let offerId = value.offerId.toString();
-    let fulfillmentRequests = value.fulfillmentRequests;
 
     const offerDetailsInJson: IOfferdata = {
       offerId: offerId,
@@ -757,12 +763,11 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
       offerValidTill: offer.offerValidTill.toString(),
       orderedTime: offer.orderedTime.toString(),
       offeredBlockNumber: offer.offeredBlockNumber.toString(),
-      bitcoinAddress: offer.bitcoinAddress.toString(),
+      pubKeyHash: offer.pubKeyHash?.toString(),
       satoshisToReceive: offer.satoshisToReceive.toString(),
       satoshisReceived: offer.satoshisReceived.toString(),
       satoshisReserved: offer.satoshisReserved.toString(),
-      collateralPer3Hours: offer.collateralPer3Hours.toString(),
-      fulfillmentRequests: offer.fulfillmentRequests,
+      settlementRequests: offer.settlementRequests,
       progress: "",
       offerType: "",
       fullfillmentRequestId: undefined,
@@ -781,26 +786,29 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
       let satoshisReceived = offer.satoshisReceived;
       filled =
         ((Number(satoshisReserved) + Number(satoshisReceived)) /
-          satoshisToReceive) *
+          Number(satoshisToReceive)) *
         100;
       offerDetailsInJson.progress = filled.toString();
       offerDetailsInJson.offerType = "my_offer";
       MyOffersPromises.push({ offerDetailsInJson });
     }
     // get the fullfillment list
-    let FullfillmentResults: IFullfillmentResult[] =
-      await getInitializedFulfillmentsByOfferId(trustLex, value.offerId);
+    let FullfillmentResults: IResultSettlementRequest[] =
+      await getInitializedFulfillmentsByOfferId(
+        trustLex,
+        Number(value.offerId)
+      );
 
     let fullfillmentRequestId = undefined;
     let fullfillmentResult =
       FullfillmentResults &&
       FullfillmentResults.find((fullfillmentResult, index) => {
         if (
-          fullfillmentResult.fulfillmentRequest.fulfillmentBy.toLowerCase() ===
+          fullfillmentResult.settlementRequest.settledBy.toLowerCase() ===
             account.toLowerCase() &&
-          fullfillmentResult.fulfillmentRequest.paymentProofSubmitted == false
+          fullfillmentResult.settlementRequest.settled == false
         ) {
-          fullfillmentRequestId = offer.fulfillmentRequests[index];
+          fullfillmentRequestId = offer.settlementRequests[index];
           return true;
         } else {
           return false;
@@ -809,16 +817,20 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
     if (fullfillmentResult) {
       offerDetailsInJson.offerType = "my_order";
       offerDetailsInJson.progress =
-        TimestampTotoNow(fullfillmentResult.fulfillmentRequest.expiryTime) +
+        TimestampTotoNow(
+          "" + fullfillmentResult.settlementRequest.settlementRequestedTime
+        ) +
         " and " +
-        TimestampfromNow(fullfillmentResult.fulfillmentRequest.expiryTime);
+        TimestampfromNow(
+          fullfillmentResult.settlementRequest?.expiryTime as string
+        );
       offerDetailsInJson.fullfillmentRequestId = fullfillmentRequestId;
       offerDetailsInJson.fulfillmentRequestExpiryTime =
-        fullfillmentResult.fulfillmentRequest.expiryTime;
+        fullfillmentResult.settlementRequest.expiryTime;
       offerDetailsInJson.fulfillmentRequestQuantityRequested =
-        fullfillmentResult.fulfillmentRequest.quantityRequested.toString();
-      offerDetailsInJson.fulfillmentRequestPaymentProofSubmitted =
-        fullfillmentResult.fulfillmentRequest.paymentProofSubmitted;
+        fullfillmentResult.settlementRequest.quantityRequested.toString();
+      offerDetailsInJson.fulfillmentRequestSettled =
+        fullfillmentResult.settlementRequest.settled;
     }
     fullfillmentResult &&
       MyOffersPromises.push({ offerDetailsInJson: offerDetailsInJson });
@@ -840,13 +852,12 @@ export const listInitializeFullfillmentCompletedByNonEvent = async (
   }
   let offersData = await trustLex.getOffers(fromOfferId);
   let totalFetchedRecords = offersData.total;
-  let offers = offersData.result;
+  let offers: IResultOffer[] = offersData.result;
   const MyOffersPromises = [];
   for (let i = 0; i < totalFetchedRecords; i++) {
     let value = offers[i];
-    let offer = value.offer;
+    let offer: IOfferdata = value.offer;
     let offerId = value.offerId.toString();
-    let fulfillmentRequests = value.fulfillmentRequests;
 
     const offerDetailsInJson: IOfferdata = {
       offerId: offerId,
@@ -855,12 +866,11 @@ export const listInitializeFullfillmentCompletedByNonEvent = async (
       offerValidTill: offer.offerValidTill.toString(),
       orderedTime: offer.orderedTime.toString(),
       offeredBlockNumber: offer.offeredBlockNumber.toString(),
-      bitcoinAddress: offer.bitcoinAddress.toString(),
+      pubKeyHash: offer.pubKeyHash.toString(),
       satoshisToReceive: offer.satoshisToReceive.toString(),
       satoshisReceived: offer.satoshisReceived.toString(),
       satoshisReserved: offer.satoshisReserved.toString(),
-      collateralPer3Hours: offer.collateralPer3Hours.toString(),
-      fulfillmentRequests: offer.fulfillmentRequests,
+      settlementRequests: offer.settlementRequests,
       progress: "",
       offerType: "",
       fullfillmentRequestId: undefined,
@@ -886,27 +896,28 @@ export const listInitializeFullfillmentCompletedByNonEvent = async (
       let filled = 0;
       let satoshisReserved = offer.satoshisReserved;
       let satoshisToReceive = offer.satoshisToReceive;
-      filled = (satoshisReserved / satoshisToReceive) * 100;
+      filled = (Number(satoshisReserved) / Number(satoshisToReceive)) * 100;
       offerDetailsInJson.progress = filled + "% filled";
       offerDetailsInJson.offerType = "my_offer";
       MyOffersPromises.push({ offerDetailsInJson });
     }
     if (account != "") {
       // get the fullfillment list
-      let FullfillmentResults: IFullfillmentResult[] =
-        await getInitializedFulfillmentsByOfferId(trustLex, value.offerId);
+      let FullfillmentResults: IResultSettlementRequest[] =
+        await getInitializedFulfillmentsByOfferId(trustLex, Number(offerId));
       if (FullfillmentResults && FullfillmentResults.length > 0) {
         // console.log(FullfillmentResults);
         let fullfillmentRequestIds: string[] = [];
         let fullfillmentFilteredResult = FullfillmentResults.filter(
           (fullfillmentResult, index) => {
             if (
-              fullfillmentResult.fulfillmentRequest.fulfillmentBy.toLowerCase() ===
+              fullfillmentResult.settlementRequest.settledBy.toLowerCase() ===
                 account.toLowerCase() &&
-              fullfillmentResult.fulfillmentRequest.paymentProofSubmitted ==
-                true
+              fullfillmentResult.settlementRequest.settled == true
             ) {
-              let fullfillmentRequestId = offer.fulfillmentRequests[index];
+              let fullfillmentRequestId = offer.settlementRequests[index];
+
+              // console.log(fullfillmentRequestId);
               fullfillmentRequestIds.push(fullfillmentRequestId);
               return true;
             } else {
@@ -919,24 +930,28 @@ export const listInitializeFullfillmentCompletedByNonEvent = async (
           let fullfillmentResult = value;
           let offerDetailsInJson2: IOfferdata = { ...offerDetailsInJson };
           let quantityRequested =
-            fullfillmentResult.fulfillmentRequest.quantityRequested.toString();
+            fullfillmentResult.settlementRequest.quantityRequested.toString();
 
           offerDetailsInJson2.offerType = "my_order";
           offerDetailsInJson2.progress =
-            TimestampTotoNow(fullfillmentResult.fulfillmentRequest.expiryTime) +
+            TimestampTotoNow(
+              "" + fullfillmentResult.settlementRequest.settlementRequestedTime
+            ) +
             " and " +
-            TimestampfromNow(fullfillmentResult.fulfillmentRequest.expiryTime);
+            TimestampfromNow(
+              fullfillmentResult.settlementRequest.expiryTime as string
+            );
           offerDetailsInJson2.fullfillmentRequestId =
             fullfillmentRequestIds[index];
           offerDetailsInJson2.fulfillmentRequestExpiryTime =
-            fullfillmentResult.fulfillmentRequest.expiryTime;
+            fullfillmentResult.settlementRequest.expiryTime;
           offerDetailsInJson2.fulfillmentRequestQuantityRequested =
             quantityRequested;
 
-          offerDetailsInJson2.fulfillmentRequestPaymentProofSubmitted =
-            fullfillmentResult.fulfillmentRequest.paymentProofSubmitted;
+          // offerDetailsInJson2.fulfillmentRequestsettled =
+          //   fullfillmentResult.settlementRequest.settled;
           offerDetailsInJson2.fulfillmentRequestfulfilledTime =
-            fullfillmentResult.fulfillmentRequest.fulfilledTime;
+            fullfillmentResult.settlementRequest.settledTime;
 
           MyOffersPromises.push({ offerDetailsInJson: offerDetailsInJson2 });
         });
@@ -951,20 +966,15 @@ export const listInitializeFullfillmentCompletedByNonEvent = async (
 export const getInitializedFulfillments = async (
   trustLex: ethers.Contract | undefined,
   offerId: number,
-  fulfillmentId: number
+  settlementRequestId: string
 ) => {
   try {
-    if (!trustLex) return false;
+    if (!trustLex) return undefined;
 
-    let offerData = await trustLex.initializedFulfillments(
-      offerId,
-      fulfillmentId
-    );
-    // let tokenContract = await trustLex.tokenContract();
+    let settlementRequest: SettlementRequest =
+      await trustLex.initializedSettlements(offerId, settlementRequestId);
 
-    // console.log("TokenContracts", tokenContract);
-
-    return offerData;
+    return settlementRequest;
   } catch (error) {
     console.log(error);
     return;
@@ -975,32 +985,31 @@ export const getInitializedFulfillmentsByOfferId = async (
   trustLex: ethers.Contract | undefined,
   offerId: number
 ) => {
-  let fullfillmentResult: IFullfillmentResult[] = [];
+  let fullfillmentResult: IResultSettlementRequest[] = [];
   try {
     if (!trustLex) return false;
 
-    let fullfillmentResult = await trustLex.getInitiateFulfillments(offerId);
+    let fullfillmentResult = await trustLex.getInitiatedSettlements(offerId);
+    // console.log(fullfillmentResult);
     return fullfillmentResult;
   } catch (error) {
     console.log(error);
     return fullfillmentResult;
   }
 };
-export const InitializeFullfillment = async (
+export const initiateSettlementService = async (
   trustLex: ethers.Contract | undefined,
   offerId: string,
-  _fulfillment: IFullfillmentEvent,
-  colletarealValue: string
+  _settlement: SettlementRequest,
+  proof: IBitcoinPaymentProof
 ) => {
   try {
     if (!trustLex) return false;
-    const initializeFullfillment = await trustLex.initiateFulfillment(
+    console.log(offerId, _settlement, proof);
+    const initializeFullfillment = await trustLex.initiateSettlement(
       offerId,
-      _fulfillment,
-      {
-        value: colletarealValue,
-        gasLimit: 800000,
-      }
+      _settlement,
+      proof
     );
 
     await initializeFullfillment.wait();
@@ -1041,35 +1050,17 @@ export const showErrorMessage = (message: string) => {
   });
 };
 
-export const submitPaymentProof = async (
+export const finalizeSettlement = async (
   trustLex: ethers.Contract | undefined,
   offerId: string,
-  fulfillmentId: string,
-  bitcoinPaymentProof: IBitcoinPaymentProof,
   htlcDetails: HTLCDetail
 ) => {
   try {
     if (!trustLex) return false;
-    console.log(offerId, fulfillmentId, bitcoinPaymentProof, [
-      bitcoinPaymentProof.transaction,
-      bitcoinPaymentProof.proof,
-      bitcoinPaymentProof.index,
-      bitcoinPaymentProof.blockHeight,
+    console.log(offerId, htlcDetails);
+    const transaction = await trustLex.finalizeSettlement(offerId, [
+      htlcDetails.secret,
     ]);
-    const transaction = await trustLex.submitPaymentProof(
-      offerId,
-      fulfillmentId,
-      [
-        bitcoinPaymentProof.transaction,
-        bitcoinPaymentProof.proof,
-        bitcoinPaymentProof.index,
-        bitcoinPaymentProof.blockHeight,
-      ],
-      [
-         htlcDetails.secret,
-         htlcDetails.recoveryPubKeyHash
-      ]
-    );
 
     let tx = await transaction.wait();
     return tx;

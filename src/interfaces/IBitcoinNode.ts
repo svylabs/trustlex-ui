@@ -4,13 +4,12 @@ export enum BitcoinNodeEnum {
 }
 
 export interface IBitcoinPaymentProof {
-  transaction: String; // transaction
-  proof: String; // concatnation of transactions inside of block but skip first transaction
+  transaction: string; // transaction
+  proof: string; // concatnation of transactions inside of block but skip first transaction
   index: Number; //
   blockHeight: Number; //Height of the block
 }
 
 export interface HTLCDetail {
-   secret: String;
-   recoveryPubKeyHash: String;
+  secret: String;
 }

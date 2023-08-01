@@ -11,9 +11,6 @@ import {
   connect,
   findMetaMaskAccount,
   getBalance,
-  // listOffers,
-  InitializeFullfillment,
-  // listInitializeFullfillment,
   getOffersList,
   getTotalOffers,
   getERC20TokenBalance,
@@ -37,6 +34,7 @@ import {
   IOffersResultByNonEvent,
   OrderBy,
   IListInitiatedFullfillmentDataByNonEvent,
+  IInitiatedOrder,
 } from "./interfaces/IOfferdata";
 import { ethers } from "ethers";
 import { ContractMap } from "./Context/AppConfig";
@@ -178,6 +176,7 @@ export default function App() {
     chainId: 0,
   });
   const userData = get("userInputData", true);
+
   const [userInputData, setUserInputData] = useState<IUserInputData>(
     userData
       ? userData
@@ -189,6 +188,17 @@ export default function App() {
           isNativeToken: DEFAULT_IS_NATIVE_TOKEN,
         }
   );
+
+  const initiatedOrdersLocalStoarge = get("initiatedOrders", false);
+  // console.log(initiatedOrdersLocalStoarge);
+
+  let initiatedOrders_ =
+    initiatedOrdersLocalStoarge != false
+      ? JSON.parse(initiatedOrdersLocalStoarge)
+      : [];
+  const [initiatedOrders, setInitiatedOrders] =
+    useState<IInitiatedOrder[]>(initiatedOrders_);
+
   const [selectedNetwork, setSelectedNetwork] = useState<string>(
     userData.selectedNetwork !== undefined
       ? userData?.selectedNetwork
@@ -258,6 +268,12 @@ export default function App() {
       set("btcWalletData", btcWalletData);
     }
   }, [btcWalletData]);
+
+  // use Effect for change in user initiated order
+  useEffect(() => {
+    // console.log(initiatedOrders);
+    set("initiatedOrders", JSON.stringify(initiatedOrders));
+  }, [initiatedOrders]);
 
   //Account change event
   const { ethereum } = window;
@@ -422,6 +438,7 @@ export default function App() {
           let fromOfferId = totalOffers;
 
           let offersList = await getOffersList(trustlex, fromOfferId);
+          // console.log(offersList);
           fromOfferId =
             fromOfferId - PAGE_SIZE > 0 ? fromOfferId - PAGE_SIZE : 0;
           setFromOfferId(fromOfferId);
@@ -452,7 +469,9 @@ export default function App() {
           updateTokenBalance(account, ERC20Address, ERC20ABI);
         }
       } else {
-        showErrorMessage("Unable to connect to Web3 wallet! Please install Metamask to continue");
+        showErrorMessage(
+          "Unable to connect to Web3 wallet! Please install Metamask to continue"
+        );
         setExchangeLoadingText("");
         setMySwapOngoingLoadingText("");
         setMySwapCompletedLoadingText("");
@@ -597,7 +616,7 @@ export default function App() {
           account,
           fromOfferMySwapOngoingId
         );
-
+      console.log(InitializeFullfillmentDataByNonEvent);
       setlistenedOngoinMySwapOnGoingDataByNonEvent(
         InitializeFullfillmentDataByNonEvent
       );
@@ -896,6 +915,8 @@ export default function App() {
             //BTC Wallet data variables
             btcWalletData,
             setBTCWalletData,
+            initiatedOrders,
+            setInitiatedOrders,
           }}
         >
           <Layout>
@@ -919,6 +940,7 @@ export default function App() {
               <Route path="/exchange" element={<Exchange />} />
               <Route path="/recent" element={<Recent />} />
               <Route path="/earn" element={<Earn />} />
+
               <Route path="/protocol" element={<ProtocolDocs />} />
             </Routes>
           </Layout>

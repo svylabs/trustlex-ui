@@ -9,10 +9,14 @@ import {
   NumberToTime,
   TimeToNumber,
   TimeToDateFormat,
+  getTimeInSeconds,
 } from "~/utils/TimeConverter";
 import { AppContext } from "~/Context/AppContext";
 import { tofixedEther } from "~/utils/Ether.utills";
-import { IFullfillmentResult } from "~/interfaces/IOfferdata";
+import {
+  IFullfillmentResult,
+  IResultSettlementRequest,
+} from "~/interfaces/IOfferdata";
 import { getInitializedFulfillmentsByOfferId } from "~/service/AppService";
 import { tofixedBTC } from "~/utils/BitcoinUtils";
 import { BTC_DECIMAL_PLACE } from "~/Context/Constants";
@@ -33,11 +37,20 @@ const getTableData = (
       let satoshisReceived = +offer.offerDetailsInJson.satoshisReceived;
       let isCanceled = offer.offerDetailsInJson.isCanceled;
 
+      let offerValidity =
+        parseInt(offer.offerDetailsInJson.offerValidTill) +
+        parseInt(offer.offerDetailsInJson.orderedTime);
+      let currentTimestampInSecond = getTimeInSeconds();
+
       // let left_to_buy = satoshisToReceive - (satoshisReceived + satoshisReserved);
       let left_to_buy = satoshisToReceive - satoshisReceived;
       // console.log(left_to_buy);
       // add OR condition in if , if any fullfillment of that offer is in progress
-      if (left_to_buy === 0 || isCanceled == true) {
+      if (
+        left_to_buy === 0 ||
+        isCanceled == true ||
+        offerValidity < currentTimestampInSecond
+      ) {
         return false; // skip
       }
       return true;
@@ -71,23 +84,23 @@ const getTableData = (
 
       // update satoshisReserved amount
       // if (satoshisToReceive == satoshisReserved + satoshisReceived) {
-      let fullfillmentResults = offer.offerDetailsInJson.fullfillmentResults;
+      let fullfillmentResults: IResultSettlementRequest[] | undefined =
+        offer.offerDetailsInJson?.settlementRequestResults;
 
       fullfillmentResults &&
         fullfillmentResults?.map(
-          (value: IFullfillmentResult, index: number) => {
-            let expiryTime = Number(value.fulfillmentRequest.expiryTime) * 1000;
-            let isExpired = value.fulfillmentRequest.isExpired;
-            let paymentProofSubmitted =
-              value.fulfillmentRequest.paymentProofSubmitted;
+          (value: IResultSettlementRequest, index: number) => {
+            let expiryTime = Number(value.settlementRequest.expiryTime) * 1000;
+            let isExpired = value.settlementRequest.isExpired;
+            let settled = value.settlementRequest.settled;
 
             if (
               expiryTime < Date.now() &&
               isExpired == false &&
-              paymentProofSubmitted == false
+              settled == false
             ) {
               satoshisReserved -= Number(
-                value.fulfillmentRequest.quantityRequested
+                value.settlementRequest.quantityRequested
               );
             }
           }

@@ -10,9 +10,8 @@ export const MAX_BLOCKS_TO_QUERY = 5000;
 export const MAX_ITERATIONS = 14;
 export const PAGE_SIZE = 50;
 export const TOKEN_DECIMAL_PLACE = 4;
-export const OFFER_ORDER_EXPIRY_DIRATION = 7 * 24 * 60 * 60; // in seconds
-export const BTC_REFUND_CLAIM_PERIOD = 7 * 24 * 60 * 60; // IN SECONDS
-// export const OFFER_ORDER_EXPIRY_DIRATION = 5 * 60; // in seconds
+export const SETTLEMENT_COMPLETION_WINDOW = 7 * 24 * 60 * 60; // in seconds
+export const BTC_REFUND_CLAIM_PERIOD = 2 * 24 * 60 * 60; // IN SECONDS
 export const BTC_DECIMAL_PLACE = 6;
 export const ETH_DECIMAL_PLACE = 8;
 export const DEFAULT_COLLETARAL_FEES = 10;
@@ -225,9 +224,9 @@ export const currencyObjects: {
       label: "Matic", // Please always keep the label  in upper case
       value: "Matic",
       icon: <ImageIcon image={"/icons/matic-token.png"} />,
-      orderBookContractAddreess: "0xF51061fffD99d0E82b954F1499fe07D32dff1506",
+      orderBookContractAddreess: "0x48Ed1B2dc72261316044438F8C82284000297F00",
       TrustedBitcoinSPVChainContractAddress:
-        "0x6f87791a620c26D6E15C0679868D509A59eC7d69",
+        "0x014f0a04f5825E0fb8627280d5cA83d8e84AEfdE",
       orderBookContractABI: OrderBookETHABI.abi,
       decimalPlace: 18,
       isNativeToken: true,

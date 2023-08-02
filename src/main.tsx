@@ -17,23 +17,26 @@ import { Web3Button } from "@web3modal/react";
 //------------End Import for wallet connect -----------------//
 
 // ------------------------Variables for wallet connect--------------------------- //
-const chains = [arbitrum, mainnet, polygon];
+const chains = [polygon];
 const projectId = "f651a9b7ead78bc8fba3196e06188f4b";
 
 const { publicClient } = configureChains(chains, [w3mProvider({ projectId })]);
+
 const wagmiConfig = createConfig({
   autoConnect: true,
   connectors: w3mConnectors({ projectId, chains }),
   publicClient,
 });
 const ethereumClient = new EthereumClient(wagmiConfig, chains);
+console.log(ethereumClient);
+console.log(window.ethereum);
 
 // ------------------------End Variables for wallet connect--------------------------- //
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <>
     <WagmiConfig config={wagmiConfig}>
-      <App />
+      <App ethereumClient={ethereumClient} />
     </WagmiConfig>
     <Web3Modal projectId={projectId} ethereumClient={ethereumClient} />
   </>

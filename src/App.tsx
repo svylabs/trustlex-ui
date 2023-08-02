@@ -1,5 +1,5 @@
 //------------Import for wallet connect -----------------//
-
+import { EthereumClient } from "@web3modal/ethereum";
 import { useWeb3Modal } from "@web3modal/react";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { InjectedConnector } from "wagmi/connectors/injected";
@@ -69,8 +69,10 @@ const DefaultPage = () => {
   }
   return <Home />;
 };
-
-export default function App() {
+export interface IEthereumClient {
+  ethereumClient: EthereumClient;
+}
+export default function App({ ethereumClient }: IEthereumClient) {
   const { address, isConnected } = useAccount();
   const { connect } = useConnect({
     connector: new InjectedConnector(),
@@ -84,7 +86,7 @@ export default function App() {
             Connected to {address}
             <button onClick={() => disconnect()}>Disconnect</button>
           </div> */}
-          <App2 />
+          <BaseApp ethereumClient={ethereumClient} />
         </>
       ) : (
         <>
@@ -103,7 +105,7 @@ export default function App() {
   );
 }
 
-export function App2() {
+export function BaseApp({ ethereumClient }: IEthereumClient) {
   const { get, set, remove } = useLocalstorage();
   const [account, setAccount] = useState("");
   const [balance, setBalance] = useState("");

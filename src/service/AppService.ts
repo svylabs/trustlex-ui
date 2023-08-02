@@ -30,6 +30,9 @@ import { HTLCDetail, IBitcoinPaymentProof } from "~/interfaces/IBitcoinNode";
 import moment from "moment";
 import { tofixedBTC } from "~/utils/BitcoinUtils";
 
+// import { useWeb3React } from "@web3-react/core";
+// import { injected } from "~/components/Connectors/connectors";
+
 const getEthereumObject = () => window.ethereum;
 // https://snyk.io/advisor/npm-package/ethereum-block-by-date
 const { EthDater } = window;
@@ -54,6 +57,25 @@ export const findMetaMaskAccount = async () => {
   }
 };
 
+export const findWalletConnetAccount = async () => {
+  try {
+    const ethereum = getEthereumObject();
+    if (!ethereum || ethereum.request === undefined) {
+      return false;
+    }
+
+    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+    if (accounts.length !== 0) {
+      const account = accounts[0];
+      return account;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
 export const connectToMetamask = async () => {
   try {
     const ethereum = getEthereumObject();

@@ -2,6 +2,7 @@ import { Icon } from "@iconify/react";
 import { Menu } from "@mantine/core";
 import styles from "./NavDropdownButton.module.scss";
 import navDropdownStyles from "./NavDropdownStyles.module.scss";
+
 interface INavDropdown {
   icon?: string;
   title: string;
@@ -11,6 +12,7 @@ interface INavDropdown {
     href: string;
     inputField?: React.ReactNode;
     onClick?: () => void;
+    icon: string;
   }[];
 }
 
@@ -42,6 +44,9 @@ const NavDropdownButton = ({
                 onClick={() => {
                   item.onClick;
                 }}
+                icon={
+                  <img src={item.icon} className={styles.icon} width={28} />
+                }
                 rightSection={<></>}
               >
                 {item.title}

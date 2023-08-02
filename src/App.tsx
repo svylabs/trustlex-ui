@@ -1,3 +1,10 @@
+//------------Import for wallet connect -----------------//
+
+import { useWeb3Modal } from "@web3modal/react";
+import { useAccount, useConnect, useDisconnect } from "wagmi";
+import { InjectedConnector } from "wagmi/connectors/injected";
+//------------End Import for wallet connect -----------------//
+
 import { MantineProvider } from "@mantine/core";
 import Layout from "./components/Layout/Layout";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -8,7 +15,7 @@ import Recent from "./pages/Recent/Recent";
 import { AppContext } from "./Context/AppContext";
 import { useState, useEffect } from "react";
 import {
-  connect,
+  connect as connectService,
   findMetaMaskAccount,
   getBalance,
   getOffersList,
@@ -64,6 +71,39 @@ const DefaultPage = () => {
 };
 
 export default function App() {
+  const { address, isConnected } = useAccount();
+  const { connect } = useConnect({
+    connector: new InjectedConnector(),
+  });
+  const { disconnect } = useDisconnect();
+  return (
+    <>
+      {isConnected ? (
+        <>
+          {/* <div>
+            Connected to {address}
+            <button onClick={() => disconnect()}>Disconnect</button>
+          </div> */}
+          <App2 />
+        </>
+      ) : (
+        <>
+          {/* {" "}
+          <button onClick={() => connect()}>Connect Wallet</button> */}
+          <MantineProvider
+            theme={{ colorScheme: "dark" }}
+            withGlobalStyles
+            withNormalizeCSS
+          >
+            <ProtocolDocs />
+          </MantineProvider>
+        </>
+      )}
+    </>
+  );
+}
+
+export function App2() {
   const { get, set, remove } = useLocalstorage();
   const [account, setAccount] = useState("");
   const [balance, setBalance] = useState("");
@@ -522,7 +562,7 @@ export default function App() {
             }
 
             // update the total offers for echange page and recent my swap page
-            let trustlex = await connect(
+            let trustlex = await connectService(
               provider,
               // ContractMap[selectedToken].address
               currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
@@ -824,128 +864,130 @@ export default function App() {
   }
 
   return (
-    <MantineProvider
-      theme={{ colorScheme: "dark" }}
-      withGlobalStyles
-      withNormalizeCSS
-    >
-      <BrowserRouter>
-        <AppContext.Provider
-          value={{
-            balance,
-            setBalance,
-            account,
-            setAccount,
-            selectedToken,
-            setSelectedToken,
-            contract,
-            setContract,
-            userInputData,
-            setUserInputData,
-            swapChange,
-            dropDownChange,
-            listenedOfferData,
-            setListenedOfferData,
-            listenedOngoinMySwapData,
-            setlistenedOngoinMySwapData,
-            listenedOfferDataByNonEvent,
-            setListenedOfferDataByNonEvent,
-            isMoreTableDataLoading,
-            setMoreTableDataLoading,
-            exchangeLoadingText,
-            setExchangeLoadingText,
-            totalOffers,
-            setTotalOffers,
-            fromOfferId,
-            setFromOfferId,
-            refreshOffersListKey,
-            setRefreshOffersListKey,
-            erc20balance,
-            setERC20balance,
-            // start my swap ongoing variables
-            listenedOngoinMySwapOnGoingDataByNonEvent,
-            setlistenedOngoinMySwapOnGoingDataByNonEvent,
-            mySwapOngoingLoadingText,
-            setMySwapOngoingLoadingText,
-            isMoreMySwapOngoinTableDataLoading,
-            mySwapOngoingfromOfferId,
-            setMySwapOngoingfromOfferId,
-            refreshMySwapOngoingListKey,
-            setRefreshMySwapOngoingListKey,
-            // end my swap ongoing variables
+    <>
+      <MantineProvider
+        theme={{ colorScheme: "dark" }}
+        withGlobalStyles
+        withNormalizeCSS
+      >
+        <BrowserRouter>
+          <AppContext.Provider
+            value={{
+              balance,
+              setBalance,
+              account,
+              setAccount,
+              selectedToken,
+              setSelectedToken,
+              contract,
+              setContract,
+              userInputData,
+              setUserInputData,
+              swapChange,
+              dropDownChange,
+              listenedOfferData,
+              setListenedOfferData,
+              listenedOngoinMySwapData,
+              setlistenedOngoinMySwapData,
+              listenedOfferDataByNonEvent,
+              setListenedOfferDataByNonEvent,
+              isMoreTableDataLoading,
+              setMoreTableDataLoading,
+              exchangeLoadingText,
+              setExchangeLoadingText,
+              totalOffers,
+              setTotalOffers,
+              fromOfferId,
+              setFromOfferId,
+              refreshOffersListKey,
+              setRefreshOffersListKey,
+              erc20balance,
+              setERC20balance,
+              // start my swap ongoing variables
+              listenedOngoinMySwapOnGoingDataByNonEvent,
+              setlistenedOngoinMySwapOnGoingDataByNonEvent,
+              mySwapOngoingLoadingText,
+              setMySwapOngoingLoadingText,
+              isMoreMySwapOngoinTableDataLoading,
+              mySwapOngoingfromOfferId,
+              setMySwapOngoingfromOfferId,
+              refreshMySwapOngoingListKey,
+              setRefreshMySwapOngoingListKey,
+              // end my swap ongoing variables
 
-            // start my swap completed variables
-            listenedMySwapCompletedDataByNonEvent,
-            setListenedMySwapCompletedDataByNonEvent,
-            mySwapCompletedLoadingText,
-            setMySwapCompletedLoadingText,
-            isMoreMySwapCompletedTableDataLoading,
-            mySwapCompletedfromOfferId,
-            setMySwapCompletedfromOfferId,
-            refreshMySwapCompletedListKey,
-            setRefreshMySwapCompletedListKey,
-            // end my swap completed variables
+              // start my swap completed variables
+              listenedMySwapCompletedDataByNonEvent,
+              setListenedMySwapCompletedDataByNonEvent,
+              mySwapCompletedLoadingText,
+              setMySwapCompletedLoadingText,
+              isMoreMySwapCompletedTableDataLoading,
+              mySwapCompletedfromOfferId,
+              setMySwapCompletedfromOfferId,
+              refreshMySwapCompletedListKey,
+              setRefreshMySwapCompletedListKey,
+              // end my swap completed variables
 
-            // start my swap completed variables
-            listenedMySwapAllCompletedDataByNonEvent,
-            setListenedMySwapAllCompletedDataByNonEvent,
-            mySwapAllCompletedLoadingText,
-            setMySwapAllCompletedLoadingText,
-            isMoreMySwapAllCompletedTableDataLoading,
-            mySwapAllCompletedfromOfferId,
-            setMySwapAllCompletedfromOfferId,
-            refreshMySwapAllCompletedListKey,
-            setRefreshMySwapAllCompletedListKey,
-            getSelectedTokenContractInstance,
-            // end my swap completed variables
-            selectedNetwork,
-            setSelectedNetwork,
-            checkNetwork,
+              // start my swap completed variables
+              listenedMySwapAllCompletedDataByNonEvent,
+              setListenedMySwapAllCompletedDataByNonEvent,
+              mySwapAllCompletedLoadingText,
+              setMySwapAllCompletedLoadingText,
+              isMoreMySwapAllCompletedTableDataLoading,
+              mySwapAllCompletedfromOfferId,
+              setMySwapAllCompletedfromOfferId,
+              refreshMySwapAllCompletedListKey,
+              setRefreshMySwapAllCompletedListKey,
+              getSelectedTokenContractInstance,
+              // end my swap completed variables
+              selectedNetwork,
+              setSelectedNetwork,
+              checkNetwork,
 
-            //alert variables
-            alertOpen,
-            setAlertOpen,
-            alertMessage,
-            setAlertMessage,
-            selectedBitcoinNode,
-            setSelectedBitcoinNode,
-            // BTC balance context variable
-            BTCBalance,
-            setBTCBalance,
-            //BTC Wallet data variables
-            btcWalletData,
-            setBTCWalletData,
-            initiatedOrders,
-            setInitiatedOrders,
-          }}
-        >
-          <Layout>
-            <ToastContainer />
-            {alertMessage != "" ? (
-              <>
-                <Alert
-                  message={alertMessage}
-                  setAlertMessage={setAlertMessage}
-                  isOpened={alertOpen}
-                  setAlertOpen={setAlertOpen}
-                  addNetwork={addNetwork}
-                />
-              </>
-            ) : (
-              ""
-            )}
+              //alert variables
+              alertOpen,
+              setAlertOpen,
+              alertMessage,
+              setAlertMessage,
+              selectedBitcoinNode,
+              setSelectedBitcoinNode,
+              // BTC balance context variable
+              BTCBalance,
+              setBTCBalance,
+              //BTC Wallet data variables
+              btcWalletData,
+              setBTCWalletData,
+              initiatedOrders,
+              setInitiatedOrders,
+            }}
+          >
+            <Layout>
+              <ToastContainer />
+              {alertMessage != "" ? (
+                <>
+                  <Alert
+                    message={alertMessage}
+                    setAlertMessage={setAlertMessage}
+                    isOpened={alertOpen}
+                    setAlertOpen={setAlertOpen}
+                    addNetwork={addNetwork}
+                  />
+                </>
+              ) : (
+                ""
+              )}
 
-            <Routes>
-              <Route path="/" element={<DefaultPage />} />
-              <Route path="/exchange" element={<Exchange />} />
-              <Route path="/recent" element={<Recent />} />
-              <Route path="/earn" element={<Earn />} />
+              <Routes>
+                <Route path="/" element={<DefaultPage />} />
+                <Route path="/exchange" element={<Exchange />} />
+                <Route path="/recent" element={<Recent />} />
+                <Route path="/earn" element={<Earn />} />
 
-              <Route path="/protocol" element={<ProtocolDocs />} />
-            </Routes>
-          </Layout>
-        </AppContext.Provider>
-      </BrowserRouter>
-    </MantineProvider>
+                <Route path="/protocol" element={<ProtocolDocs />} />
+              </Routes>
+            </Layout>
+          </AppContext.Provider>
+        </BrowserRouter>
+      </MantineProvider>
+    </>
   );
 }

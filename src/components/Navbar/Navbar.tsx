@@ -16,6 +16,7 @@ import SendBtcBox from "~/components/SendBtc/SendBtcBox/SendBtcBox";
 import OfferCurrencyDropdown from "~/components/OfferCurrencyDropdown/OfferCurrencyDropdown";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 import NetworkMenu from "./NetworkMenu";
+import Connectors from "~/components/Connectors/Connectors";
 
 import {
   Wallet,
@@ -32,6 +33,7 @@ import {
   NetworkInfo,
 } from "~/Context/Constants";
 import { ethers } from "ethers";
+import { Web3Button } from "@web3modal/react";
 type Props = {
   toggleSidebar: () => void;
 };
@@ -67,7 +69,7 @@ const Navbar = (props: Props) => {
   const [generateAddress, setGenerateAddress] = useState("");
   /* End Variables for My wallet */
 
-  const handleConnect = async () => {
+  const handleMetamaskConnect = async () => {
     if (account !== "" && (account as unknown as boolean) != false) {
       console.log("Account already connected");
       return;
@@ -77,7 +79,19 @@ const Navbar = (props: Props) => {
         let message: string = "Failed to connect";
         showErrorMessage(message);
       }
-
+      setAccount(connect);
+    }
+  };
+  const handleWalletConnect = async () => {
+    if (account !== "" && (account as unknown as boolean) != false) {
+      console.log("Account already connected");
+      return;
+    } else {
+      const connect = await connectToMetamask();
+      if (!connect) {
+        let message: string = "Failed to connect";
+        showErrorMessage(message);
+      }
       setAccount(connect);
     }
   };
@@ -88,9 +102,20 @@ const Navbar = (props: Props) => {
         account !== "" && (account as unknown as boolean) != false
           ? // ? `Connected to ${account} \n Balance ${balance} ETH`
             `Connected`
-          : "Connect to Metamask",
+          : "Metamask",
       href: "",
-      onClick: handleConnect,
+      onClick: handleMetamaskConnect,
+      icon: "/icons/MetaMaskIcon.svg",
+    },
+    {
+      title:
+        account !== "" && (account as unknown as boolean) != false
+          ? // ? `Connected to ${account} \n Balance ${balance} ETH`
+            `Connected`
+          : "Wallet Connect",
+      href: "",
+      onClick: handleWalletConnect,
+      icon: "/icons/walletConnect.svg",
     },
   ];
 
@@ -130,6 +155,8 @@ const Navbar = (props: Props) => {
   return (
     <nav className={styles.navbar}>
       <div className={styles.left}>
+        {/* <Connectors /> */}
+        <Web3Button />
         <Button
           p={0}
           variant={"subtle"}
@@ -231,6 +258,11 @@ const Navbar = (props: Props) => {
           selectedNetwork={selectedNetwork}
           setSelectedNetwork={setSelectedNetwork}
           checkNetwork={checkNetwork}
+        />
+        <NavDropdownButton
+          title={mobileView ? "Connect" : "Connect"}
+          icon="/icons/etherium.svg"
+          dropdownItems={ethDropdownItems}
         />
       </div>
     </nav>

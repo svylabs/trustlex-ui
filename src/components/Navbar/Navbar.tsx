@@ -156,7 +156,7 @@ const Navbar = (props: Props) => {
     <nav className={styles.navbar}>
       <div className={styles.left}>
         {/* <Connectors /> */}
-        <Web3Button />
+        {/* <Web3Button /> */}
         <Button
           p={0}
           variant={"subtle"}

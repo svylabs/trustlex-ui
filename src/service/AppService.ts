@@ -57,6 +57,17 @@ export const findMetaMaskAccount = async () => {
   }
 };
 
+export const isMetamaskConnectedService = async () => {
+  if (
+    getEthereumObject() === undefined ||
+    window.ethereum.isConnected() === false ||
+    (await findMetaMaskAccount()) === false
+  ) {
+    return false;
+  }
+  return true;
+};
+
 export const findWalletConnetAccount = async () => {
   try {
     const ethereum = getEthereumObject();
@@ -196,7 +207,7 @@ export const getEventData = async (
         estimatedFromBlock,
         toBlock
       );
-      console.log(PAYMENT_SUCCESSFUL_EVENTS);
+      // console.log(PAYMENT_SUCCESSFUL_EVENTS);
       let total_quantityRequested = 0;
       // console.log(PAYMENT_SUCCESSFUL_EVENTS);
       if (receivedByAddress != "") {

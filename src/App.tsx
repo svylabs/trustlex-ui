@@ -1,7 +1,7 @@
 //------------Import for wallet connect -----------------//
 import { EthereumClient } from "@web3modal/ethereum";
 import { useWeb3Modal } from "@web3modal/react";
-import { useAccount, useConnect, useDisconnect } from "wagmi";
+import { useAccount, useConnect, useDisconnect, useEnsName } from "wagmi";
 import { InjectedConnector } from "wagmi/connectors/injected";
 //------------End Import for wallet connect -----------------//
 
@@ -27,7 +27,14 @@ import {
   showSuccessMessage,
   createContractInstance,
   getEventData,
+  isMetamaskConnectedService,
 } from "./service/AppService";
+import {
+  getConnectedAccount,
+  createContractInstanceWalletService,
+  provider as walletConnectProvider,
+} from "./service/WalletConnectService";
+
 import IUserInputData from "./interfaces/IUserInputData";
 import { INetworkInfo } from "./interfaces/INetworkInfo";
 import swapArrayElements from "./utils/swapArray";
@@ -69,24 +76,36 @@ const DefaultPage = () => {
   }
   return <Home />;
 };
+
 export interface IEthereumClient {
   ethereumClient: EthereumClient;
 }
-export default function App({ ethereumClient }: IEthereumClient) {
-  const { address, isConnected } = useAccount();
-  const { connect } = useConnect({
-    connector: new InjectedConnector(),
-  });
+export default function App() {
+  const [isMetamaskConnected, setIsMetamaskConnected] = useState(false);
+  useEffect(() => {
+    (async () => {
+      let isMetamaskConnected = await isMetamaskConnectedService();
+      setIsMetamaskConnected(isMetamaskConnected);
+    })();
+  }, []);
+
+  const { address, isConnected: isWalletConnectConnected } = useAccount();
+
+  const { connect, connectors, error, isLoading, pendingConnector } =
+    useConnect({
+      connector: new InjectedConnector(),
+    });
   const { disconnect } = useDisconnect();
+
   return (
     <>
-      {isConnected ? (
+      {isWalletConnectConnected == true || isMetamaskConnected == true ? (
         <>
           {/* <div>
             Connected to {address}
             <button onClick={() => disconnect()}>Disconnect</button>
           </div> */}
-          <BaseApp ethereumClient={ethereumClient} />
+          <BaseApp />
         </>
       ) : (
         <>
@@ -105,7 +124,7 @@ export default function App({ ethereumClient }: IEthereumClient) {
   );
 }
 
-export function BaseApp({ ethereumClient }: IEthereumClient) {
+export function BaseApp() {
   const { get, set, remove } = useLocalstorage();
   const [account, setAccount] = useState("");
   const [balance, setBalance] = useState("");
@@ -658,7 +677,7 @@ export function BaseApp({ ethereumClient }: IEthereumClient) {
           account,
           fromOfferMySwapOngoingId
         );
-      console.log(InitializeFullfillmentDataByNonEvent);
+      // console.log(InitializeFullfillmentDataByNonEvent);
       setlistenedOngoinMySwapOnGoingDataByNonEvent(
         InitializeFullfillmentDataByNonEvent
       );
@@ -778,6 +797,7 @@ export function BaseApp({ ethereumClient }: IEthereumClient) {
       setIsMoreMySwapAllCompletedTableDataLoading(false);
     }
   }
+
   async function getSelectedTokenContractInstance() {
     // create the contract instance
     // console.log(
@@ -796,6 +816,11 @@ export function BaseApp({ ethereumClient }: IEthereumClient) {
       contractABI
     );
 
+    // let contract2 = await createContractInstanceWalletService(
+    //   contractAddress as string,
+    //   contractABI
+    // );
+    // console.log(contract2);
     return contract;
   }
   async function addNetwork() {

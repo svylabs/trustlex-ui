@@ -5,7 +5,7 @@ import navbarStyles from "~/components/Navbar/Navbar.module.scss";
 
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { InjectedConnector } from "wagmi/connectors/injected";
-import { Web3Button } from "@web3modal/react";
+// import { Web3Button } from "@web3modal/react";
 //------------End Import for wallet connect -----------------//
 interface IMainLayoutProps {
   children: React.ReactNode;
@@ -14,11 +14,12 @@ interface IMainLayoutProps {
 }
 
 const MainLayout = ({ title, description, children }: IMainLayoutProps) => {
-  const { address, isConnected } = useAccount();
-  const { connect } = useConnect({
-    connector: new InjectedConnector(),
-  });
-  const { disconnect } = useDisconnect();
+  // const { address, isConnected } = useAccount();
+  // const { connect } = useConnect({
+  //   connector: new InjectedConnector(),
+  // });
+  // const { disconnect } = useDisconnect();
+  let isConnected = true;
   return (
     <div className={styles.mainLayoutRoot}>
       <div className={styles.mainLayoutTop}>
@@ -36,8 +37,8 @@ const MainLayout = ({ title, description, children }: IMainLayoutProps) => {
               </div>
 
               <div className={navbarStyles.right}>
-                <button onClick={() => connect()}>Connect Wallet sd</button>
-                <Web3Button />
+                {/* <button onClick={() => connect()}>Connect Wallet</button> */}
+                {/* <Web3Button /> */}
               </div>
             </nav>
           </>

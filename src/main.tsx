@@ -36,7 +36,7 @@ console.log(window.ethereum);
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <>
     <WagmiConfig config={wagmiConfig}>
-      <App ethereumClient={ethereumClient} />
+      <App />
     </WagmiConfig>
     <Web3Modal projectId={projectId} ethereumClient={ethereumClient} />
   </>

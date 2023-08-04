@@ -11,6 +11,10 @@ import {
   showErrorMessage,
   showSuccessMessage,
 } from "~/service/AppService";
+import {
+  ethereum as WalletConnectEthereum,
+  provider as walletConnectprovider,
+} from "~/service/WalletConnectService";
 import SendBtcDrawer from "~/components/SendBtc/SendBtcDrawer/SendBtcDrawer";
 import SendBtcBox from "~/components/SendBtc/SendBtcBox/SendBtcBox";
 import OfferCurrencyDropdown from "~/components/OfferCurrencyDropdown/OfferCurrencyDropdown";
@@ -33,7 +37,14 @@ import {
   NetworkInfo,
 } from "~/Context/Constants";
 import { ethers } from "ethers";
+
+//------------Import for wallet connect -----------------//
+import { EthereumClient } from "@web3modal/ethereum";
+import { useWeb3Modal } from "@web3modal/react";
+import { useAccount, useConnect, useDisconnect, useEnsName } from "wagmi";
+import { InjectedConnector } from "wagmi/connectors/injected";
 import { Web3Button } from "@web3modal/react";
+//------------End Import for wallet connect -----------------//
 type Props = {
   toggleSidebar: () => void;
 };
@@ -59,7 +70,25 @@ const Navbar = (props: Props) => {
     BTCBalance,
     btcWalletData,
     setBTCWalletData,
+    isMetamaskConnected,
+    connectInfo,
+    setConnectinfo,
   } = context;
+
+  //---------------------------Wallet connect hook ------------------------
+  const { address, isConnected: isWalletConnectConnected } = useAccount();
+
+  let connectedWalletImage = "";
+
+  if (connectInfo.walletName == "wallet_connect") {
+    connectedWalletImage = "/icons/walletConnect.svg";
+  }
+  if (connectInfo.walletName == "metamask") {
+    connectedWalletImage = "/icons/MetaMaskIcon.svg";
+  }
+  const { disconnect } = useDisconnect();
+
+  //---------------------------End Wallet connect hook ------------------------
 
   /* Start Variables for My wallet */
   const [myBTCWalletDrawerOpen, setMyBTCWalletDrawerOpen] = useState(false);
@@ -95,6 +124,18 @@ const Navbar = (props: Props) => {
       setAccount(connect);
     }
   };
+  const handleWalletDisconnect = async () => {
+    console.log(address, isWalletConnectConnected);
+    // return;
+    disconnect();
+
+    // setConnectinfo({
+    //   ...connectInfo,
+    //   isConnected: false,
+    //   walletName: "",
+    // });
+    console.log("disconnected");
+  };
 
   const ethDropdownItems = [
     {
@@ -119,6 +160,14 @@ const Navbar = (props: Props) => {
     },
   ];
 
+  const disconnectDropdown = [
+    {
+      title: `Disconnect`,
+      href: "",
+      onClick: handleWalletDisconnect,
+      icon: "",
+    },
+  ];
   const [showSendBtcBox, setShowSendBtcBox] = useState(false);
 
   const handleShowSendBtc = () => {
@@ -259,10 +308,11 @@ const Navbar = (props: Props) => {
           setSelectedNetwork={setSelectedNetwork}
           checkNetwork={checkNetwork}
         />
+
         <NavDropdownButton
-          title={mobileView ? "Connect" : "Connect"}
-          icon="/icons/etherium.svg"
-          dropdownItems={ethDropdownItems}
+          title={mobileView ? "Connected" : "Connected"}
+          icon={connectedWalletImage}
+          dropdownItems={disconnectDropdown}
         />
       </div>
     </nav>

@@ -42,7 +42,7 @@ const NavDropdownButton = ({
               <Menu.Item
                 key={index}
                 onClick={() => {
-                  item.onClick;
+                  item !== undefined ? item.onClick() : "";
                 }}
                 icon={
                   <img src={item.icon} className={styles.icon} width={28} />

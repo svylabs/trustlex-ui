@@ -1,12 +1,17 @@
+import { useContext, useEffect, useState } from "react";
+import { isMetamaskConnectedService } from "~/service/AppService";
 import styles from "~/components/MainLayout/MainLayout.module.scss";
-import navbarStyles from "~/components/Navbar/Navbar.module.scss";
+import { BaseContext } from "~/Context/BaseContext";
 
 //------------Import for wallet connect -----------------//
 
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { InjectedConnector } from "wagmi/connectors/injected";
 // import { Web3Button } from "@web3modal/react";
+
 //------------End Import for wallet connect -----------------//
+import NavbarWhileDisconnected from "~/components/Navbar/NavbarWhileDisconnected";
+
 interface IMainLayoutProps {
   children: React.ReactNode;
   title: string;
@@ -14,33 +19,39 @@ interface IMainLayoutProps {
 }
 
 const MainLayout = ({ title, description, children }: IMainLayoutProps) => {
-  // const { address, isConnected } = useAccount();
-  // const { connect } = useConnect({
-  //   connector: new InjectedConnector(),
-  // });
-  // const { disconnect } = useDisconnect();
-  let isConnected = true;
+  const context = useContext(BaseContext);
+  if (context === null) {
+    return <>Loading...</>;
+  }
+  const { connectInfo, setConnectinfo } = context;
+
+  const { address, isConnected } = useAccount();
+  const { connect: WalletConnect } = useConnect({
+    connector: new InjectedConnector(),
+  });
+  const { disconnect } = useDisconnect();
+
+  const [isMetamaskConnected, setIsMetamaskConnected] = useState(false);
+  useEffect(() => {
+    (async () => {
+      let isMetamaskConnected = await isMetamaskConnectedService();
+      setIsMetamaskConnected(isMetamaskConnected);
+    })();
+  }, []);
+
   return (
     <div className={styles.mainLayoutRoot}>
       <div className={styles.mainLayoutTop}>
-        {isConnected ? (
+        {connectInfo.isConnected ? (
           <>
+            {" "}
             <h1 className={styles.layoutTitle}>{title}</h1>{" "}
             <p className={styles.layoutDesc}>{description}</p>
           </>
         ) : (
           <>
-            <nav className={navbarStyles.navbar}>
-              <div className={navbarStyles.left}>
-                <h1 className={styles.layoutTitle}>{title}</h1>{" "}
-                <p className={styles.layoutDesc}>{description}</p>
-              </div>
-
-              <div className={navbarStyles.right}>
-                {/* <button onClick={() => connect()}>Connect Wallet</button> */}
-                {/* <Web3Button /> */}
-              </div>
-            </nav>
+            {" "}
+            <NavbarWhileDisconnected title={title} description={description} />
           </>
         )}
       </div>

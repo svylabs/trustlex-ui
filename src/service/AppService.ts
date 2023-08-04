@@ -33,7 +33,7 @@ import { tofixedBTC } from "~/utils/BitcoinUtils";
 // import { useWeb3React } from "@web3-react/core";
 // import { injected } from "~/components/Connectors/connectors";
 
-const getEthereumObject = () => window.ethereum;
+export const getEthereumObject = () => window.ethereum;
 // https://snyk.io/advisor/npm-package/ethereum-block-by-date
 const { EthDater } = window;
 
@@ -60,8 +60,9 @@ export const findMetaMaskAccount = async () => {
 export const isMetamaskConnectedService = async () => {
   if (
     getEthereumObject() === undefined ||
-    window.ethereum.isConnected() === false ||
-    (await findMetaMaskAccount()) === false
+    window.ethereum.isConnected() === false
+    // ||
+    // (await findMetaMaskAccount()) === false
   ) {
     return false;
   }
@@ -90,8 +91,10 @@ export const findWalletConnetAccount = async () => {
 export const connectToMetamask = async () => {
   try {
     const ethereum = getEthereumObject();
-    if (!ethereum || ethereum.request === undefined) {
+    console.log(ethereum);
+    if (ethereum == undefined || ethereum.request === undefined) {
       showErrorMessage("Get MetaMask!");
+      alert("Get MetaMask!");
       return false;
     }
     // console.log(ethereum.request);
@@ -100,7 +103,6 @@ export const connectToMetamask = async () => {
     });
     return accounts[0];
   } catch (error) {
-    console.log(error);
     return false;
   }
 };

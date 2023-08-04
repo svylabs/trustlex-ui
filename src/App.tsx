@@ -1,6 +1,7 @@
 //------------Import for wallet connect -----------------//
 import { EthereumClient } from "@web3modal/ethereum";
-import { useWeb3Modal } from "@web3modal/react";
+import { useWeb3Modal, Web3Button } from "@web3modal/react";
+import {} from "@web3modal/react";
 import { useAccount, useConnect, useDisconnect, useEnsName } from "wagmi";
 import { InjectedConnector } from "wagmi/connectors/injected";
 //------------End Import for wallet connect -----------------//
@@ -12,8 +13,9 @@ import Earn from "~/pages/Earn/Earn";
 import Home from "~/pages/Home/Home";
 import Exchange from "~/pages/Exchange/Exchange";
 import Recent from "./pages/Recent/Recent";
+import { BaseContext } from "~/Context/BaseContext";
 import { AppContext } from "./Context/AppContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import {
   connect as connectService,
   findMetaMaskAccount,
@@ -29,11 +31,7 @@ import {
   getEventData,
   isMetamaskConnectedService,
 } from "./service/AppService";
-import {
-  getConnectedAccount,
-  createContractInstanceWalletService,
-  provider as walletConnectProvider,
-} from "./service/WalletConnectService";
+import { ethereum as WalletConnectEthereum } from "./service/WalletConnectService";
 
 import IUserInputData from "./interfaces/IUserInputData";
 import { INetworkInfo } from "./interfaces/INetworkInfo";
@@ -41,6 +39,7 @@ import swapArrayElements from "./utils/swapArray";
 import { formatERC20Tokens } from "./utils/Ether.utills";
 import { IBTCWallet } from "./utils/BitcoinUtils";
 import { BitcoinNodeEnum } from "./interfaces/IBitcoinNode";
+import { IConnectInfo } from "./interfaces/INetworkInfo";
 import {
   IListenedOfferData,
   IOffersResult,
@@ -77,9 +76,6 @@ const DefaultPage = () => {
   return <Home />;
 };
 
-export interface IEthereumClient {
-  ethereumClient: EthereumClient;
-}
 export default function App() {
   const [isMetamaskConnected, setIsMetamaskConnected] = useState(false);
   useEffect(() => {
@@ -88,8 +84,11 @@ export default function App() {
       setIsMetamaskConnected(isMetamaskConnected);
     })();
   }, []);
+  0;
 
-  const { address, isConnected: isWalletConnectConnected } = useAccount();
+  const { address, isConnected } = useAccount();
+  console.log("address", address);
+  console.log("isConnected", isConnected);
 
   const { connect, connectors, error, isLoading, pendingConnector } =
     useConnect({
@@ -97,34 +96,79 @@ export default function App() {
     });
   const { disconnect } = useDisconnect();
 
+  const [connectInfo, setConnectinfo] = useState<IConnectInfo>({
+    isConnected: isConnected == true || isMetamaskConnected == true,
+    walletName:
+      isConnected == true
+        ? "wallet_connect"
+        : isMetamaskConnected == true
+        ? "metamask"
+        : "",
+  });
+
+  useEffect(() => {
+    console.log(connectInfo);
+  }, [connectInfo]);
+
+  // session established
+  WalletConnectEthereum.on("connect", (data) => {
+    console.log("WalletConnect event connect fired");
+    setConnectinfo({
+      ...connectInfo,
+      isConnected: true,
+      walletName: "wallet_connect",
+    });
+  });
+  WalletConnectEthereum.on("disconnect", (data) => {
+    console.log("WalletConnect event disconnect fired");
+    setConnectinfo({
+      ...connectInfo,
+      isConnected: false,
+      walletName: "",
+    });
+  });
   return (
     <>
-      {isWalletConnectConnected == true || isMetamaskConnected == true ? (
-        <>
-          {/* <div>
-            Connected to {address}
-            <button onClick={() => disconnect()}>Disconnect</button>
-          </div> */}
-          <BaseApp />
-        </>
-      ) : (
-        <>
-          {/* {" "}
-          <button onClick={() => connect()}>Connect Wallet</button> */}
-          <MantineProvider
-            theme={{ colorScheme: "dark" }}
-            withGlobalStyles
-            withNormalizeCSS
-          >
-            <ProtocolDocs />
-          </MantineProvider>
-        </>
-      )}
+      <BaseContext.Provider
+        value={{
+          connectInfo,
+          setConnectinfo,
+        }}
+      >
+        {/* <Web3Button /> */}
+        {connectInfo.isConnected == true ? (
+          <>
+            {/* <div>
+              Connected to {address}
+              <button onClick={() => disconnect()}>Disconnect</button>
+            </div> */}
+            <BaseApp />
+          </>
+        ) : (
+          <>
+            {" "}
+            {/* <button onClick={() => connect()}>Connect Wallet</button> */}
+            <MantineProvider
+              theme={{ colorScheme: "dark" }}
+              withGlobalStyles
+              withNormalizeCSS
+            >
+              <ProtocolDocs />
+            </MantineProvider>
+          </>
+        )}
+      </BaseContext.Provider>
     </>
   );
 }
 
 export function BaseApp() {
+  const context = useContext(BaseContext);
+  if (context === null) {
+    return <>Loading...</>;
+  }
+  const { connectInfo, setConnectinfo } = context;
+
   const { get, set, remove } = useLocalstorage();
   const [account, setAccount] = useState("");
   const [balance, setBalance] = useState("");
@@ -985,6 +1029,8 @@ export function BaseApp() {
               setBTCWalletData,
               initiatedOrders,
               setInitiatedOrders,
+              connectInfo,
+              setConnectinfo,
             }}
           >
             <Layout>

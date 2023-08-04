@@ -5,8 +5,9 @@ import { EthereumProvider } from "@walletconnect/ethereum-provider";
 import { arbitrum, mainnet, polygon } from "wagmi/chains";
 const chains = [polygon];
 const projectId = "f651a9b7ead78bc8fba3196e06188f4b";
+
 // Rename provider to ethereum
-const ethereum = await EthereumProvider.init({
+export const ethereum = await EthereumProvider.init({
   projectId: projectId, // REQUIRED your projectId
   chains: [80001], // REQUIRED chain ids
   optionalChains: [], // OPTIONAL chains
@@ -36,8 +37,9 @@ const ethereum = await EthereumProvider.init({
     explorerRecommendedWalletIds: "NONE",
   }, // OPTIONAL - `undefined` by default, see https://docs.walletconnect.com/2.0/web3modal/options
 });
-console.log(ethereum);
-alert("ok");
+
+export const provider = new ethers.providers.Web3Provider(ethereum);
+
 export const getConnectedAccount = async () => {
   try {
     let result = await ethereum.enable();
@@ -63,8 +65,6 @@ ethereum.on("session_event", (data) => handler("session_event", data));
 ethereum.on("display_uri", (data) => handler("display_uri", data));
 // session disconnect
 ethereum.on("disconnect", (data) => handler("disconnect", data));
-
-export const provider = new ethers.providers.Web3Provider(ethereum);
 
 export const getBalance = async () => {
   try {

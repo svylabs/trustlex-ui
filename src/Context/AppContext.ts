@@ -7,6 +7,7 @@ import {
   IListInitiatedFullfillmentDataByNonEvent,
   IInitiatedOrder,
 } from "~/interfaces/IOfferdata";
+import { IConnectInfo } from "~/interfaces/INetworkInfo";
 import { ethers } from "ethers";
 
 import IUserInputData from "~/interfaces/IUserInputData";
@@ -117,4 +118,7 @@ export const AppContext = createContext<null | {
   setBTCWalletData: (btcWalletData: IBTCWallet | undefined) => void;
   initiatedOrders: IInitiatedOrder[];
   setInitiatedOrders: (initiatedOrders: IInitiatedOrder[]) => void;
+  isMetamaskConnected: boolean;
+  connectInfo: IConnectInfo;
+  setConnectinfo: (connectInfo: IConnectInfo) => void;
 }>(null);

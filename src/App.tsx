@@ -68,6 +68,16 @@ import { number } from "bitcoinjs-lib/src/script";
 import Alert from "./components/Alerts/Alert";
 import ProtocolDocs from "./pages/Protocol/protocol";
 
+interface ConnectInfo {
+  chainId: string;
+}
+
+interface ProviderRpcError extends Error {
+  message: string;
+  code: number;
+  data?: unknown;
+}
+
 const DefaultPage = () => {
   const { ethereum } = window;
   if (!ethereum) {
@@ -77,25 +87,9 @@ const DefaultPage = () => {
 };
 
 export default function App() {
+  const { ethereum: MetamaskEthereum } = window;
   const [isMetamaskConnected, setIsMetamaskConnected] = useState(false);
-  useEffect(() => {
-    (async () => {
-      let isMetamaskConnected = await isMetamaskConnectedService();
-      setIsMetamaskConnected(isMetamaskConnected);
-    })();
-  }, []);
-  0;
-
   const { address, isConnected } = useAccount();
-  console.log("address", address);
-  console.log("isConnected", isConnected);
-
-  const { connect, connectors, error, isLoading, pendingConnector } =
-    useConnect({
-      connector: new InjectedConnector(),
-    });
-  const { disconnect } = useDisconnect();
-
   const [connectInfo, setConnectinfo] = useState<IConnectInfo>({
     isConnected: isConnected == true || isMetamaskConnected == true,
     walletName:
@@ -105,6 +99,29 @@ export default function App() {
         ? "metamask"
         : "",
   });
+
+  useEffect(() => {
+    (async () => {
+      let isMetamaskConnected = await isMetamaskConnectedService();
+      console.log("isMetamaskConnected", isMetamaskConnected);
+      setIsMetamaskConnected(isMetamaskConnected);
+      if (isMetamaskConnected == true) {
+        setConnectinfo({
+          isConnected: true,
+          walletName: "metamask",
+        });
+      }
+    })();
+  }, []);
+
+  console.log("address", address);
+  console.log("isConnected", isConnected);
+
+  const { connect, connectors, error, isLoading, pendingConnector } =
+    useConnect({
+      connector: new InjectedConnector(),
+    });
+  const { disconnect } = useDisconnect();
 
   useEffect(() => {
     console.log(connectInfo);
@@ -125,6 +142,24 @@ export default function App() {
       ...connectInfo,
       isConnected: false,
       walletName: "",
+    });
+  });
+
+  //metamask disconnect event
+  (MetamaskEthereum as any).on("disconnect", (error: ProviderRpcError) => {
+    console.log("Metamask event disconnect fired");
+    setConnectinfo({
+      ...connectInfo,
+      isConnected: false,
+      walletName: "",
+    });
+  });
+  (MetamaskEthereum as any).on("connect", (connectInfo: ConnectInfo) => {
+    console.log("Metamask event disconnect fired");
+    setConnectinfo({
+      ...connectInfo,
+      isConnected: true,
+      walletName: "metamask",
     });
   });
   return (

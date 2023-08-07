@@ -60,9 +60,9 @@ export const findMetaMaskAccount = async () => {
 export const isMetamaskConnectedService = async () => {
   if (
     getEthereumObject() === undefined ||
-    window.ethereum.isConnected() === false
+    // window.ethereum.isConnected() === false
     // ||
-    // (await findMetaMaskAccount()) === false
+    (await findMetaMaskAccount()) === false
   ) {
     return false;
   }

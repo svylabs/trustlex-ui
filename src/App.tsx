@@ -1,3 +1,11 @@
+//------------Import for wallet connect -----------------//
+import { EthereumClient } from "@web3modal/ethereum";
+import { useWeb3Modal, Web3Button } from "@web3modal/react";
+import {} from "@web3modal/react";
+import { useAccount, useConnect, useDisconnect, useEnsName } from "wagmi";
+import { InjectedConnector } from "wagmi/connectors/injected";
+//------------End Import for wallet connect -----------------//
+
 import { MantineProvider } from "@mantine/core";
 import Layout from "./components/Layout/Layout";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -5,10 +13,11 @@ import Earn from "~/pages/Earn/Earn";
 import Home from "~/pages/Home/Home";
 import Exchange from "~/pages/Exchange/Exchange";
 import Recent from "./pages/Recent/Recent";
+import { BaseContext } from "~/Context/BaseContext";
 import { AppContext } from "./Context/AppContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import {
-  connect,
+  connect as connectService,
   findMetaMaskAccount,
   getBalance,
   getOffersList,
@@ -20,13 +29,17 @@ import {
   showSuccessMessage,
   createContractInstance,
   getEventData,
+  isMetamaskConnectedService,
 } from "./service/AppService";
+import { ethereum as WalletConnectEthereum } from "./service/WalletConnectService";
+
 import IUserInputData from "./interfaces/IUserInputData";
 import { INetworkInfo } from "./interfaces/INetworkInfo";
 import swapArrayElements from "./utils/swapArray";
 import { formatERC20Tokens } from "./utils/Ether.utills";
 import { IBTCWallet } from "./utils/BitcoinUtils";
 import { BitcoinNodeEnum } from "./interfaces/IBitcoinNode";
+import { IConnectInfo } from "./interfaces/INetworkInfo";
 import {
   IListenedOfferData,
   IOffersResult,
@@ -55,6 +68,16 @@ import { number } from "bitcoinjs-lib/src/script";
 import Alert from "./components/Alerts/Alert";
 import ProtocolDocs from "./pages/Protocol/protocol";
 
+interface ConnectInfo {
+  chainId: string;
+}
+
+interface ProviderRpcError extends Error {
+  message: string;
+  code: number;
+  data?: unknown;
+}
+
 const DefaultPage = () => {
   const { ethereum } = window;
   if (!ethereum) {
@@ -64,6 +87,123 @@ const DefaultPage = () => {
 };
 
 export default function App() {
+  const { ethereum: MetamaskEthereum } = window;
+  const [isMetamaskConnected, setIsMetamaskConnected] = useState(false);
+  const { address, isConnected } = useAccount();
+  const [connectInfo, setConnectinfo] = useState<IConnectInfo>({
+    isConnected: isConnected == true || isMetamaskConnected == true,
+    walletName:
+      isConnected == true
+        ? "wallet_connect"
+        : isMetamaskConnected == true
+        ? "metamask"
+        : "",
+  });
+
+  useEffect(() => {
+    (async () => {
+      let isMetamaskConnected = await isMetamaskConnectedService();
+      console.log("isMetamaskConnected", isMetamaskConnected);
+      setIsMetamaskConnected(isMetamaskConnected);
+      if (isMetamaskConnected == true) {
+        setConnectinfo({
+          isConnected: true,
+          walletName: "metamask",
+        });
+      }
+    })();
+  }, []);
+
+  console.log("address", address);
+  console.log("isConnected", isConnected);
+
+  const { connect, connectors, error, isLoading, pendingConnector } =
+    useConnect({
+      connector: new InjectedConnector(),
+    });
+  const { disconnect } = useDisconnect();
+
+  useEffect(() => {
+    console.log(connectInfo);
+  }, [connectInfo]);
+
+  // session established
+  WalletConnectEthereum.on("connect", (data) => {
+    console.log("WalletConnect event connect fired");
+    setConnectinfo({
+      ...connectInfo,
+      isConnected: true,
+      walletName: "wallet_connect",
+    });
+  });
+  WalletConnectEthereum.on("disconnect", (data) => {
+    console.log("WalletConnect event disconnect fired");
+    setConnectinfo({
+      ...connectInfo,
+      isConnected: false,
+      walletName: "",
+    });
+  });
+
+  //metamask disconnect event
+  (MetamaskEthereum as any).on("disconnect", (error: ProviderRpcError) => {
+    console.log("Metamask event disconnect fired");
+    setConnectinfo({
+      ...connectInfo,
+      isConnected: false,
+      walletName: "",
+    });
+  });
+  (MetamaskEthereum as any).on("connect", (connectInfo: ConnectInfo) => {
+    console.log("Metamask event disconnect fired");
+    setConnectinfo({
+      ...connectInfo,
+      isConnected: true,
+      walletName: "metamask",
+    });
+  });
+  return (
+    <>
+      <BaseContext.Provider
+        value={{
+          connectInfo,
+          setConnectinfo,
+        }}
+      >
+        {/* <Web3Button /> */}
+        {connectInfo.isConnected == true ? (
+          <>
+            {/* <div>
+              Connected to {address}
+              <button onClick={() => disconnect()}>Disconnect</button>
+            </div> */}
+            <BaseApp />
+          </>
+        ) : (
+          <>
+            {" "}
+            {/* <button onClick={() => connect()}>Connect Wallet</button> */}
+            <MantineProvider
+              theme={{ colorScheme: "dark" }}
+              withGlobalStyles
+              withNormalizeCSS
+            >
+              <ProtocolDocs />
+            </MantineProvider>
+          </>
+        )}
+      </BaseContext.Provider>
+    </>
+  );
+}
+
+export function BaseApp() {
+  const context = useContext(BaseContext);
+  if (context === null) {
+    return <>Loading...</>;
+  }
+  const { connectInfo, setConnectinfo } = context;
+
   const { get, set, remove } = useLocalstorage();
   const [account, setAccount] = useState("");
   const [balance, setBalance] = useState("");
@@ -522,7 +662,7 @@ export default function App() {
             }
 
             // update the total offers for echange page and recent my swap page
-            let trustlex = await connect(
+            let trustlex = await connectService(
               provider,
               // ContractMap[selectedToken].address
               currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
@@ -616,7 +756,7 @@ export default function App() {
           account,
           fromOfferMySwapOngoingId
         );
-      console.log(InitializeFullfillmentDataByNonEvent);
+      // console.log(InitializeFullfillmentDataByNonEvent);
       setlistenedOngoinMySwapOnGoingDataByNonEvent(
         InitializeFullfillmentDataByNonEvent
       );
@@ -736,6 +876,7 @@ export default function App() {
       setIsMoreMySwapAllCompletedTableDataLoading(false);
     }
   }
+
   async function getSelectedTokenContractInstance() {
     // create the contract instance
     // console.log(
@@ -754,6 +895,11 @@ export default function App() {
       contractABI
     );
 
+    // let contract2 = await createContractInstanceWalletService(
+    //   contractAddress as string,
+    //   contractABI
+    // );
+    // console.log(contract2);
     return contract;
   }
   async function addNetwork() {
@@ -824,128 +970,132 @@ export default function App() {
   }
 
   return (
-    <MantineProvider
-      theme={{ colorScheme: "dark" }}
-      withGlobalStyles
-      withNormalizeCSS
-    >
-      <BrowserRouter>
-        <AppContext.Provider
-          value={{
-            balance,
-            setBalance,
-            account,
-            setAccount,
-            selectedToken,
-            setSelectedToken,
-            contract,
-            setContract,
-            userInputData,
-            setUserInputData,
-            swapChange,
-            dropDownChange,
-            listenedOfferData,
-            setListenedOfferData,
-            listenedOngoinMySwapData,
-            setlistenedOngoinMySwapData,
-            listenedOfferDataByNonEvent,
-            setListenedOfferDataByNonEvent,
-            isMoreTableDataLoading,
-            setMoreTableDataLoading,
-            exchangeLoadingText,
-            setExchangeLoadingText,
-            totalOffers,
-            setTotalOffers,
-            fromOfferId,
-            setFromOfferId,
-            refreshOffersListKey,
-            setRefreshOffersListKey,
-            erc20balance,
-            setERC20balance,
-            // start my swap ongoing variables
-            listenedOngoinMySwapOnGoingDataByNonEvent,
-            setlistenedOngoinMySwapOnGoingDataByNonEvent,
-            mySwapOngoingLoadingText,
-            setMySwapOngoingLoadingText,
-            isMoreMySwapOngoinTableDataLoading,
-            mySwapOngoingfromOfferId,
-            setMySwapOngoingfromOfferId,
-            refreshMySwapOngoingListKey,
-            setRefreshMySwapOngoingListKey,
-            // end my swap ongoing variables
+    <>
+      <MantineProvider
+        theme={{ colorScheme: "dark" }}
+        withGlobalStyles
+        withNormalizeCSS
+      >
+        <BrowserRouter>
+          <AppContext.Provider
+            value={{
+              balance,
+              setBalance,
+              account,
+              setAccount,
+              selectedToken,
+              setSelectedToken,
+              contract,
+              setContract,
+              userInputData,
+              setUserInputData,
+              swapChange,
+              dropDownChange,
+              listenedOfferData,
+              setListenedOfferData,
+              listenedOngoinMySwapData,
+              setlistenedOngoinMySwapData,
+              listenedOfferDataByNonEvent,
+              setListenedOfferDataByNonEvent,
+              isMoreTableDataLoading,
+              setMoreTableDataLoading,
+              exchangeLoadingText,
+              setExchangeLoadingText,
+              totalOffers,
+              setTotalOffers,
+              fromOfferId,
+              setFromOfferId,
+              refreshOffersListKey,
+              setRefreshOffersListKey,
+              erc20balance,
+              setERC20balance,
+              // start my swap ongoing variables
+              listenedOngoinMySwapOnGoingDataByNonEvent,
+              setlistenedOngoinMySwapOnGoingDataByNonEvent,
+              mySwapOngoingLoadingText,
+              setMySwapOngoingLoadingText,
+              isMoreMySwapOngoinTableDataLoading,
+              mySwapOngoingfromOfferId,
+              setMySwapOngoingfromOfferId,
+              refreshMySwapOngoingListKey,
+              setRefreshMySwapOngoingListKey,
+              // end my swap ongoing variables
 
-            // start my swap completed variables
-            listenedMySwapCompletedDataByNonEvent,
-            setListenedMySwapCompletedDataByNonEvent,
-            mySwapCompletedLoadingText,
-            setMySwapCompletedLoadingText,
-            isMoreMySwapCompletedTableDataLoading,
-            mySwapCompletedfromOfferId,
-            setMySwapCompletedfromOfferId,
-            refreshMySwapCompletedListKey,
-            setRefreshMySwapCompletedListKey,
-            // end my swap completed variables
+              // start my swap completed variables
+              listenedMySwapCompletedDataByNonEvent,
+              setListenedMySwapCompletedDataByNonEvent,
+              mySwapCompletedLoadingText,
+              setMySwapCompletedLoadingText,
+              isMoreMySwapCompletedTableDataLoading,
+              mySwapCompletedfromOfferId,
+              setMySwapCompletedfromOfferId,
+              refreshMySwapCompletedListKey,
+              setRefreshMySwapCompletedListKey,
+              // end my swap completed variables
 
-            // start my swap completed variables
-            listenedMySwapAllCompletedDataByNonEvent,
-            setListenedMySwapAllCompletedDataByNonEvent,
-            mySwapAllCompletedLoadingText,
-            setMySwapAllCompletedLoadingText,
-            isMoreMySwapAllCompletedTableDataLoading,
-            mySwapAllCompletedfromOfferId,
-            setMySwapAllCompletedfromOfferId,
-            refreshMySwapAllCompletedListKey,
-            setRefreshMySwapAllCompletedListKey,
-            getSelectedTokenContractInstance,
-            // end my swap completed variables
-            selectedNetwork,
-            setSelectedNetwork,
-            checkNetwork,
+              // start my swap completed variables
+              listenedMySwapAllCompletedDataByNonEvent,
+              setListenedMySwapAllCompletedDataByNonEvent,
+              mySwapAllCompletedLoadingText,
+              setMySwapAllCompletedLoadingText,
+              isMoreMySwapAllCompletedTableDataLoading,
+              mySwapAllCompletedfromOfferId,
+              setMySwapAllCompletedfromOfferId,
+              refreshMySwapAllCompletedListKey,
+              setRefreshMySwapAllCompletedListKey,
+              getSelectedTokenContractInstance,
+              // end my swap completed variables
+              selectedNetwork,
+              setSelectedNetwork,
+              checkNetwork,
 
-            //alert variables
-            alertOpen,
-            setAlertOpen,
-            alertMessage,
-            setAlertMessage,
-            selectedBitcoinNode,
-            setSelectedBitcoinNode,
-            // BTC balance context variable
-            BTCBalance,
-            setBTCBalance,
-            //BTC Wallet data variables
-            btcWalletData,
-            setBTCWalletData,
-            initiatedOrders,
-            setInitiatedOrders,
-          }}
-        >
-          <Layout>
-            <ToastContainer />
-            {alertMessage != "" ? (
-              <>
-                <Alert
-                  message={alertMessage}
-                  setAlertMessage={setAlertMessage}
-                  isOpened={alertOpen}
-                  setAlertOpen={setAlertOpen}
-                  addNetwork={addNetwork}
-                />
-              </>
-            ) : (
-              ""
-            )}
+              //alert variables
+              alertOpen,
+              setAlertOpen,
+              alertMessage,
+              setAlertMessage,
+              selectedBitcoinNode,
+              setSelectedBitcoinNode,
+              // BTC balance context variable
+              BTCBalance,
+              setBTCBalance,
+              //BTC Wallet data variables
+              btcWalletData,
+              setBTCWalletData,
+              initiatedOrders,
+              setInitiatedOrders,
+              connectInfo,
+              setConnectinfo,
+            }}
+          >
+            <Layout>
+              <ToastContainer />
+              {alertMessage != "" ? (
+                <>
+                  <Alert
+                    message={alertMessage}
+                    setAlertMessage={setAlertMessage}
+                    isOpened={alertOpen}
+                    setAlertOpen={setAlertOpen}
+                    addNetwork={addNetwork}
+                  />
+                </>
+              ) : (
+                ""
+              )}
 
-            <Routes>
-              <Route path="/" element={<DefaultPage />} />
-              <Route path="/exchange" element={<Exchange />} />
-              <Route path="/recent" element={<Recent />} />
-              <Route path="/earn" element={<Earn />} />
+              <Routes>
+                <Route path="/" element={<DefaultPage />} />
+                <Route path="/exchange" element={<Exchange />} />
+                <Route path="/recent" element={<Recent />} />
+                <Route path="/earn" element={<Earn />} />
 
-              <Route path="/protocol" element={<ProtocolDocs />} />
-            </Routes>
-          </Layout>
-        </AppContext.Provider>
-      </BrowserRouter>
-    </MantineProvider>
+                <Route path="/protocol" element={<ProtocolDocs />} />
+              </Routes>
+            </Layout>
+          </AppContext.Provider>
+        </BrowserRouter>
+      </MantineProvider>
+    </>
   );
 }

@@ -331,7 +331,7 @@ function MySwaps() {
         offerData: value,
         isCanceled: value.offerDetailsInJson?.isCanceled,
       };
-      console.log(row.offerData);
+      // console.log(row.offerData);
       return row;
     });
 

@@ -144,24 +144,25 @@ export default function App() {
       walletName: "",
     });
   });
-
-  //metamask disconnect event
-  (MetamaskEthereum as any).on("disconnect", (error: ProviderRpcError) => {
-    console.log("Metamask event disconnect fired");
-    setConnectinfo({
-      ...connectInfo,
-      isConnected: false,
-      walletName: "",
+  if (MetamaskEthereum) {
+    // metamask disconnect event
+    (MetamaskEthereum as any).on("disconnect", (error: ProviderRpcError) => {
+      console.log("Metamask event disconnect fired");
+      setConnectinfo({
+        ...connectInfo,
+        isConnected: false,
+        walletName: "",
+      });
     });
-  });
-  (MetamaskEthereum as any).on("connect", (connectInfo: ConnectInfo) => {
-    console.log("Metamask event disconnect fired");
-    setConnectinfo({
-      ...connectInfo,
-      isConnected: true,
-      walletName: "metamask",
+    (MetamaskEthereum as any).on("connect", (connectInfo: ConnectInfo) => {
+      console.log("Metamask event disconnect fired");
+      setConnectinfo({
+        ...connectInfo,
+        isConnected: true,
+        walletName: "metamask",
+      });
     });
-  });
+  }
   return (
     <>
       <BaseContext.Provider

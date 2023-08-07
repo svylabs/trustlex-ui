@@ -1,10 +1,15 @@
 import navbarStyles from "~/components/Navbar/Navbar.module.scss";
 import styles from "~/components/MainLayout/MainLayout.module.scss";
 import NavDropdownButton from "../NavDropdownButton/NavDropdownButton";
-
+import { BaseContext } from "~/Context/BaseContext";
+import { useContext, useEffect, useState } from "react";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 
-import { getConnectedAccount } from "~/service/WalletConnectService";
+import {
+  getConnectedAccount,
+  ethereum as WalletConnectEthereum,
+} from "~/service/WalletConnectService";
+
 import { connectToMetamask, showErrorMessage } from "~/service/AppService";
 
 interface props {
@@ -13,10 +18,24 @@ interface props {
 }
 const NavbarWhileDisconnected = ({ title, description }: props) => {
   const { mobileView } = useWindowDimensions();
+  const context = useContext(BaseContext);
+  if (context === null) {
+    return <>Loading...</>;
+  }
+  const { connectInfo, setConnectinfo } = context;
 
   const handleWalletConnect = async () => {
     console.log("handleWalletConnect connect request");
-    await getConnectedAccount();
+    let result: any = await getConnectedAccount();
+    if (!result) {
+      let message: string = "Unable to connect with walletConnect";
+      showErrorMessage(message);
+    }
+    setConnectinfo({
+      isConnected: true,
+      walletName: "wallet_connect",
+      ethereumObject: WalletConnectEthereum,
+    });
   };
   const handleMetamaskConnect = async () => {
     const connect = await connectToMetamask();

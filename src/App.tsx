@@ -98,7 +98,11 @@ export default function App() {
         : isMetamaskConnected == true
         ? "metamask"
         : "",
+    ethereumObject: MetamaskEthereum,
   });
+  const [account, setAccount] = useState(address ? address : "");
+  const [balance, setBalance] = useState("");
+  const [contract, setContract] = useState<ethers.Contract>();
 
   useEffect(() => {
     (async () => {
@@ -109,6 +113,7 @@ export default function App() {
         setConnectinfo({
           isConnected: true,
           walletName: "metamask",
+          ethereumObject: MetamaskEthereum,
         });
       }
     })();
@@ -169,6 +174,12 @@ export default function App() {
         value={{
           connectInfo,
           setConnectinfo,
+          account,
+          setAccount,
+          balance,
+          setBalance,
+          contract,
+          setContract,
         }}
       >
         {/* <Web3Button /> */}
@@ -203,14 +214,23 @@ export function BaseApp() {
   if (context === null) {
     return <>Loading...</>;
   }
-  const { connectInfo, setConnectinfo } = context;
+  const {
+    connectInfo,
+    setConnectinfo,
+    account,
+    setAccount,
+    balance,
+    setBalance,
+    contract,
+    setContract,
+  } = context;
 
   const { get, set, remove } = useLocalstorage();
-  const [account, setAccount] = useState("");
-  const [balance, setBalance] = useState("");
+  // const [account, setAccount] = useState("");
+  // const [balance, setBalance] = useState("");
   const [totalOffers, setTotalOffers] = useState(0);
   const [fromOfferId, setFromOfferId] = useState(0);
-  const [contract, setContract] = useState<ethers.Contract>();
+  // const [contract, setContract] = useState<ethers.Contract>();
   const tokenData = get("selectedToken", false);
   const selectedBitcoinNode_ = get("selectedBitcoinNode", false);
   const [selectedToken, setSelectedToken] = useState(
@@ -420,6 +440,7 @@ export function BaseApp() {
   const { ethereum } = window;
   if (ethereum) {
     (ethereum as any).on("accountsChanged", async function (accounts: any) {
+      // alert("line no. 443");
       setAccount(accounts[0]);
     });
     //  Network changed event
@@ -532,7 +553,8 @@ export function BaseApp() {
   // use effect for offers list
   useEffect(() => {
     (async () => {
-      const { ethereum } = window;
+      // const { ethereum } = window;
+      const ethereum = connectInfo.ethereumObject;
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
         setMoreTableDataLoading(false);
@@ -628,7 +650,8 @@ export function BaseApp() {
   useEffect(() => {
     (async () => {
       try {
-        const { ethereum } = window;
+        const ethereum = connectInfo.ethereumObject;
+
         if (ethereum) {
           const provider = new ethers.providers.Web3Provider(ethereum);
 
@@ -688,9 +711,13 @@ export function BaseApp() {
   // update the eth balance
   async function updateAccountBalance(account: string) {
     if (account !== null) {
+      // alert("line no. 712");
+      console.log("account", account);
+
       setAccount(account);
-      getBalance(account).then((balance) => {
+      getBalance(connectInfo.ethereumObject, account).then((balance) => {
         if (balance) {
+          console.log(balance);
           setBalance(balance);
         }
       });

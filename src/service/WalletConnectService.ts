@@ -47,6 +47,7 @@ export const getConnectedAccount = async () => {
     return result;
   } catch (err) {
     console.log(err);
+    return false;
   }
 };
 const handler = (event: any, data: any) => {
@@ -83,8 +84,6 @@ export const getBalance = async () => {
     return 0;
   }
 };
-
-await getBalance();
 
 export const getERC20TokenBalance = async (
   address: string,

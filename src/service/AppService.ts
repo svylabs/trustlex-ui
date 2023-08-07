@@ -310,18 +310,22 @@ export const connect = async (
   }
 };
 
-export const getBalance = async (address: string) => {
+export const getBalance = async (ethereumObject: any, address: string) => {
   try {
-    if (typeof window.ethereum !== undefined) {
-      const { ethereum } = window;
-      const provider = new ethers.providers.Web3Provider(ethereum);
-      let balance: any = await provider.getBalance(address);
-      balance = +ethers.utils.formatEther(balance);
-      return balance;
-    } else {
-      return 0;
-    }
+    console.log(ethereumObject, address);
+    const provider = new ethers.providers.Web3Provider(ethereumObject);
+    let balance: any = await provider.getBalance(address);
+    balance = +ethers.utils.formatEther(balance);
+    console.log(
+      "----------------------------------------------------------------"
+    );
+    console.log(balance);
+    return balance;
   } catch (error) {
+    console.log(error);
+    console.log(
+      "----------------------------------------------------------------"
+    );
     console.log(error);
     return 0;
   }

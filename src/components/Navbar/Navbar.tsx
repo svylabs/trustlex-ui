@@ -98,36 +98,14 @@ const Navbar = (props: Props) => {
   const [generateAddress, setGenerateAddress] = useState("");
   /* End Variables for My wallet */
 
-  const handleMetamaskConnect = async () => {
-    if (account !== "" && (account as unknown as boolean) != false) {
-      console.log("Account already connected");
-      return;
-    } else {
-      const connect = await connectToMetamask();
-      if (!connect) {
-        let message: string = "Failed to connect";
-        showErrorMessage(message);
-      }
-      setAccount(connect);
-    }
-  };
-  const handleWalletConnect = async () => {
-    if (account !== "" && (account as unknown as boolean) != false) {
-      console.log("Account already connected");
-      return;
-    } else {
-      const connect = await connectToMetamask();
-      if (!connect) {
-        let message: string = "Failed to connect";
-        showErrorMessage(message);
-      }
-      setAccount(connect);
-    }
-  };
   const handleWalletDisconnect = async () => {
+    console.log(connectInfo.walletName);
     console.log(address, isWalletConnectConnected);
     // return;
-    disconnect();
+    if (connectInfo.walletName == "metamask") {
+    } else if (connectInfo.walletName == "wallet_connect") {
+      disconnect();
+    }
 
     // setConnectinfo({
     //   ...connectInfo,
@@ -136,29 +114,6 @@ const Navbar = (props: Props) => {
     // });
     console.log("disconnected");
   };
-
-  const ethDropdownItems = [
-    {
-      title:
-        account !== "" && (account as unknown as boolean) != false
-          ? // ? `Connected to ${account} \n Balance ${balance} ETH`
-            `Connected`
-          : "Metamask",
-      href: "",
-      onClick: handleMetamaskConnect,
-      icon: "/icons/MetaMaskIcon.svg",
-    },
-    {
-      title:
-        account !== "" && (account as unknown as boolean) != false
-          ? // ? `Connected to ${account} \n Balance ${balance} ETH`
-            `Connected`
-          : "Wallet Connect",
-      href: "",
-      onClick: handleWalletConnect,
-      icon: "/icons/walletConnect.svg",
-    },
-  ];
 
   const disconnectDropdown = [
     {
@@ -294,11 +249,7 @@ const Navbar = (props: Props) => {
           selectedBitcoinNode={selectedBitcoinNode}
           setSelectedBitcoinNode={setSelectedBitcoinNode}
         />
-        {/* <NavDropdownButton
-          title={mobileView ? "" : "Ethereum"}
-          icon="/icons/etherium.svg"
-          dropdownItems={ethDropdownItems}
-        /> */}
+
         <DropdownSubmenu
           selectedToken={selectedToken}
           setSelectedToken={setSelectedToken}

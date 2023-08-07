@@ -6,4 +6,6 @@ export interface INetworkInfo {
 export interface IConnectInfo {
   isConnected: boolean;
   walletName: string;
+  ethereumObject?: any;
+  provider?: any;
 }

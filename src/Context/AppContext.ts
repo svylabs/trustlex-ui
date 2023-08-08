@@ -104,7 +104,7 @@ export const AppContext = createContext<null | {
   getSelectedTokenContractInstance: () => Promise<ethers.Contract | false>;
   selectedNetwork: string;
   setSelectedNetwork: (selectedNetwork: string) => void;
-  checkNetwork: () => void;
+  checkNetwork: (ethereumObject: any) => void;
   alertOpen: number;
   setAlertOpen: (alertOpen: number) => void;
   alertMessage: string | JSX.Element;

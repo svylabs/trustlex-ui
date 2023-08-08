@@ -63,7 +63,7 @@ function NavItem({ icon, to, children }: INavItem) {
           isActive ? clsx(styles.active, styles.navLink) : styles.navLink
         }
         onClick={(e) => {
-          console.log(to);
+          // console.log(to);
           if (to == "/earn") {
             e.preventDefault();
           }

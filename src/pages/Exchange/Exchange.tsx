@@ -269,7 +269,8 @@ const Exchange = (props: Props) => {
         addedOffer = await AddOfferWithEth(
           context.contract,
           data,
-          sellCurrecny
+          sellCurrecny,
+          context.connectInfo.ethereumObject
         );
       } else {
         let decimalPlace = Number(

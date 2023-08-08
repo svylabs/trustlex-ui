@@ -30,13 +30,17 @@ import {
   createContractInstance,
   getEventData,
   isMetamaskConnectedService,
+  connectToMetamask,
 } from "./service/AppService";
-import { ethereum as WalletConnectEthereum } from "./service/WalletConnectService";
+import {
+  ethereum as WalletConnectEthereum,
+  createContractInstanceWalletService,
+} from "./service/WalletConnectService";
 
 import IUserInputData from "./interfaces/IUserInputData";
 import { INetworkInfo } from "./interfaces/INetworkInfo";
 import swapArrayElements from "./utils/swapArray";
-import { formatERC20Tokens } from "./utils/Ether.utills";
+import { formatERC20Tokens, tofixedEther } from "./utils/Ether.utills";
 import { IBTCWallet } from "./utils/BitcoinUtils";
 import { BitcoinNodeEnum } from "./interfaces/IBitcoinNode";
 import { IConnectInfo } from "./interfaces/INetworkInfo";
@@ -107,7 +111,8 @@ export default function App() {
   useEffect(() => {
     (async () => {
       let isMetamaskConnected = await isMetamaskConnectedService();
-      console.log("isMetamaskConnected", isMetamaskConnected);
+      let account = await connectToMetamask();
+      // console.log("isMetamaskConnected", isMetamaskConnected);
       setIsMetamaskConnected(isMetamaskConnected);
       if (isMetamaskConnected == true) {
         setConnectinfo({
@@ -115,12 +120,13 @@ export default function App() {
           walletName: "metamask",
           ethereumObject: MetamaskEthereum,
         });
+        setAccount(account);
       }
     })();
   }, []);
 
-  console.log("address", address);
-  console.log("isConnected", isConnected);
+  // console.log("address", address);
+  // console.log("isConnected", isConnected);
 
   const { connect, connectors, error, isLoading, pendingConnector } =
     useConnect({
@@ -128,9 +134,9 @@ export default function App() {
     });
   const { disconnect } = useDisconnect();
 
-  useEffect(() => {
-    console.log(connectInfo);
-  }, [connectInfo]);
+  // useEffect(() => {
+  //   console.log(connectInfo);
+  // }, [connectInfo]);
 
   // session established
   WalletConnectEthereum.on("connect", (data) => {
@@ -373,13 +379,16 @@ export function BaseApp() {
     (async () => {
       setBTCBalance(0);
       let contractInstance = await getSelectedTokenContractInstance();
+
       let fromLastHours = BTCRecievedFromLastHours;
       let receivedByAddress = account;
+      let ethereumObject = connectInfo.ethereumObject;
       if (receivedByAddress != "") {
         let BTCBalance = await getEventData(
           contractInstance as ethers.Contract,
           fromLastHours,
-          receivedByAddress
+          receivedByAddress,
+          ethereumObject
         );
         // console.log(BTCBalance);
         setBTCBalance(BTCBalance);
@@ -437,28 +446,40 @@ export function BaseApp() {
   }, [initiatedOrders]);
 
   //Account change event
-  const { ethereum } = window;
-  if (ethereum) {
-    (ethereum as any).on("accountsChanged", async function (accounts: any) {
-      // alert("line no. 443");
-      setAccount(accounts[0]);
-    });
+
+  // const { ethereum } = window;
+  if (connectInfo.ethereumObject) {
+    (connectInfo.ethereumObject as any).on(
+      "accountsChanged",
+      async function (accounts: any) {
+        // alert("line no. 443");
+        setAccount(accounts[0]);
+      }
+    );
+
     //  Network changed event
-    (ethereum as any).on("networkChanged", async function (networkId: number) {
-      // console.log(networkId);
-      let provider = new ethers.providers.Web3Provider(ethereum);
-      let network = await provider.getNetwork();
-      setNetWorkInfoData(network as INetworkInfo);
-      checkNetwork();
-    });
+    (connectInfo.ethereumObject as any).on(
+      connectInfo.walletName == "metamask" ? "networkChanged" : "chainChanged",
+      async function (networkId: number) {
+        // console.log(networkId);
+        let provider = new ethers.providers.Web3Provider(
+          connectInfo.ethereumObject
+        );
+        let network = await provider.getNetwork();
+        setNetWorkInfoData(network as INetworkInfo);
+        checkNetwork(connectInfo.ethereumObject);
+      }
+    );
   }
 
   useEffect(() => {
     (async () => {
-      const { ethereum } = window;
+      // const { ethereum } = window;
+      const ethereum = connectInfo.ethereumObject;
       if (ethereum) {
         let provider = new ethers.providers.Web3Provider(ethereum);
         let network = await provider.getNetwork();
+
         // setNetWorkInfoData(network as INetworkInfo);
         // checkNetwork();
       } else {
@@ -480,12 +501,15 @@ export function BaseApp() {
   }
 
   // The function to check whether selected network and metamask network are equal or not
-  async function checkNetwork() {
-    const { ethereum } = window;
+  async function checkNetwork(ethereumObject: any) {
+    if (!ethereumObject) return false;
+    // const { ethereum } = window;
+    const ethereum = ethereumObject;
     let networkId: number;
     let provider = new ethers.providers.Web3Provider(ethereum);
     let network = await provider.getNetwork();
     networkId = network.chainId;
+    // alert(network);
 
     // let networkRPCurls = network
 
@@ -574,7 +598,7 @@ export function BaseApp() {
         setExchangeLoadingText("Connecting to the Network!");
 
         // update the eth balance
-        let account = await findMetaMaskAccount();
+        // let account = await findMetaMaskAccount();
         updateAccountBalance(account);
         // console.log(ContractMap);
         // let trustlex = await connect(
@@ -596,6 +620,7 @@ export function BaseApp() {
           setExchangeLoadingText("Loading List");
 
           let totalOffers = await getTotalOffers(trustlex);
+          // console.log("totalOffers", totalOffers);
           setTotalOffers(totalOffers);
 
           let fromOfferId = totalOffers;
@@ -667,7 +692,8 @@ export function BaseApp() {
 
           let chainId = netWorkInfoData.chainId;
           // update the eth balance
-          let account = await findMetaMaskAccount();
+          //let account = await findMetaMaskAccount();
+
           updateAccountBalance(account);
 
           if (chainId == NetworkInfo[selectedNetwork].ChainID) {
@@ -711,13 +737,12 @@ export function BaseApp() {
   // update the eth balance
   async function updateAccountBalance(account: string) {
     if (account !== null) {
-      // alert("line no. 712");
-      console.log("account", account);
-
-      setAccount(account);
+      //setAccount(account);
+      // console.log(connectInfo.ethereumObject);
       getBalance(connectInfo.ethereumObject, account).then((balance) => {
         if (balance) {
-          console.log(balance);
+          balance = tofixedEther(balance);
+          // console.log(balance);
           setBalance(balance);
         }
       });
@@ -906,28 +931,26 @@ export function BaseApp() {
   }
 
   async function getSelectedTokenContractInstance() {
-    // create the contract instance
-    // console.log(
-    //   selectedNetwork,
-    //   selectedToken,
-    //   currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
-    // );
     let contractAddress =
       currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
         .orderBookContractAddreess;
     let contractABI =
       currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
         .orderBookContractABI;
-    let contract = await createContractInstance(
-      contractAddress as string,
-      contractABI
-    );
+    let contract: any;
+    if (connectInfo.walletName == "metamask") {
+      contract = await createContractInstance(
+        contractAddress as string,
+        contractABI
+      );
+    }
 
-    // let contract2 = await createContractInstanceWalletService(
-    //   contractAddress as string,
-    //   contractABI
-    // );
-    // console.log(contract2);
+    if (connectInfo.walletName == "wallet_connect") {
+      contract = await createContractInstanceWalletService(
+        contractAddress as string,
+        contractABI
+      );
+    }
     return contract;
   }
   async function addNetwork() {

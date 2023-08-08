@@ -172,7 +172,7 @@ const Navbar = (props: Props) => {
         </Button>
         {account != "" ? (
           <>
-            <div style={{ fontSize: 9 }}>
+            <div style={{ fontSize: 14 }}>
               Connected To: {account} ({balance} ETH)
               <br />
               Network: {networkName}

@@ -20,7 +20,7 @@ export const ERC20TokenKey = "spvc"; // it should be in lower case
 export const ERC20TokenLabel = "SPVC"; // To show in the dropdown
 export const ERC20TokenValue = "SPVC";
 
-export const BTCRecievedFromLastHours = 2 * 7 * 24; //Default 2 week
+export const BTCRecievedFromLastHours = 1 * 24; //Default 2 week
 
 export const TrustlexBitcoinNodeApiKey = "d924a382-ab7c-4649-b4eb-0f731b9a100e";
 export const BITCOIN_MAINNET_API_URL = "https://btc.getblock.io/mainnet/";

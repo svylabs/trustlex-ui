@@ -40,11 +40,13 @@ const { EthDater } = window;
 export const findMetaMaskAccount = async () => {
   try {
     const ethereum = getEthereumObject();
+
     if (!ethereum || ethereum.request === undefined) {
       return false;
     }
 
     const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+
     if (accounts.length !== 0) {
       const account = accounts[0];
       return account;
@@ -91,7 +93,6 @@ export const findWalletConnetAccount = async () => {
 export const connectToMetamask = async () => {
   try {
     const ethereum = getEthereumObject();
-    console.log(ethereum);
     if (ethereum == undefined || ethereum.request === undefined) {
       showErrorMessage("Get MetaMask!");
       alert("Get MetaMask!");
@@ -181,13 +182,14 @@ export const listOffers = async (
 export const getEventData = async (
   ContractInstance: ethers.Contract,
   fromLastHours: number = 0,
-  receivedByAddress: string = ""
+  receivedByAddress: string = "",
+  ethereumObject: any
 ) => {
   try {
     // console.log(fromLastHours, receivedByAddress);
-    if (typeof window.ethereum !== undefined) {
-      const { ethereum } = window;
-      const provider = new ethers.providers.Web3Provider(ethereum);
+    if (typeof ethereumObject !== undefined) {
+      // const { ethereum } = window;
+      const provider = new ethers.providers.Web3Provider(ethereumObject);
       let toBlock: any = await provider.getBlockNumber();
       // Getting block by date:
       const dater = new EthDater(
@@ -238,16 +240,6 @@ export const getEventData = async (
           compactFulfillmentDetail & ((BigInt(1) << BigInt(8 * 8)) - BigInt(1))
         );
         total_quantityRequested += quantityRequested;
-        // console.log([
-        //   fulfillmentId,
-        //   quantityRequested,
-        //   offerId,
-        //   submittedBy,
-        //   receivedBy,
-        //   txHash,
-        //   outputHash,
-        //   compactFulfillmentDetail,
-        // ]);
       });
       // console.log(PAYMENT_SUCCESSFUL_EVENTS);
       // console.log(total_quantityRequested);
@@ -312,20 +304,14 @@ export const connect = async (
 
 export const getBalance = async (ethereumObject: any, address: string) => {
   try {
-    console.log(ethereumObject, address);
+    // console.log(ethereumObject, address);
     const provider = new ethers.providers.Web3Provider(ethereumObject);
     let balance: any = await provider.getBalance(address);
     balance = +ethers.utils.formatEther(balance);
-    console.log(
-      "----------------------------------------------------------------"
-    );
-    console.log(balance);
+
+    // console.log(balance);
     return balance;
   } catch (error) {
-    console.log(error);
-    console.log(
-      "----------------------------------------------------------------"
-    );
     console.log(error);
     return 0;
   }
@@ -336,8 +322,8 @@ export const createContractInstance = async (
   contractABI: string
 ): Promise<ethers.Contract | false> => {
   try {
-    if (typeof window.ethereum !== undefined) {
-      const { ethereum } = window;
+    const { ethereum } = window;
+    if (typeof ethereum !== undefined) {
       const provider = new ethers.providers.Web3Provider(ethereum);
 
       const signer = provider.getSigner();
@@ -395,6 +381,7 @@ export const getTotalOffers = async (trustLex: ethers.Contract | undefined) => {
     let offerData = await trustLex.getTotalOffers();
     return offerData.toString();
   } catch (error) {
+    console.log("error");
     console.log(error);
     return;
   }
@@ -519,7 +506,8 @@ export const getOffer = async (
 export const AddOfferWithEth = async (
   trustLex: ethers.Contract | undefined,
   data: IAddOfferWithEth,
-  sellCurrecny: string
+  sellCurrecny: string,
+  ethereumObject: any
 ) => {
   const { weieth, satoshis, pubKeyHash, offerValidTill, account } = data;
 
@@ -533,7 +521,8 @@ export const AddOfferWithEth = async (
     // Get the ETH account
     // const account = await connectToMetamask();
     // Get the ETH balance
-    const EthBalance = await getBalance(account);
+    const EthBalance = await getBalance(ethereumObject, account);
+
     const userInputEth = WeitoEth(weieth);
 
     if (userInputEth > EthBalance) {

@@ -73,6 +73,7 @@ const Home = (props: Props) => {
     selectedNetwork,
     selectedToken,
     getSelectedTokenContractInstance,
+    connectInfo,
   } = context;
   const { width } = useWindowDimensions();
   const settings = {
@@ -113,7 +114,10 @@ const Home = (props: Props) => {
     let contractAddress = currencyObjects[selectedNetwork][
       selectedToken.toLowerCase()
     ].orderBookContractAddreess as string;
-    let contract_balance = await getBalance(contractAddress);
+    let contract_balance = await getBalance(
+      connectInfo.ethereumObject,
+      contractAddress
+    );
     return contract_balance;
   }
 
@@ -175,7 +179,9 @@ const Home = (props: Props) => {
         let fromLastHours: number = 24;
         total_quantityRequested = await getEventData(
           contractInstance,
-          fromLastHours
+          fromLastHours,
+          "",
+          connectInfo.ethereumObject
         );
         // console.log(total_quantityRequested);
       }
@@ -183,8 +189,8 @@ const Home = (props: Props) => {
       let priceRateBTCContractAddress =
         currencyObjects[selectedNetwork]["btc"].priceRateContractAddress;
       let btc_to_usd_rate = await getPriceRate(priceRateBTCContractAddress);
-      console.log("btc_to_usd_rate", btc_to_usd_rate);
-      console.log("total_quantityRequested", total_quantityRequested);
+      // console.log("btc_to_usd_rate", btc_to_usd_rate);
+      // console.log("total_quantityRequested", total_quantityRequested);
 
       let total_transaction_volume_btc = await ConvertCrytoToFiat(
         btc_to_usd_rate,

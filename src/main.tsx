@@ -28,7 +28,7 @@ const wagmiConfig = createConfig({
   publicClient,
 });
 const ethereumClient = new EthereumClient(wagmiConfig, chains);
-console.log(ethereumClient);
+// console.log(ethereumClient);
 
 // ------------------------End Variables for wallet connect--------------------------- //
 

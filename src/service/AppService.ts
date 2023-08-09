@@ -94,8 +94,9 @@ export const connectToMetamask = async () => {
   try {
     const ethereum = getEthereumObject();
     if (ethereum == undefined || ethereum.request === undefined) {
-      showErrorMessage("Get MetaMask!");
-      alert("Get MetaMask!");
+      // showErrorMessage("Get MetaMask!");
+      // alert("Get MetaMask!");
+      console.log("Get MetaMask!");
       return false;
     }
     // console.log(ethereum.request);
@@ -406,12 +407,19 @@ export const getOffers = async (
 export const getOffer = async (
   trustLex: ethers.Contract | undefined,
   offerId: any,
-  account: string = ""
+  account: string = "",
+  walletName: string = "metamask"
 ) => {
   try {
     if (!trustLex) return false;
 
-    let offer: IOfferdata = await trustLex.getOffer(offerId);
+    let offer: IOfferdata;
+    if (walletName == "metamask") {
+      offer = await trustLex.getOffer(offerId);
+    }
+    if (walletName == "wallet_connect") {
+      offer = await trustLex.read.getOffer([offerId]);
+    }
 
     const offerDetailsInJson: IOfferdata = {
       offerId: offerId,
@@ -459,7 +467,7 @@ export const getOffer = async (
     }
     // get the fullfillment list
     let FullfillmentResults: IResultSettlementRequest[] =
-      await getInitializedFulfillmentsByOfferId(trustLex, offerId);
+      await getInitializedFulfillmentsByOfferId(trustLex, offerId, walletName);
 
     let fullfillmentRequestId = undefined;
     let fullfillmentResult =
@@ -701,7 +709,8 @@ export const increaseContractAllownace = async (
 
 export const getOffersList = async (
   trustLex: ethers.Contract | undefined,
-  fromOfferId: number
+  fromOfferId: number,
+  walletName: string
 ) => {
   try {
     if (!trustLex) {
@@ -709,10 +718,20 @@ export const getOffersList = async (
       return <IOffersResultByNonEvent>{ offers: [] };
     }
 
-    let offersData = await trustLex.getOffers(fromOfferId);
-    // console.log(offersData);
-    let totalFetchedRecords = offersData.total;
-    let records = offersData.result;
+    let offersData: any;
+    let totalFetchedRecords: number = 0;
+    let records: any = [];
+
+    if (walletName == "metamask") {
+      offersData = await trustLex.getOffers(fromOfferId);
+      totalFetchedRecords = offersData.total;
+      records = offersData.result;
+    }
+    if (walletName == "wallet_connect") {
+      offersData = await trustLex.read.getOffers([fromOfferId]);
+      totalFetchedRecords = offersData[1];
+      records = offersData[0];
+    }
 
     const promises = [];
     for (let i = 0; i < totalFetchedRecords; i++) {
@@ -744,15 +763,19 @@ export const getOffersList = async (
       // fetch the intial fullfillment
       let allFullfillments = await getInitializedFulfillmentsByOfferId(
         trustLex,
-        offerDetailsInJson.offerId
+        offerDetailsInJson.offerId,
+        walletName
       );
+
       offerDetailsInJson.settlementRequestResults = allFullfillments;
 
       // }
       // console.log(offerDetailsInJson);
       promises.push({ offerDetailsInJson });
     }
+
     const offersList = await Promise.all(promises);
+    // console.log(offersList);
     return <IOffersResultByNonEvent>{
       offers: offersList,
     };
@@ -1011,13 +1034,23 @@ export const getInitializedFulfillments = async (
 
 export const getInitializedFulfillmentsByOfferId = async (
   trustLex: ethers.Contract | undefined,
-  offerId: number
+  offerId: number,
+  walletName: string
 ) => {
   let fullfillmentResult: IResultSettlementRequest[] = [];
   try {
     if (!trustLex) return false;
 
-    let fullfillmentResult = await trustLex.getInitiatedSettlements(offerId);
+    let fullfillmentResult = [];
+    if (walletName == "metamask") {
+      fullfillmentResult = await trustLex.getInitiatedSettlements(offerId);
+    }
+    if (walletName == "wallet_connect") {
+      fullfillmentResult = await trustLex.read.getInitiatedSettlements([
+        offerId,
+      ]);
+    }
+
     // console.log(fullfillmentResult);
     return fullfillmentResult;
   } catch (error) {

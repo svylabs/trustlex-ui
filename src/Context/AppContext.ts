@@ -121,4 +121,8 @@ export const AppContext = createContext<null | {
   isMetamaskConnected: boolean;
   connectInfo: IConnectInfo;
   setConnectinfo: (connectInfo: IConnectInfo) => void;
+  getSelectedTokenContractandABI: () => Promise<{
+    contractAddress: string;
+    contractABI: string;
+  }>;
 }>(null);

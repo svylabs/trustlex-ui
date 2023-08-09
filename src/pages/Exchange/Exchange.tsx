@@ -44,6 +44,11 @@ import {
   addOfferWithToken,
   getInitializedFulfillmentsByOfferId,
 } from "~/service/AppService";
+import {
+  writeContractWagmi,
+  readContractWagmi,
+  fetchBalanceWagmi,
+} from "~/service/WalletConnectService";
 import BtcToSatoshiConverter from "~/utils/BtcToSatoshiConverter";
 import { IListenedOfferData } from "~/interfaces/IOfferdata";
 import { PaperWalletDownloadedEnum } from "~/interfaces/IExchannge";
@@ -54,12 +59,16 @@ import {
   generateBitcoinWallet,
   generateTrustlexAddress,
 } from "~/utils/BitcoinUtils";
+import AlertModal from "~/components/Modals/AlertModal";
 
 import GenerateWalletDrawer from "~/components/GenerateWalletDrawer/GenerateWalletDrawer";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 import MainLayout from "~/components/MainLayout/MainLayout";
 import { PAGE_SIZE, currencyObjects } from "~/Context/Constants";
 import { IResultSettlementRequest } from "~/interfaces/IOfferdata";
+
+import { sendTransaction } from "@wagmi/core";
+import { parseEther } from "viem";
 
 type Props = {};
 
@@ -75,6 +84,10 @@ const mobileTableDummyData: string[][] = new Array(5).fill([
 ]);
 
 const Exchange = (props: Props) => {
+  const [alertModalIsOpened, setAlertModalIsOpened] = useState<number>(0);
+  const [alertModalTitle, setAlertModalTitle] = useState("");
+  const [alertModalContent, setAlertModalContent] = useState("");
+
   const [rowData, setRowData] = useState<(string | ReactNode)[] | null>(null);
   const [rowOfferId, setRowOfferId] = useState<number | null>(null);
   const [rowFullFillmentId, setRowFullFillmentId] = useState<
@@ -137,6 +150,7 @@ const Exchange = (props: Props) => {
     btcWalletData,
     setBTCWalletData,
     getSelectedTokenContractInstance,
+    connectInfo,
   } = context;
 
   const [exchangeData, setExchangeData] = useState({
@@ -208,7 +222,11 @@ const Exchange = (props: Props) => {
   };
 
   const callOffersListService = async () => {
-    const offersList = await getOffersList(context.contract, fromOfferId);
+    const offersList = await getOffersList(
+      context.contract,
+      fromOfferId,
+      connectInfo.walletName
+    );
     // console.log(offersList);
     return offersList;
   };
@@ -265,13 +283,41 @@ const Exchange = (props: Props) => {
           offerValidTill: TimeToNumber(exchangeData.valid),
           account: account,
         };
+        let walletName = context.connectInfo.walletName;
+        if (walletName == "metamask") {
+          addedOffer = await AddOfferWithEth(
+            context.contract,
+            data,
+            sellCurrecny,
+            context.connectInfo.ethereumObject
+          );
+        } else if (walletName == "wallet_connect") {
+          const { weieth, satoshis, pubKeyHash, offerValidTill, account } =
+            data;
+          const { contractAddress, contractABI } =
+            await context.getSelectedTokenContractandABI();
+          // first check the balance
+          let balance = await fetchBalanceWagmi(context.account, "eth");
+          if (Number(inputEther) >= Number(balance)) {
+            let message = `Your ${sellCurrecny.toUpperCase()} balance is low !`;
+            showErrorMessage(message);
+            return false;
+          }
+          setAlertModalIsOpened(alertModalIsOpened + 1);
+          setAlertModalTitle("Alert");
+          setAlertModalContent(
+            "Please check you connected device. We have sent a notification to approve this request."
+          );
 
-        addedOffer = await AddOfferWithEth(
-          context.contract,
-          data,
-          sellCurrecny,
-          context.connectInfo.ethereumObject
-        );
+          addedOffer = await writeContractWagmi(
+            contractAddress,
+            contractABI,
+            "addOfferWithEth",
+            [weieth, satoshis, "0x" + pubKeyHash, offerValidTill],
+            weieth
+          );
+          console.log(addedOffer);
+        }
       } else {
         let decimalPlace = Number(
           currencyObjects[selectedNetwork][sellCurrecny.toLowerCase()]
@@ -283,7 +329,7 @@ const Exchange = (props: Props) => {
           satoshis: BtcToSatoshiConverter(
             userInputData.activeExchange[0].value
           ),
-          bitcoinAddress: bitcoinAddress,
+          bitcoinAddress: pubkeyHash,
           offerValidTill: TimeToNumber(exchangeData.valid),
           account: account,
         };
@@ -312,6 +358,20 @@ const Exchange = (props: Props) => {
       }
     } catch (error) {
       setConfirm("none");
+    }
+  };
+
+  const testFunc = async () => {
+    alert("hash");
+    try {
+      const { hash } = await sendTransaction({
+        to: "0xf72B8291b10eC381e55DE4788F6EBBB7425cF34e",
+        value: parseEther("0.01"),
+      });
+      console.log(hash);
+      alert(hash);
+    } catch (err) {
+      console.log(err);
     }
   };
 
@@ -433,6 +493,15 @@ const Exchange = (props: Props) => {
           colorLeft="#FEBD3833"
         >
           <div className={styles.innerWrapper}>
+            {/* <button onClick={testFunc}>test function</button> */}
+            <AlertModal
+              isOpened={alertModalIsOpened}
+              setIsOpened={setAlertModalIsOpened}
+              title={alertModalTitle}
+              setAlertModalTitle={setAlertModalTitle}
+              content={alertModalContent}
+              setAlertModalContent={setAlertModalContent}
+            />
             {addOffer && (
               <div className={styles.exchangeForm}>
                 <div>
@@ -646,6 +715,7 @@ const Exchange = (props: Props) => {
         btcWalletData={btcWalletData}
         setBTCWalletData={setBTCWalletData}
         getSelectedTokenContractInstance={getSelectedTokenContractInstance}
+        connectInfo={connectInfo}
       />
 
       <div className={styles.overlay}>

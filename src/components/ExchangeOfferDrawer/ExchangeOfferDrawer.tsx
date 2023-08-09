@@ -83,6 +83,7 @@ import { default as Countdowntimer } from "react-countdown";
 import BtcToSatoshiConverter from "~/utils/BtcToSatoshiConverter";
 import { currencyObjects } from "~/Context/Constants";
 import { IBTCWallet } from "~/utils/BitcoinUtils";
+import { IConnectInfo } from "./interfaces/INetworkInfo";
 
 type Props = {
   isOpened: boolean;
@@ -114,6 +115,7 @@ type Props = {
   btcWalletData: IBTCWallet | undefined;
   setBTCWalletData: (btcWalletData: IBTCWallet | undefined) => void;
   getSelectedTokenContractInstance: () => Promise<ethers.Contract | false>;
+  connectInfo: IConnectInfo;
 };
 
 const ExchangeOfferDrawer = ({
@@ -140,6 +142,7 @@ const ExchangeOfferDrawer = ({
   btcWalletData,
   setBTCWalletData,
   getSelectedTokenContractInstance,
+  connectInfo,
 }: Props) => {
   const { get, set, remove } = useLocalstorage();
   const { cleanTx } = window;
@@ -229,8 +232,11 @@ const ExchangeOfferDrawer = ({
     //let inputForSecretBuffer: Buffer = Buffer.from(inputForSecret, "hex");
     let extendedPublicKeyRecovery = btcWalletData?.extendedPublicKeyRecovery;
     let extendedPublicKeySecret = btcWalletData?.extendedPublicKeySecret;
-    let pubKeyHash = deriveRecoveryPubKeyHash(extendedPublicKeyRecovery || '', rowOfferId || 0).toString('hex');
-    let secret = deriveSecret(extendedPublicKeySecret || '', rowOfferId || 0);
+    let pubKeyHash = deriveRecoveryPubKeyHash(
+      extendedPublicKeyRecovery || "",
+      rowOfferId || 0
+    ).toString("hex");
+    let secret = deriveSecret(extendedPublicKeySecret || "", rowOfferId || 0);
     return { shortOrderId, secret, pubKeyHash };
   };
 
@@ -258,7 +264,9 @@ const ExchangeOfferDrawer = ({
       // get offer details
       let offerDetails: IOfferdata | false | undefined = await getOffer(
         contract,
-        rowOfferId
+        rowOfferId,
+        "",
+        connectInfo.walletName
       );
       if (!offerDetails || offerDetails === undefined) return;
       // console.log(offerDetails);
@@ -304,7 +312,11 @@ const ExchangeOfferDrawer = ({
       //-----------------Update satoshisReserved if order is expired ---------------------//
       // get the offerfullfillment details
       let fullfillmentResults: IResultSettlementRequest[] =
-        await getInitializedFulfillmentsByOfferId(contract, rowOfferId);
+        await getInitializedFulfillmentsByOfferId(
+          contract,
+          rowOfferId,
+          connectInfo.walletName
+        );
 
       fullfillmentResults &&
         fullfillmentResults?.map(

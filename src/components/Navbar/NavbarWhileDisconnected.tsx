@@ -4,7 +4,7 @@ import NavDropdownButton from "../NavDropdownButton/NavDropdownButton";
 import { BaseContext } from "~/Context/BaseContext";
 import { useContext, useEffect, useState } from "react";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
-
+import { Web3Button } from "@web3modal/react";
 import {
   getConnectedAccount,
   ethereum as WalletConnectEthereum,
@@ -74,7 +74,7 @@ const NavbarWhileDisconnected = ({ title, description }: props) => {
           dropdownItems={connectDropdownItems}
         />
         {/* <button onClick={() => connect()}>Connect Wallet</button> */}
-        {/* <Web3Button /> */}
+        <Web3Button />
       </div>
     </nav>
   );

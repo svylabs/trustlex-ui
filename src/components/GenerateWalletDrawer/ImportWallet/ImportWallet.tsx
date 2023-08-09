@@ -61,6 +61,7 @@ function Demo({ btcWalletData, setBTCWalletData }: IInstantWallet) {
     fileReader.onload = (e) => {
       let fileData: any = e?.target?.result;
       fileData = JSON.parse(fileData);
+      console.log(fileData);
       if (
         !(
           "address" in fileData &&
@@ -73,6 +74,7 @@ function Demo({ btcWalletData, setBTCWalletData }: IInstantWallet) {
         showErrorMessage("invalid file format");
         return false;
       }
+
       let address = fileData?.address;
       let publicKeyString = fileData?.publicKey;
       let pubkeyHashString = fileData?.pubkeyHash;
@@ -85,7 +87,7 @@ function Demo({ btcWalletData, setBTCWalletData }: IInstantWallet) {
         publicKey: publicKeyString,
         pubkeyHash: pubkeyHashString,
         extendedPublicKeyRecovery: fileData?.extendedPublicKeyRecovery,
-        extendedPublicKeySecret: fileData?.extendedPublicKeySecret
+        extendedPublicKeySecret: fileData?.extendedPublicKeySecret,
       });
       showSuccessMessage("You wallet is successfully imported.");
     };

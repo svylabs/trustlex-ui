@@ -210,34 +210,42 @@ const ExchangeOfferDrawer = ({
     secret: Buffer;
     pubKeyHash: String;
   } => {
-    const orderId = ethers.utils.keccak256(
-      ethers.utils.solidityPack(
-        ["address", "uint256", "address", "bytes20", "uint256"],
-        // To be interpreted as: address of contract, orderId, fulfillmentId, pubKeyHash, orderTimestamp
-        // ["0xFD05beBFEa081f6902bf9ec57DCb50b40BA02510", 0, 0, '0x0000000000000000000000000000000000000000', 0]
-        [
-          contractAddress,
-          rowOfferId,
-          fulfillmentId,
-          foundOffer.offerDetailsInJson.pubKeyHash,
-          orderTimestamp,
-        ]
-      )
-    );
+    try {
+      const orderId = ethers.utils.keccak256(
+        ethers.utils.solidityPack(
+          ["address", "uint256", "address", "bytes20", "uint256"],
+          // To be interpreted as: address of contract, orderId, fulfillmentId, pubKeyHash, orderTimestamp
+          // ["0xFD05beBFEa081f6902bf9ec57DCb50b40BA02510", 0, 0, '0x0000000000000000000000000000000000000000', 0]
+          [
+            contractAddress,
+            Number(rowOfferId),
+            fulfillmentId,
+            foundOffer.offerDetailsInJson.pubKeyHash,
+            Number(orderTimestamp),
+          ]
+        )
+      );
 
-    const shortOrderId = orderId.slice(2, 10);
-    //let publicKeyCurrentUser = btcWalletData?.extendd;
-    //let pubKeyHash = btcWalletData?.pubkeyHash || "";
-    //let inputForSecret = publicKeyCurrentUser + shortOrderId;
-    //let inputForSecretBuffer: Buffer = Buffer.from(inputForSecret, "hex");
-    let extendedPublicKeyRecovery = btcWalletData?.extendedPublicKeyRecovery;
-    let extendedPublicKeySecret = btcWalletData?.extendedPublicKeySecret;
-    let pubKeyHash = deriveRecoveryPubKeyHash(
-      extendedPublicKeyRecovery || "",
-      rowOfferId || 0
-    ).toString("hex");
-    let secret = deriveSecret(extendedPublicKeySecret || "", rowOfferId || 0);
-    return { shortOrderId, secret, pubKeyHash };
+      const shortOrderId = orderId.slice(2, 10);
+
+      //let publicKeyCurrentUser = btcWalletData?.extendd;
+      //let pubKeyHash = btcWalletData?.pubkeyHash || "";
+      //let inputForSecret = publicKeyCurrentUser + shortOrderId;
+      //let inputForSecretBuffer: Buffer = Buffer.from(inputForSecret, "hex");
+      let extendedPublicKeyRecovery = btcWalletData?.extendedPublicKeyRecovery;
+      let extendedPublicKeySecret = btcWalletData?.extendedPublicKeySecret;
+      console.log(extendedPublicKeyRecovery, rowOfferId);
+      let pubKeyHash = deriveRecoveryPubKeyHash(
+        extendedPublicKeyRecovery || "",
+        Number(rowOfferId) || 0
+      ).toString("hex");
+
+      let secret = deriveSecret(extendedPublicKeySecret || "", rowOfferId || 0);
+      console.log({ shortOrderId, secret, pubKeyHash });
+      return { shortOrderId, secret, pubKeyHash };
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const {
@@ -268,6 +276,7 @@ const ExchangeOfferDrawer = ({
         "",
         connectInfo.walletName
       );
+
       if (!offerDetails || offerDetails === undefined) return;
       // console.log(offerDetails);
 
@@ -287,7 +296,6 @@ const ExchangeOfferDrawer = ({
         isOrderExpired = true;
         setIsOrderExpired(true);
       }
-      // console.log(isOrderExpired);
 
       let planningToSell_ = Number(
         ethers.utils.formatEther(foundOffer.offerDetailsInJson.offerQuantity)
@@ -371,6 +379,7 @@ const ExchangeOfferDrawer = ({
 
       // Make the btc address to pay
       let pubKeyHash = Buffer.from(offerDetails.pubKeyHash.substring(2), "hex");
+
       const addressParameters = getParametersForAddress(
         contractAddress || "",
         foundOffer,
@@ -466,9 +475,10 @@ const ExchangeOfferDrawer = ({
           (Number(ethers.utils.formatEther(offerQuantity)) /
             Number(SatoshiToBtcConverter(satoshisToReceive)));
       }
+      console.log(left_to_buy);
       //----------------------------------End if order already initiated ----------------------//
       left_to_buy = tofixedEther(left_to_buy);
-      // console.log(left_to_buy);
+      console.log(left_to_buy);
       setLeftToBuy(left_to_buy);
       setEthValue(left_to_buy);
     })();
@@ -760,7 +770,7 @@ const ExchangeOfferDrawer = ({
   };
 
   const getInitiatedOrderDetails = () => {
-    let rowOfferId_ = rowOfferId.toString();
+    let rowOfferId_ = rowOfferId?.toString();
 
     let initiatedOrders_ = initiatedOrders;
 
@@ -884,7 +894,7 @@ const ExchangeOfferDrawer = ({
       });
 
       // set the data in local storage
-      let rowOfferId_ = rowOfferId.toString();
+      let rowOfferId_ = rowOfferId?.toString();
       let userAccount = account.toLowerCase();
 
       let initiatedOrderResult: IInitiatedOrder | undefined =
@@ -893,7 +903,7 @@ const ExchangeOfferDrawer = ({
       if (initiatedOrderResult === undefined) {
         let userIntiatedOrder: IInitiatedOrder = {
           accountAddress: userAccount,
-          offerId: rowOfferId_,
+          offerId: rowOfferId_ as string,
           ethAmount: ethValue as string,
           txHash: transactionHash,
           blockHash: blockHash,

@@ -452,7 +452,11 @@ const Exchange = (props: Props) => {
     // console.log(offerId);
     // get the Fulfillments By OfferId
     let FullfillmentResult: IResultSettlementRequest[] =
-      await getInitializedFulfillmentsByOfferId(contract, offerId);
+      await getInitializedFulfillmentsByOfferId(
+        contract,
+        offerId,
+        connectInfo.walletName
+      );
 
     let fullfillmentResult: IResultSettlementRequest | undefined =
       FullfillmentResult &&

@@ -76,6 +76,7 @@ const ViewOrderDrawer = ({
     selectedNetwork,
     selectedToken,
     btcWalletData,
+    connectInfo,
   } = context;
 
   const { width } = useWindowDimensions();
@@ -114,7 +115,8 @@ const ViewOrderDrawer = ({
       let offerDetails: IOfferdata | false | undefined = await getOffer(
         contractInstance as ethers.Contract,
         offerId_,
-        account
+        account,
+        connectInfo.walletName
       );
       if (offerDetails) {
         offerData.offerDetailsInJson = offerDetails as IOfferdata;
@@ -165,7 +167,8 @@ const ViewOrderDrawer = ({
           let FullfillmentResult: IResultSettlementRequest[] =
             await getInitializedFulfillmentsByOfferId(
               contract,
-              offerId_ as number
+              offerId_ as number,
+              connectInfo.walletName
             );
           // console.log(FullfillmentResult);
           setFullfillmentResult(FullfillmentResult);
@@ -312,7 +315,8 @@ const ViewOrderDrawer = ({
           // get offer details
           let offerDetails: IOfferdata | false | undefined = await getOffer(
             contractInstance,
-            offerId
+            offerId,
+            connectInfo.walletName
           );
           if (offerDetails) {
             let offerValidTill = offerDetails.offerValidTill;

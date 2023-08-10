@@ -475,30 +475,30 @@ export function BaseApp() {
 
   //Account change event
 
-  // const { ethereum } = window;
-  // if (connectInfo.ethereumObject) {
-  //   (connectInfo.ethereumObject as any).on(
-  //     "accountsChanged",
-  //     async function (accounts: any) {
-  //       // alert("line no. 443");
-  //       setAccount(accounts[0]);
-  //     }
-  //   );
+  const { ethereum } = window;
+  if (connectInfo.ethereumObject) {
+    (connectInfo.ethereumObject as any).on(
+      "accountsChanged",
+      async function (accounts: any) {
+        // alert("line no. 443");
+        setAccount(accounts[0]);
+      }
+    );
 
-  //   //  Network changed event
-  //   (connectInfo.ethereumObject as any).on(
-  //     connectInfo.walletName == "metamask" ? "networkChanged" : "chainChanged",
-  //     async function (networkId: number) {
-  //       // console.log(networkId);
-  //       let provider = new ethers.providers.Web3Provider(
-  //         connectInfo.ethereumObject
-  //       );
-  //       let network = await provider.getNetwork();
-  //       setNetWorkInfoData(network as INetworkInfo);
-  //       checkNetwork(connectInfo.ethereumObject);
-  //     }
-  //   );
-  // }
+    //  Network changed event
+    (connectInfo.ethereumObject as any).on(
+      connectInfo.walletName == "metamask" ? "networkChanged" : "chainChanged",
+      async function (networkId: number) {
+        // console.log(networkId);
+        let provider = new ethers.providers.Web3Provider(
+          connectInfo.ethereumObject
+        );
+        let network = await provider.getNetwork();
+        setNetWorkInfoData(network as INetworkInfo);
+        checkNetwork(connectInfo.ethereumObject);
+      }
+    );
+  }
 
   useEffect(() => {
     (async () => {
@@ -631,6 +631,7 @@ export function BaseApp() {
         setExchangeLoadingText("");
         setMySwapOngoingLoadingText("");
         setMySwapCompletedLoadingText("");
+        return;
       }
       // console.log("ok");
       setMoreTableDataLoading(true);
@@ -813,9 +814,12 @@ export function BaseApp() {
   }
   // use effect for my swap ongoing data
   useEffect(() => {
-    if (contract) {
-      prepareMySwapOngoingData(contract);
-    }
+    // update the contract info
+    getSelectedTokenContractInstance().then((contract) => {
+      if (contract) {
+        prepareMySwapOngoingData(contract);
+      }
+    });
   }, [
     // totalOffers,
     refreshMySwapOngoingListKey,
@@ -826,12 +830,13 @@ export function BaseApp() {
 
   async function prepareMySwapOngoingData(trustlex: ethers.Contract) {
     const { ethereum } = window;
-    if (ethereum) {
-      const provider = new ethers.providers.Web3Provider(ethereum);
-      setIsMoreMySwapOngoinTableDataLoading(false);
-      setMySwapOngoingLoadingText("");
-      setlistenedOngoinMySwapOnGoingDataByNonEvent([]);
+    // if (ethereum) {
 
+    setIsMoreMySwapOngoinTableDataLoading(false);
+    setMySwapOngoingLoadingText("");
+    setlistenedOngoinMySwapOnGoingDataByNonEvent([]);
+    if (connectInfo.walletName == "metamask" && ethereum != undefined) {
+      const provider = new ethers.providers.Web3Provider(ethereum);
       let network = await provider.getNetwork();
       let networkId = network.chainId;
       networkId =
@@ -840,55 +845,64 @@ export function BaseApp() {
       if (networkId !== NetworkInfo[selectedNetwork].ChainID) {
         return;
       }
-
-      // create the contract instance
-      let contract = await getSelectedTokenContractInstance();
-      if (!contract) return false;
-      setContract(contract);
-      setIsMoreMySwapOngoinTableDataLoading(true);
-      setMySwapOngoingLoadingText("Loading List");
-
-      // fetch the recent orders my swaps ongoing by non event
-      let totalOffers = await getTotalOffers(contract as ethers.Contract);
-      setTotalOffers(totalOffers);
-      let fromOfferMySwapOngoingId = totalOffers;
-      const InitializeFullfillmentDataByNonEvent =
-        await listInitializeFullfillmentOnGoingByNonEvent(
-          contract,
-          account,
-          fromOfferMySwapOngoingId
-        );
-      // console.log(InitializeFullfillmentDataByNonEvent);
-      setlistenedOngoinMySwapOnGoingDataByNonEvent(
-        InitializeFullfillmentDataByNonEvent
-      );
-      fromOfferMySwapOngoingId =
-        fromOfferMySwapOngoingId - PAGE_SIZE > 0
-          ? fromOfferMySwapOngoingId - PAGE_SIZE
-          : 0;
-      setMySwapOngoingfromOfferId(fromOfferMySwapOngoingId);
-
-      setMySwapOngoingLoadingText("");
-      setIsMoreMySwapOngoinTableDataLoading(false);
     }
+
+    // create the contract instance
+    let contract = await getSelectedTokenContractInstance();
+    if (!contract) return false;
+    setContract(contract);
+    setIsMoreMySwapOngoinTableDataLoading(true);
+    setMySwapOngoingLoadingText("Loading List");
+
+    // fetch the recent orders my swaps ongoing by non event
+    let totalOffers = await getTotalOffers(
+      contract as ethers.Contract,
+      connectInfo.walletName
+    );
+
+    setTotalOffers(totalOffers);
+    let fromOfferMySwapOngoingId = totalOffers;
+    const InitializeFullfillmentDataByNonEvent =
+      await listInitializeFullfillmentOnGoingByNonEvent(
+        contract,
+        account,
+        fromOfferMySwapOngoingId,
+        connectInfo.walletName
+      );
+
+    setlistenedOngoinMySwapOnGoingDataByNonEvent(
+      InitializeFullfillmentDataByNonEvent
+    );
+    fromOfferMySwapOngoingId =
+      fromOfferMySwapOngoingId - PAGE_SIZE > 0
+        ? fromOfferMySwapOngoingId - PAGE_SIZE
+        : 0;
+    setMySwapOngoingfromOfferId(fromOfferMySwapOngoingId);
+
+    setMySwapOngoingLoadingText("");
+    setIsMoreMySwapOngoinTableDataLoading(false);
+    // }
   }
 
   useEffect(() => {
-    if (contract) {
-      prepareMySwapCompletedData(contract);
-      prepareMySwapCompletedDataForAll(contract);
-    }
+    getSelectedTokenContractInstance().then((contract) => {
+      if (contract) {
+        prepareMySwapCompletedData(contract);
+        prepareMySwapCompletedDataForAll(contract);
+      }
+    });
   }, [
     // totalOffers,
     refreshMySwapCompletedListKey,
     account,
     refreshOffersListKey,
     selectedToken,
+    refreshMySwapOngoingListKey,
   ]);
 
   async function prepareMySwapCompletedData(trustlex: ethers.Contract) {
     const { ethereum } = window;
-    if (ethereum) {
+    if (ethereum != undefined && connectInfo.walletName == "metamask") {
       const provider = new ethers.providers.Web3Provider(ethereum);
       let network = await provider.getNetwork();
       let networkId = network.chainId;
@@ -898,44 +912,48 @@ export function BaseApp() {
       if (networkId !== NetworkInfo[selectedNetwork].ChainID) {
         return;
       }
-
-      setIsMoreMySwapCompletedTableDataLoading(true);
-      setMySwapCompletedLoadingText("Loading List");
-      setListenedMySwapCompletedDataByNonEvent([]);
-
-      // create the contract instance
-      let contract = await getSelectedTokenContractInstance();
-      if (!contract) return false;
-      setContract(contract);
-      // fetch the recent orders my swaps ongoing by non event
-      let totalOffers = await getTotalOffers(contract as ethers.Contract);
-      setTotalOffers(totalOffers);
-
-      // fetch the recent orders my swaps ongoing by non event
-      let fromOfferMySwapCompetedId = totalOffers;
-      const InitializeFullfillmentDataByNonEvent =
-        await listInitializeFullfillmentCompletedByNonEvent(
-          contract,
-          account,
-          fromOfferMySwapCompetedId
-        );
-      setListenedMySwapCompletedDataByNonEvent(
-        InitializeFullfillmentDataByNonEvent
-      );
-      let mySwapCompletedfromOfferId_ =
-        mySwapCompletedfromOfferId - PAGE_SIZE > 0
-          ? mySwapCompletedfromOfferId - PAGE_SIZE
-          : 0;
-      setMySwapCompletedfromOfferId(mySwapCompletedfromOfferId_);
-
-      setMySwapCompletedLoadingText("");
-      setIsMoreMySwapCompletedTableDataLoading(false);
     }
+    setIsMoreMySwapCompletedTableDataLoading(true);
+    setMySwapCompletedLoadingText("Loading List");
+    setListenedMySwapCompletedDataByNonEvent([]);
+
+    // create the contract instance
+    let contract = await getSelectedTokenContractInstance();
+    if (!contract) return false;
+    setContract(contract);
+    // fetch the recent orders my swaps ongoing by non event
+    let totalOffers = await getTotalOffers(
+      contract as ethers.Contract,
+      connectInfo.walletName
+    );
+    setTotalOffers(totalOffers);
+
+    // fetch the recent orders my swaps ongoing by non event
+    let fromOfferMySwapCompetedId = totalOffers;
+    const InitializeFullfillmentDataByNonEvent =
+      await listInitializeFullfillmentCompletedByNonEvent(
+        contract,
+        account,
+        fromOfferMySwapCompetedId,
+        connectInfo.walletName
+      );
+
+    setListenedMySwapCompletedDataByNonEvent(
+      InitializeFullfillmentDataByNonEvent
+    );
+    let mySwapCompletedfromOfferId_ =
+      mySwapCompletedfromOfferId - PAGE_SIZE > 0
+        ? mySwapCompletedfromOfferId - PAGE_SIZE
+        : 0;
+    setMySwapCompletedfromOfferId(mySwapCompletedfromOfferId_);
+
+    setMySwapCompletedLoadingText("");
+    setIsMoreMySwapCompletedTableDataLoading(false);
   }
 
   async function prepareMySwapCompletedDataForAll(trustlex: ethers.Contract) {
     const { ethereum } = window;
-    if (ethereum) {
+    if (connectInfo.walletName == "metamask" && ethereum != undefined) {
       const provider = new ethers.providers.Web3Provider(ethereum);
       let network = await provider.getNetwork();
       let networkId = network.chainId;
@@ -945,38 +963,44 @@ export function BaseApp() {
       if (networkId !== NetworkInfo[selectedNetwork].ChainID) {
         return;
       }
-      setIsMoreMySwapAllCompletedTableDataLoading(true);
-      setMySwapAllCompletedLoadingText("Loading List");
-      setListenedMySwapAllCompletedDataByNonEvent([]);
-
-      // create the contract instance
-      let contract = await getSelectedTokenContractInstance();
-      if (!contract) return false;
-      setContract(contract);
-      // fetch the recent orders my swaps ongoing by non event
-      let totalOffers = await getTotalOffers(contract as ethers.Contract);
-      setTotalOffers(totalOffers);
-
-      // fetch the recent orders my swaps ongoing by non event
-      let fromOfferMySwapCompetedId = totalOffers;
-      const InitializeFullfillmentDataByNonEvent =
-        await listInitializeFullfillmentCompletedByNonEvent(
-          contract,
-          "",
-          fromOfferMySwapCompetedId
-        );
-      setListenedMySwapAllCompletedDataByNonEvent(
-        InitializeFullfillmentDataByNonEvent
-      );
-      let mySwapCompletedfromOfferId_ =
-        mySwapCompletedfromOfferId - PAGE_SIZE > 0
-          ? mySwapCompletedfromOfferId - PAGE_SIZE
-          : 0;
-      setMySwapAllCompletedfromOfferId(mySwapCompletedfromOfferId_);
-
-      setMySwapAllCompletedLoadingText("");
-      setIsMoreMySwapAllCompletedTableDataLoading(false);
     }
+    setIsMoreMySwapAllCompletedTableDataLoading(true);
+    setMySwapAllCompletedLoadingText("Loading List");
+    setListenedMySwapAllCompletedDataByNonEvent([]);
+
+    // create the contract instance
+    let contract = await getSelectedTokenContractInstance();
+    if (!contract) return false;
+    setContract(contract);
+    // fetch the recent orders my swaps ongoing by non event
+    let totalOffers = await getTotalOffers(
+      contract as ethers.Contract,
+      connectInfo.walletName
+    );
+    setTotalOffers(totalOffers);
+
+    // fetch the recent orders my swaps ongoing by non event
+    let fromOfferMySwapCompetedId = totalOffers;
+
+    const InitializeFullfillmentDataByNonEvent =
+      await listInitializeFullfillmentCompletedByNonEvent(
+        contract,
+        "",
+        fromOfferMySwapCompetedId,
+        connectInfo.walletName
+      );
+
+    setListenedMySwapAllCompletedDataByNonEvent(
+      InitializeFullfillmentDataByNonEvent
+    );
+    let mySwapCompletedfromOfferId_ =
+      mySwapCompletedfromOfferId - PAGE_SIZE > 0
+        ? mySwapCompletedfromOfferId - PAGE_SIZE
+        : 0;
+    setMySwapAllCompletedfromOfferId(mySwapCompletedfromOfferId_);
+
+    setMySwapAllCompletedLoadingText("");
+    setIsMoreMySwapAllCompletedTableDataLoading(false);
   }
 
   async function getSelectedTokenContractInstance() {

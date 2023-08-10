@@ -375,16 +375,24 @@ export const getERC20TokenBalance = async (
   }
 };
 
-export const getTotalOffers = async (trustLex: ethers.Contract | undefined) => {
+export const getTotalOffers = async (
+  trustLex: ethers.Contract | undefined,
+  walletName: string = "metamask"
+) => {
   try {
     if (!trustLex) return false;
+    let offerData;
+    if (walletName == "metamask") {
+      offerData = await trustLex.getTotalOffers();
+    } else if (walletName == "wallet_connect") {
+      offerData = await trustLex.read.getTotalOffers();
+    }
 
-    let offerData = await trustLex.getTotalOffers();
     return offerData.toString();
   } catch (error) {
     console.log("error");
     console.log(error);
-    return;
+    return 0;
   }
 };
 
@@ -788,17 +796,29 @@ export const getOffersList = async (
 export const listInitializeFullfillmentOnGoingByNonEvent = async (
   trustLex: ethers.Contract | undefined,
   account: string,
-  fromOfferId: number
+  fromOfferId: number,
+  walletName: string = "metamask"
 ) => {
   let MyoffersList: IListInitiatedFullfillmentDataByNonEvent[] = [];
   if (!trustLex) {
     console.log("trustLex is not defined", trustLex);
     return MyoffersList;
   }
-  let offersData = await trustLex.getOffers(fromOfferId);
+  let offersData: any;
+  let totalFetchedRecords: number;
+  let offers: IResultOffer[];
 
-  let totalFetchedRecords = offersData.total;
-  let offers: IResultOffer[] = offersData.result;
+  if (walletName == "metamask") {
+    offersData = await trustLex.getOffers(fromOfferId);
+    totalFetchedRecords = offersData.total;
+    offers = offersData.result;
+  } else if (walletName == "wallet_connect") {
+    offersData = await trustLex.read.getOffers([fromOfferId]);
+
+    totalFetchedRecords = Number(offersData[1]);
+    offers = offersData[0];
+  }
+
   let MyOngoingOrdersPromises = [];
   const MyOffersPromises = [];
   for (let i = 0; i < totalFetchedRecords; i++) {
@@ -847,7 +867,8 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
     let FullfillmentResults: IResultSettlementRequest[] =
       await getInitializedFulfillmentsByOfferId(
         trustLex,
-        Number(value.offerId)
+        Number(value.offerId),
+        walletName
       );
 
     let fullfillmentRequestId = undefined;
@@ -894,16 +915,30 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
 export const listInitializeFullfillmentCompletedByNonEvent = async (
   trustLex: ethers.Contract | undefined,
   account: string = "",
-  fromOfferId: number
+  fromOfferId: number,
+  walletName: string = "metamask"
 ) => {
   let MyoffersList: IListInitiatedFullfillmentDataByNonEvent[] = [];
   if (!trustLex) {
     console.log("trustLex is not defined", trustLex);
     return MyoffersList;
   }
-  let offersData = await trustLex.getOffers(fromOfferId);
-  let totalFetchedRecords = offersData.total;
-  let offers: IResultOffer[] = offersData.result;
+
+  let offersData: any;
+  let totalFetchedRecords: number;
+  let offers: IResultOffer[];
+  if (walletName == "metamask") {
+    offersData = await trustLex.getOffers(fromOfferId);
+
+    totalFetchedRecords = offersData.total;
+    offers = offersData.result;
+  } else if (walletName == "wallet_connect") {
+    offersData = await trustLex.read.getOffers([fromOfferId]);
+
+    totalFetchedRecords = Number(offersData[1]);
+    offers = offersData[0];
+  }
+
   const MyOffersPromises = [];
   for (let i = 0; i < totalFetchedRecords; i++) {
     let value = offers[i];
@@ -931,6 +966,7 @@ export const listInitializeFullfillmentCompletedByNonEvent = async (
     let satoshisToReceive = offer.satoshisToReceive;
     let satoshisReceived = offer.satoshisReceived;
     let ConditionFlag;
+
     if (account != "") {
       if (offer.offeredBy.toLowerCase() == account.toLowerCase()) {
         ConditionFlag = true;
@@ -955,7 +991,11 @@ export const listInitializeFullfillmentCompletedByNonEvent = async (
     if (account != "") {
       // get the fullfillment list
       let FullfillmentResults: IResultSettlementRequest[] =
-        await getInitializedFulfillmentsByOfferId(trustLex, Number(offerId));
+        await getInitializedFulfillmentsByOfferId(
+          trustLex,
+          Number(offerId),
+          walletName
+        );
       if (FullfillmentResults && FullfillmentResults.length > 0) {
         // console.log(FullfillmentResults);
         let fullfillmentRequestIds: string[] = [];
@@ -1010,6 +1050,7 @@ export const listInitializeFullfillmentCompletedByNonEvent = async (
     }
   }
   MyoffersList = await Promise.all(MyOffersPromises);
+
   return MyoffersList;
 };
 

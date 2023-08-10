@@ -109,6 +109,7 @@ function MySwaps() {
     selectedBitcoinNode,
     btcWalletData,
     setBTCWalletData,
+    connectInfo,
   } = context;
 
   const [isMoreOngoingLoading, setMoreOngoingDataLoading] = useState(false);
@@ -146,7 +147,8 @@ function MySwaps() {
       await listInitializeFullfillmentOnGoingByNonEvent(
         contract,
         account,
-        mySwapOngoingfromOfferId
+        mySwapOngoingfromOfferId,
+        connectInfo.walletName
       );
     return mySwapsOngoingList;
   };
@@ -183,7 +185,8 @@ function MySwaps() {
       await listInitializeFullfillmentCompletedByNonEvent(
         contract,
         account,
-        mySwapCompletedfromOfferId
+        mySwapCompletedfromOfferId,
+        connectInfo.walletName
       );
     return mySwapsCompletedList;
   };
@@ -257,7 +260,7 @@ function MySwaps() {
       }
       return true;
     })
-    .map((value, key) => {
+    .map(function (value, key) {
       // let fulfillmentBy: string = value?.offerDetailsInJson.fulfillmentBy;
       let planningToSell = Number(
         tofixedEther(
@@ -318,7 +321,7 @@ function MySwaps() {
           type: CurrencyEnum.BTC,
         },
         rateInBTC: rateInBTC,
-        progress: value.offerDetailsInJson.progress, //TimestampTofromNow(value?.offersFullfillmentJson.expiryTime),
+        progress: value.offerDetailsInJson.progress,
         offerType: value.offerDetailsInJson.offerType,
         fullfillmentRequestId: value.offerDetailsInJson.fullfillmentRequestId,
         offerId: value.offerDetailsInJson.offerId,
@@ -512,6 +515,7 @@ function MySwaps() {
           btcWalletData={btcWalletData}
           setBTCWalletData={setBTCWalletData}
           getSelectedTokenContractInstance={getSelectedTokenContractInstance}
+          connectInfo={connectInfo}
         />
       </GradientBackgroundContainer>
       {/* Star My Swap completed History */}
@@ -597,6 +601,7 @@ function AllSwaps() {
     selectedToken,
     selectedNetwork,
     getSelectedTokenContractInstance,
+    connectInfo,
   } = context;
 
   const { mobileView } = useWindowDimensions();
@@ -666,7 +671,8 @@ function AllSwaps() {
         await listInitializeFullfillmentCompletedByNonEvent(
           contract,
           account,
-          mySwapAllCompletedfromOfferId
+          mySwapAllCompletedfromOfferId,
+          connectInfo.walletName
         );
     }
     return mySwapsAllCompletedList;

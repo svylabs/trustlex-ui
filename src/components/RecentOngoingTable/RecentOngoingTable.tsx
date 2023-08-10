@@ -160,8 +160,6 @@ const RecentOngoingTable = ({
                   variant={"primary"}
                   onClick={() => {
                     handleViewClick(row.offerData);
-                    console.log(row.offerData);
-                    console.log(row.progress);
                   }}
                 >
                   View

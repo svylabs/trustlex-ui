@@ -3,6 +3,7 @@ import { ethers } from "ethers";
 import { IConnectInfo } from "~/interfaces/INetworkInfo";
 
 export const BaseContext = createContext<null | {
+  isMetamaskConnected: boolean;
   connectInfo: IConnectInfo;
   setConnectinfo: (connectInfo: IConnectInfo) => void;
   account: string;

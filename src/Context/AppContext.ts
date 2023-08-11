@@ -122,7 +122,10 @@ export const AppContext = createContext<null | {
   connectInfo: IConnectInfo;
   setConnectinfo: (connectInfo: IConnectInfo) => void;
   getSelectedTokenContractandABI: () => Promise<{
-    contractAddress: string;
-    contractABI: string;
+    contractAddress: string | undefined;
+    contractABI: string | false;
   }>;
+  getSelectedTokenWalletConnectSignerContractInstance: () => Promise<
+    ethers.Contract | false
+  >;
 }>(null);

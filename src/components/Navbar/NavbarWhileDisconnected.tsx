@@ -5,6 +5,7 @@ import { BaseContext } from "~/Context/BaseContext";
 import { useContext, useEffect, useState } from "react";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 import { Web3Button } from "@web3modal/react";
+import { useWeb3Modal } from "@web3modal/react";
 import {
   getConnectedAccount,
   ethereum as WalletConnectEthereum,
@@ -18,6 +19,7 @@ interface props {
 }
 const NavbarWhileDisconnected = ({ title, description }: props) => {
   const { mobileView } = useWindowDimensions();
+  const { open, close } = useWeb3Modal();
   const context = useContext(BaseContext);
   if (context === null) {
     return <>Loading...</>;
@@ -25,17 +27,7 @@ const NavbarWhileDisconnected = ({ title, description }: props) => {
   const { connectInfo, setConnectinfo } = context;
 
   const handleWalletConnect = async () => {
-    console.log("handleWalletConnect connect request");
-    let result: any = await getConnectedAccount();
-    if (!result) {
-      let message: string = "Unable to connect with walletConnect";
-      showErrorMessage(message);
-    }
-    setConnectinfo({
-      isConnected: true,
-      walletName: "wallet_connect",
-      ethereumObject: WalletConnectEthereum,
-    });
+    open();
   };
   const handleMetamaskConnect = async () => {
     const connect = await connectToMetamask();
@@ -74,7 +66,7 @@ const NavbarWhileDisconnected = ({ title, description }: props) => {
           dropdownItems={connectDropdownItems}
         />
         {/* <button onClick={() => connect()}>Connect Wallet</button> */}
-        <Web3Button />
+        {/* <Web3Button /> */}
       </div>
     </nav>
   );

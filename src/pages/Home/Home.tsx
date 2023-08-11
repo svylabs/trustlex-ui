@@ -23,8 +23,10 @@ import {
   getERC20TokenBalance,
   getEventData,
 } from "~/service/AppService";
+import { fetchBalanceWagmi } from "~/service/WalletConnectService";
 import { getPriceRate } from "~/service/PriceFeedService";
 import { ConvertCrytoToFiat } from "~/helpers/commonHelper";
+import { formatERC20Tokens, tofixedEther } from "~/utils/Ether.utills";
 
 type Props = {};
 
@@ -74,6 +76,7 @@ const Home = (props: Props) => {
     selectedToken,
     getSelectedTokenContractInstance,
     connectInfo,
+    getSelectedTokenWalletConnectSignerContractInstance,
   } = context;
   const { width } = useWindowDimensions();
   const settings = {
@@ -114,10 +117,17 @@ const Home = (props: Props) => {
     let contractAddress = currencyObjects[selectedNetwork][
       selectedToken.toLowerCase()
     ].orderBookContractAddreess as string;
-    let contract_balance = await getBalance(
-      connectInfo.ethereumObject,
-      contractAddress
-    );
+    let contract_balance: number = 0;
+    if (connectInfo.walletName == "metamask") {
+      contract_balance = await getBalance(
+        connectInfo.ethereumObject,
+        contractAddress
+      );
+    } else if (connectInfo.walletName == "wallet_connect") {
+      contract_balance = await fetchBalanceWagmi(contractAddress, "eth");
+      contract_balance = +tofixedEther(contract_balance).toString();
+    }
+
     return contract_balance;
   }
 
@@ -161,7 +171,8 @@ const Home = (props: Props) => {
         currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
           .priceRateContractAddress;
       let selectedToken_to_usd_rate = await getPriceRate(
-        priceRateSelectedTokenContractAddress
+        priceRateSelectedTokenContractAddress,
+        connectInfo
       );
       // console.log(selectedToken_to_usd_rate);
       // console.log(total_locked_amounts);
@@ -188,7 +199,11 @@ const Home = (props: Props) => {
 
       let priceRateBTCContractAddress =
         currencyObjects[selectedNetwork]["btc"].priceRateContractAddress;
-      let btc_to_usd_rate = await getPriceRate(priceRateBTCContractAddress);
+
+      let btc_to_usd_rate = await getPriceRate(
+        priceRateBTCContractAddress,
+        connectInfo
+      );
       // console.log("btc_to_usd_rate", btc_to_usd_rate);
       // console.log("total_quantityRequested", total_quantityRequested);
 

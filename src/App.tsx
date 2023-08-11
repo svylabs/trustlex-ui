@@ -1,10 +1,11 @@
 //------------Import for wallet connect -----------------//
-import { EthereumClient } from "@web3modal/ethereum";
+// import "wagmi/window";
 import { useWeb3Modal, Web3Button } from "@web3modal/react";
 import {} from "@web3modal/react";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { InjectedConnector } from "wagmi/connectors/injected";
 import { fetchBalance, getNetwork } from "@wagmi/core";
+import { usePublicClient } from "wagmi";
 
 //------------End Import for wallet connect -----------------//
 
@@ -91,10 +92,10 @@ interface ProviderRpcError extends Error {
 }
 
 const DefaultPage = () => {
-  const { ethereum } = window;
-  if (!ethereum) {
-    return <ProtocolDocs />;
-  }
+  // const { ethereum } = window;
+  // if (!ethereum) {
+  //   return <ProtocolDocs />;
+  // }
   return <Home />;
 };
 
@@ -102,7 +103,8 @@ export default function App() {
   const { ethereum: MetamaskEthereum } = window;
   const [isMetamaskConnected, setIsMetamaskConnected] = useState(false);
   const { address, isConnected, isDisconnected } = useAccount();
-  let chainId = 80001;
+  // const provider = useProvider(...)
+  const publicClient = usePublicClient();
 
   const [connectInfo, setConnectinfo] = useState<IConnectInfo>({
     isConnected: isConnected == true || isMetamaskConnected == true,
@@ -112,7 +114,7 @@ export default function App() {
         : isMetamaskConnected == true
         ? "metamask"
         : "",
-    ethereumObject: isConnected == true ? undefined : MetamaskEthereum,
+    ethereumObject: isConnected == true ? publicClient : MetamaskEthereum,
   });
   const [account, setAccount] = useState(address ? address : "");
   const [balance, setBalance] = useState("");
@@ -143,34 +145,36 @@ export default function App() {
   // console.log("address", address);
   // console.log("isConnected", isConnected);
 
-  const { connect, connectors, error, isLoading, pendingConnector } =
+  const { connect, connectors, error, isLoading, pendingConnector, data } =
     useConnect({
       connector: new InjectedConnector(),
     });
+
   const { disconnect } = useDisconnect();
   const { chain, chains } = getNetwork();
-  // console.log(chain, chains);
-  // useEffect(() => {
-  //   console.log(connectInfo);
-  // }, [connectInfo]);
 
   // session established
-  WalletConnectEthereum.on("connect", (data) => {
-    console.log("WalletConnect event connect fired");
-    setConnectinfo({
-      ...connectInfo,
-      isConnected: true,
-      walletName: "wallet_connect",
-    });
-  });
-  WalletConnectEthereum.on("disconnect", (data) => {
-    console.log("WalletConnect event disconnect fired");
-    setConnectinfo({
-      ...connectInfo,
-      isConnected: false,
-      walletName: "",
-    });
-  });
+  useEffect(() => {
+    if (isConnected) {
+      console.log("WalletConnect connect hook emited");
+      setConnectinfo({
+        ...connectInfo,
+        isConnected: true,
+        walletName: "wallet_connect",
+      });
+    }
+  }, [isConnected]);
+  useEffect(() => {
+    if (isDisconnected) {
+      console.log("WalletConnect disconnect hook emited");
+      setConnectinfo({
+        ...connectInfo,
+        isConnected: false,
+        walletName: "",
+      });
+    }
+  }, [isDisconnected]);
+
   if (MetamaskEthereum) {
     // metamask disconnect event
     (MetamaskEthereum as any).on("disconnect", (error: ProviderRpcError) => {
@@ -194,6 +198,7 @@ export default function App() {
     <>
       <BaseContext.Provider
         value={{
+          isMetamaskConnected,
           connectInfo,
           setConnectinfo,
           account,
@@ -207,16 +212,11 @@ export default function App() {
         {/* <Web3Button /> */}
         {connectInfo.isConnected == true ? (
           <>
-            {/* <div>
-              Connected to {address}
-              <button onClick={() => disconnect()}>Disconnect</button>
-            </div> */}
+            {" "}
             <BaseApp />
           </>
         ) : (
           <>
-            {" "}
-            {/* <button onClick={() => connect()}>Connect Wallet</button> */}
             <MantineProvider
               theme={{ colorScheme: "dark" }}
               withGlobalStyles
@@ -237,6 +237,7 @@ export function BaseApp() {
     return <>Loading...</>;
   }
   const {
+    isMetamaskConnected,
     connectInfo,
     setConnectinfo,
     account,
@@ -409,13 +410,14 @@ export function BaseApp() {
             ethereumObject
           );
         } else if (connectInfo.walletName == "wallet_connect") {
-          // let contractInstance = await getSelectedTokenContractInstance();
-          // BTCBalance = await getEventDataWagmi(
-          //   contractInstance as ethers.Contract,
-          //   fromLastHours,
-          //   receivedByAddress,
-          //   ethereumObject
-          // );
+          let contractInstance =
+            await getSelectedTokenWalletConnectSignerContractInstance();
+          BTCBalance = await getEventDataWagmi(
+            contractInstance as ethers.Contract,
+            fromLastHours,
+            receivedByAddress,
+            ethereumObject
+          );
         }
 
         // console.log(BTCBalance);
@@ -477,27 +479,26 @@ export function BaseApp() {
 
   const { ethereum } = window;
   if (connectInfo.ethereumObject) {
-    (connectInfo.ethereumObject as any).on(
-      "accountsChanged",
-      async function (accounts: any) {
-        // alert("line no. 443");
-        setAccount(accounts[0]);
-      }
-    );
-
+    // (connectInfo.ethereumObject as any).on(
+    //   "accountsChanged",
+    //   async function (accounts: any) {
+    //     // alert("line no. 443");
+    //     setAccount(accounts[0]);
+    //   }
+    // );
     //  Network changed event
-    (connectInfo.ethereumObject as any).on(
-      connectInfo.walletName == "metamask" ? "networkChanged" : "chainChanged",
-      async function (networkId: number) {
-        // console.log(networkId);
-        let provider = new ethers.providers.Web3Provider(
-          connectInfo.ethereumObject
-        );
-        let network = await provider.getNetwork();
-        setNetWorkInfoData(network as INetworkInfo);
-        checkNetwork(connectInfo.ethereumObject);
-      }
-    );
+    // (connectInfo.ethereumObject as any).on(
+    //   connectInfo.walletName == "metamask" ? "networkChanged" : "chainChanged",
+    //   async function (networkId: number) {
+    //     // console.log(networkId);
+    //     let provider = new ethers.providers.Web3Provider(
+    //       connectInfo.ethereumObject
+    //     );
+    //     let network = await provider.getNetwork();
+    //     setNetWorkInfoData(network as INetworkInfo);
+    //     checkNetwork(connectInfo.ethereumObject);
+    //   }
+    // );
   }
 
   useEffect(() => {
@@ -1034,6 +1035,25 @@ export function BaseApp() {
     return contract;
   }
 
+  async function getSelectedTokenWalletConnectSignerContractInstance() {
+    let contractAddress =
+      currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+        .orderBookContractAddreess;
+    let contractABI =
+      currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+        .orderBookContractABI;
+    let contract: any;
+    contract = await createContractInstanceWalletService(
+      connectInfo.ethereumObject,
+      contractAddress as string,
+      contractABI
+    );
+
+    // contract = contract.read;
+
+    return contract;
+  }
+
   async function getSelectedTokenContractandABI() {
     let contractAddress =
       currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
@@ -1206,9 +1226,12 @@ export function BaseApp() {
               setBTCWalletData,
               initiatedOrders,
               setInitiatedOrders,
+
+              isMetamaskConnected,
               connectInfo,
               setConnectinfo,
               getSelectedTokenContractandABI,
+              getSelectedTokenWalletConnectSignerContractInstance,
             }}
           >
             <Layout>

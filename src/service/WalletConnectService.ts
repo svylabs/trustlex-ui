@@ -125,20 +125,20 @@ export const getERC20TokenBalance = async (
   }
 };
 
-export const createContractInstanceWalletService = async (
-  contractAddress: string,
-  contractABI: string
-): Promise<ethers.Contract | false> => {
-  try {
-    const signer = provider.getSigner();
-    const contract = new ethers.Contract(contractAddress, contractABI, signer);
+// export const createContractInstanceWalletService = async (
+//   contractAddress: string,
+//   contractABI: string
+// ): Promise<ethers.Contract | false> => {
+//   try {
+//     const signer = provider.getSigner();
+//     const contract = new ethers.Contract(contractAddress, contractABI, signer);
 
-    return contract;
-  } catch (error) {
-    console.log(error);
-    return false;
-  }
-};
+//     return contract;
+//   } catch (error) {
+//     console.log(error);
+//     return false;
+//   }
+// };
 //----------------------------- Start Wagmi library functions --------------------------------//
 // export function publicClientToProvider(publicClient: PublicClient) {
 //   const { chain, transport } = publicClient;
@@ -191,6 +191,31 @@ export const createContractInstanceWagmi = async (
       abi: contractABI,
     });
     return contract;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
+export const createContractInstanceWalletService = async (
+  ethereum: any,
+  contractAddress: string,
+  contractABI: string
+): Promise<ethers.Contract | false> => {
+  try {
+    if (typeof ethereum !== undefined) {
+      const provider = new ethers.providers.Web3Provider(ethereum);
+
+      const signer = provider.getSigner();
+      const contract = new ethers.Contract(
+        contractAddress,
+        contractABI,
+        signer
+      );
+
+      return contract;
+    } else {
+      return false;
+    }
   } catch (error) {
     console.log(error);
     return false;
@@ -263,39 +288,42 @@ export const getEventDataWagmi = async (
   ethereumObject: any
 ) => {
   try {
-    console.log(ContractInstance);
     // console.log(fromLastHours, receivedByAddress);
     // if (typeof ethereumObject !== undefined) {
     // const { ethereum } = window;
-    // const provider = new ethers.providers.Web3Provider(ethereumObject);
+    const provider = new ethers.providers.Web3Provider(ethereumObject);
     let toBlock: any = await fetchBlockNumber();
-    console.log(toBlock);
+    toBlock = Number(toBlock);
+
     // Getting block by date:
-    // const dater = new EthDater(
-    //   provider // Ethers provider, required.
-    // );
+    const dater = new EthDater(
+      provider // Ethers provider, required.
+    );
+
     let estimatedFromBlock = 0;
-    // if (fromLastHours != 0) {
-    //   let dateFrom = moment().subtract(fromLastHours, "h").format();
-    //   let block = await dater.getDate(
-    //     dateFrom, //"2016-07-20T13:20:40Z", // Date, required. Any valid moment.js value: string, milliseconds, Date() object, moment() object.
-    //     true, // Block after, optional. Search for the nearest block before or after the given date. By default true.
-    //     false // Refresh boundaries, optional. Recheck the latest block before request. By default false.
-    //   );
-    //   estimatedFromBlock = block.block;
-    // }
-    estimatedFromBlock = Number(toBlock) - 50000;
+    if (fromLastHours != 0) {
+      let dateFrom = moment().subtract(fromLastHours, "h").format();
+      let block = await dater.getDate(
+        dateFrom, //"2016-07-20T13:20:40Z", // Date, required. Any valid moment.js value: string, milliseconds, Date() object, moment() object.
+        true, // Block after, optional. Search for the nearest block before or after the given date. By default true.
+        false // Refresh boundaries, optional. Recheck the latest block before request. By default false.
+      );
+
+      estimatedFromBlock = block.block;
+    }
+
+    // estimatedFromBlock = Number(toBlock) - 50000;
     let PAYMENT_SUCCESSFUL_EVENTS = await ContractInstance.queryFilter(
       "SETTLEMENT_SUCCESSFUL",
       estimatedFromBlock,
       toBlock
     );
-    // console.log(PAYMENT_SUCCESSFUL_EVENTS);
+
     let total_quantityRequested = 0;
-    // console.log(PAYMENT_SUCCESSFUL_EVENTS);
+
     if (receivedByAddress != "") {
       PAYMENT_SUCCESSFUL_EVENTS = PAYMENT_SUCCESSFUL_EVENTS.filter(
-        (value: any, index) => {
+        (value: any, index: number) => {
           let args: any = value.args;
           let receivedBy = args.receivedBy;
           // console.log("receivedBy", receivedBy);
@@ -320,17 +348,13 @@ export const getEventDataWagmi = async (
       );
       total_quantityRequested += quantityRequested;
     });
-    // console.log(PAYMENT_SUCCESSFUL_EVENTS);
-    // console.log(total_quantityRequested);
 
     // Converting satoshi to Btc
     total_quantityRequested = Number(
       tofixedBTC(total_quantityRequested / 10 ** 8)
     );
+    // console.log(total_quantityRequested);
     return total_quantityRequested;
-    // } else {
-    //   return 0;
-    // }
   } catch (err) {
     console.log(err);
     return 0;

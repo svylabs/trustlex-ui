@@ -27,6 +27,7 @@ import {
   showErrorMessage,
   showSuccessMessage,
 } from "~/service/AppService";
+import { writeContractWagmi } from "~/service/WalletConnectService";
 import { EthtoWei, WeitoEth, tofixedEther } from "~/utils/Ether.utills";
 import { TimestampTotoNow, TimestampfromNow } from "~/utils/TimeConverter";
 import {
@@ -42,6 +43,8 @@ import { IOfferdata, IResultSettlementRequest } from "~/interfaces/IOfferdata";
 import Swal from "sweetalert2";
 // import "sweetalert2/src/sweetalert2.scss";
 import "@sweetalert2/themes/dark/dark.scss";
+import AlertModal from "~/components/Modals/AlertModal";
+import { waitForTransaction } from "wagmi/actions";
 
 type Props = {
   isOpened: boolean;
@@ -82,6 +85,11 @@ const ViewOrderDrawer = ({
   const { width } = useWindowDimensions();
   let mobileView: boolean = width !== null && width < 500 ? true : false;
   const rootRef = useRef(null);
+
+  const [alertModalIsOpened, setAlertModalIsOpened] = useState<number>(0);
+  const [alertModalTitle, setAlertModalTitle] = useState("");
+  const [alertModalContent, setAlertModalContent] = useState("");
+
   const [buyAmount, setBuyAmount] = useState<number>(0);
   const [planningToSell, setPlanningToSell] = useState<number>(0);
   const [planningToBuy, setPlanningToBuy] = useState<number>(0);
@@ -352,14 +360,42 @@ const ViewOrderDrawer = ({
         if (contractInstance == false) {
           return;
         }
-        // console.log(offerId_);
-        let result = await cancelOfferService(
-          contractInstance,
-          offerId_ as string
-        );
+        let walletName = connectInfo.walletName;
+        let result: any;
+
+        if (walletName == "metamask") {
+          result = await cancelOfferService(
+            contractInstance,
+            offerId_ as string
+          );
+        } else if (walletName == "wallet_connect") {
+          const { contractAddress, contractABI } =
+            await context.getSelectedTokenContractandABI();
+          setAlertModalIsOpened(alertModalIsOpened + 1);
+          setAlertModalTitle("Alert");
+          setAlertModalContent(
+            "Please check you connected device. We have sent a notification to approve this request."
+          );
+
+          result = await writeContractWagmi(
+            contractAddress,
+            contractABI,
+            "cancelOffer",
+            [offerId_ as string],
+            ""
+          );
+          if (result) {
+            const { hash } = result || {};
+            const receipt = await waitForTransaction({ hash });
+            console.log(result);
+          } else {
+            showErrorMessage("User has cancelled the transaction");
+          }
+        }
+
         if (result) {
           setCancelOffer("Cancelled");
-          showSuccessMessage("Offer has been camcelled successfully!");
+          showSuccessMessage("Offer has been cancelled successfully!");
           setRefreshOffersListKey(refreshOffersListKey + 1);
           setRefreshMySwapOngoingListKey(refreshMySwapOngoingListKey + 1);
           setRefreshMySwapCompletedListKey(refreshMySwapCompletedListKey + 1);
@@ -419,6 +455,14 @@ const ViewOrderDrawer = ({
       withCloseButton={false}
       size={700}
     >
+      <AlertModal
+        isOpened={alertModalIsOpened}
+        setIsOpened={setAlertModalIsOpened}
+        title={alertModalTitle}
+        setAlertModalTitle={setAlertModalTitle}
+        content={alertModalContent}
+        setAlertModalContent={setAlertModalContent}
+      />
       <GradientBackgroundContainer
         radius={0}
         colorLeft={mobileView ? "" : "#FEBD3893"}

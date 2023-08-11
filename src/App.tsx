@@ -815,6 +815,7 @@ export function BaseApp() {
   // use effect for my swap ongoing data
   useEffect(() => {
     // update the contract info
+
     getSelectedTokenContractInstance().then((contract) => {
       if (contract) {
         prepareMySwapOngoingData(contract);

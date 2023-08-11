@@ -27,6 +27,7 @@ import SeeMoreButton from "~/components/SeeMoreButton/SeeMoreButton";
 import ExchangeOfferDrawer from "~/components/ExchangeOfferDrawer/ExchangeOfferDrawer";
 import getTableData from "~/components/ExchangePrepareTableData/GetTableData";
 import { AppContext } from "~/Context/AppContext";
+import { waitForTransaction } from "wagmi/actions";
 
 import { BitcoinMerkleTree } from "~/utils/bitcoinmerkletree";
 
@@ -269,7 +270,7 @@ const Exchange = (props: Props) => {
 
       let inputEther: string = userInputData.activeExchange[1].value;
 
-      let addedOffer;
+      let addedOffer: any;
       let sellCurrecny = userInputData?.activeExchange[1]?.currency;
       let isNativeToken = userInputData?.activeExchange[1].isNativeToken;
 
@@ -316,7 +317,14 @@ const Exchange = (props: Props) => {
             [weieth, satoshis, "0x" + pubKeyHash, offerValidTill],
             weieth
           );
-          console.log(addedOffer);
+
+          if (addedOffer) {
+            const { hash } = addedOffer || {};
+            const receipt = await waitForTransaction({ hash });
+            console.log(addedOffer);
+          } else {
+            showErrorMessage("User has cancelled the transaction");
+          }
         }
       } else {
         let decimalPlace = Number(

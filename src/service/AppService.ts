@@ -6,6 +6,7 @@ import { IAddOfferWithToken } from "~/interfaces/IAddOfferWithToken";
 import erc20ContractABI from "~/files/erc20Contract.json";
 import { ERC20 } from "~/Context/AppConfig";
 import { ContractMap } from "~/Context/AppConfig";
+import { waitForTransaction } from "wagmi/actions";
 import {
   IFullfillmentEvent,
   IListenedOfferData,

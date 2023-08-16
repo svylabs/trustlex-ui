@@ -9,13 +9,15 @@ import { watchContractEvent } from "@wagmi/core";
 import { type PublicClient, getPublicClient } from "@wagmi/core";
 import { providers } from "ethers";
 import { type HttpTransport } from "viem";
-import { type WalletClient, getWalletClient } from "@wagmi/core";
+import { type WalletClient } from "@wagmi/core";
+import { useContractEvent } from "wagmi";
 
 import {
   getContract,
   writeContract,
   readContract,
   fetchBalance,
+  getWalletClient,
 } from "@wagmi/core";
 const { EthDater }: any = window;
 import moment from "moment";
@@ -186,10 +188,14 @@ export const createContractInstanceWagmi = async (
   contractABI: any
 ) => {
   try {
+    const walletClient = await getWalletClient();
+
     const contract = getContract({
       address: contractAddress,
       abi: contractABI,
+      walletClient: walletClient,
     });
+
     return contract;
   } catch (error) {
     console.log(error);
@@ -203,9 +209,11 @@ export const createContractInstanceWalletService = async (
 ): Promise<ethers.Contract | false> => {
   try {
     if (typeof ethereum !== undefined) {
+      console.log(ethereum);
       const provider = new ethers.providers.Web3Provider(ethereum);
 
       const signer = provider.getSigner();
+      console.log(signer);
       const contract = new ethers.Contract(
         contractAddress,
         contractABI,
@@ -285,7 +293,9 @@ export const getEventDataWagmi = async (
   ContractInstance: ethers.Contract,
   fromLastHours: number = 0,
   receivedByAddress: string = "",
-  ethereumObject: any
+  ethereumObject: any,
+  contractAddress: string = "",
+  contractABI: any = ""
 ) => {
   try {
     // console.log(fromLastHours, receivedByAddress);
@@ -294,7 +304,7 @@ export const getEventDataWagmi = async (
     const provider = new ethers.providers.Web3Provider(ethereumObject);
     let toBlock: any = await fetchBlockNumber();
     toBlock = Number(toBlock);
-
+    console.log(toBlock);
     // Getting block by date:
     const dater = new EthDater(
       provider // Ethers provider, required.
@@ -311,14 +321,31 @@ export const getEventDataWagmi = async (
 
       estimatedFromBlock = block.block;
     }
-
+    console.log(estimatedFromBlock);
+    console.log(ContractInstance);
     // estimatedFromBlock = Number(toBlock) - 50000;
-    let PAYMENT_SUCCESSFUL_EVENTS = await ContractInstance.queryFilter(
-      "SETTLEMENT_SUCCESSFUL",
-      estimatedFromBlock,
-      toBlock
-    );
+    // let PAYMENT_SUCCESSFUL_EVENTS = await ContractInstance.queryFilter(
+    //   "SETTLEMENT_SUCCESSFUL",
+    //   estimatedFromBlock,
+    //   toBlock
+    // );
 
+    const unwatch = watchContractEvent(
+      {
+        address: contractAddress,
+        abi: contractABI,
+        eventName: "SETTLEMENT_SUCCESSFUL",
+      },
+      (log) => console.log(log)
+    );
+    return 0;
+    console.log(unwatch);
+    const data = await readContract({
+      address: contractAddress,
+      abi: contractABI,
+      eventName: "SETTLEMENT_SUCCESSFUL",
+    });
+    console.log(data);
     let total_quantityRequested = 0;
 
     if (receivedByAddress != "") {

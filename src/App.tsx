@@ -6,6 +6,7 @@ import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { InjectedConnector } from "wagmi/connectors/injected";
 import { fetchBalance, getNetwork } from "@wagmi/core";
 import { usePublicClient } from "wagmi";
+import { useWalletClient } from "wagmi";
 
 //------------End Import for wallet connect -----------------//
 
@@ -105,7 +106,8 @@ export default function App() {
   const { address, isConnected, isDisconnected } = useAccount();
   // const provider = useProvider(...)
   const publicClient = usePublicClient();
-
+  const { data: walletClient } = useWalletClient();
+  // console.log(walletClient);
   const [connectInfo, setConnectinfo] = useState<IConnectInfo>({
     isConnected: isConnected == true || isMetamaskConnected == true,
     walletName:
@@ -127,6 +129,7 @@ export default function App() {
       // });
       // console.log(balance2);
       let isMetamaskConnected = await isMetamaskConnectedService();
+      console.log(isMetamaskConnected);
       let account = await connectToMetamask();
 
       setIsMetamaskConnected(isMetamaskConnected);
@@ -157,6 +160,7 @@ export default function App() {
   useEffect(() => {
     if (isConnected) {
       console.log("WalletConnect connect hook emited");
+
       setConnectinfo({
         ...connectInfo,
         isConnected: true,
@@ -166,12 +170,14 @@ export default function App() {
   }, [isConnected]);
   useEffect(() => {
     if (isDisconnected) {
-      console.log("WalletConnect disconnect hook emited");
-      setConnectinfo({
-        ...connectInfo,
-        isConnected: false,
-        walletName: "",
-      });
+      if (connectInfo.walletName != "metamask") {
+        console.log("WalletConnect disconnect hook emited");
+        setConnectinfo({
+          ...connectInfo,
+          isConnected: false,
+          walletName: "",
+        });
+      }
     }
   }, [isDisconnected]);
 
@@ -410,14 +416,23 @@ export function BaseApp() {
             ethereumObject
           );
         } else if (connectInfo.walletName == "wallet_connect") {
+          let contractAddress =
+            currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+              .orderBookContractAddreess;
+          let contractABI =
+            currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
+              .orderBookContractABI;
           let contractInstance =
             await getSelectedTokenWalletConnectSignerContractInstance();
-          BTCBalance = await getEventDataWagmi(
-            contractInstance as ethers.Contract,
-            fromLastHours,
-            receivedByAddress,
-            ethereumObject
-          );
+          // BTCBalance = await getEventDataWagmi(
+          //   contractInstance as ethers.Contract,
+          //   fromLastHours,
+          //   receivedByAddress,
+          //   ethereumObject,
+          //   contractAddress,
+          //   contractABI
+          // );
+          BTCBalance = 0;
         }
 
         // console.log(BTCBalance);
@@ -1043,12 +1058,16 @@ export function BaseApp() {
       currencyObjects[selectedNetwork][selectedToken.toLowerCase()]
         .orderBookContractABI;
     let contract: any;
-    contract = await createContractInstanceWalletService(
-      connectInfo.ethereumObject,
+    // contract = await createContractInstanceWalletService(
+    //   connectInfo.ethereumObject,
+    //   contractAddress as string,
+    //   contractABI
+    // );
+    contract = await createContractInstanceWagmi(
       contractAddress as string,
       contractABI
     );
-
+    console.log(contract);
     // contract = contract.read;
 
     return contract;

@@ -188,12 +188,13 @@ const Home = (props: Props) => {
       let total_quantityRequested = 0;
       if (contractInstance != false) {
         let fromLastHours: number = 24;
-        total_quantityRequested = await getEventData(
-          contractInstance,
-          fromLastHours,
-          "",
-          connectInfo.ethereumObject
-        );
+        total_quantityRequested = 0;
+        // await getEventData(
+        //   contractInstance,
+        //   fromLastHours,
+        //   "",
+        //   connectInfo.ethereumObject
+        // );
         // console.log(total_quantityRequested);
       }
 

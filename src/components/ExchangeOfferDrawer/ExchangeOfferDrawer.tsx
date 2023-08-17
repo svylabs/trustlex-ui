@@ -948,7 +948,10 @@ const ExchangeOfferDrawer = ({
                     onClose(false);
                   }}
                 >
-                  Cancel
+                  <Icon
+                    icon="radix-icons:cross-circled"
+                    className={styles.closeIcon}
+                  />
                 </span>
               </Grid.Col>
             )}
@@ -1460,7 +1463,7 @@ const ExchangeOfferDrawer = ({
                   </div>
                   <div className={styles.spacing} />
                   <div className={styles.spacing} />
-                  <div className={styles.buttonContainer}>
+                  <div className={styles.buttonContainer} name={"xzccvscds"}>
                     {confirmed !== "confirmed" && (
                       <Button
                         variant={

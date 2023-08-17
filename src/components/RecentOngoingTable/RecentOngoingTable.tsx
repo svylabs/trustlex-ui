@@ -170,37 +170,55 @@ const RecentOngoingTable = ({
         ];
       })
     : data.map((row) => {
-        const progress = row.progress.split("and");
+        // const progress = row.progress.split("and");
+        let progress = row.progress;
+        let isCanceled = row.isCanceled;
+
         return [
           <div className={styles.planningCell}>
-            {row.planningToSell.amount}{" "}
-            <ImageIcon
-              image={getIconFromCurrencyType(row.planningToSell.type)}
-            />{" "}
-            {row.planningToSell.type}
+            {row.planningToSell.amount} {row.planningToSell.type}
           </div>,
           <div className={styles.planningCell}>
             {row.planningToBuy.amount}{" "}
             <ImageIcon
               image={getIconFromCurrencyType(row.planningToBuy.type)}
             />{" "}
-            {row.planningToBuy.type}
           </div>,
           <>
-            {row.progress
-              .substring(0, row.progress.indexOf(" "))
-              .toLowerCase() === "submit"
-              ? "Done"
-              : row.progress.substring(0, row.progress.indexOf(" "))}
+            {row.offerType == "my_order" ? (
+              <GetProgressText progress={progress} />
+            ) : (
+              <GetProgressText progress={progress + "% filled"} />
+            )}
           </>,
+
           <div className={styles.actionsCell}>
-            <SeeMoreButton
-              buttonText=""
-              onClick={(e) => {
-                // setViewOrderDrawerOpen(true);
-                handleViewClick(row.offerData);
-              }}
-            />
+            {row.offerType == "my_order" ? (
+              <>
+                <SeeMoreButton
+                  buttonText=""
+                  onClick={() => {
+                    handleSubmitPaymentProof(
+                      row.fullfillmentRequestId,
+                      row.offerId as number,
+                      row.fullfillmentExpiryTime,
+                      row.quantityRequested,
+                      row.paymentProofSubmitted
+                    );
+                  }}
+                />
+              </>
+            ) : (
+              <>
+                <SeeMoreButton
+                  buttonText=""
+                  onClick={(e) => {
+                    // setViewOrderDrawerOpen(true);
+                    handleViewClick(row.offerData);
+                  }}
+                />
+              </>
+            )}
           </div>,
         ];
       });
@@ -208,7 +226,6 @@ const RecentOngoingTable = ({
   const handleViewClick = (
     offerData: IListInitiatedFullfillmentDataByNonEvent
   ) => {
-    console.log(offerData);
     setViewOrderDrawerKey(viewOrderDrawerKey + 1);
     setOfferData(offerData);
     setViewOrderDrawerOpen(true);

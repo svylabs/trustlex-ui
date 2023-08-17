@@ -414,6 +414,7 @@ function MySwaps() {
                 value.offerDetailsInJson.fulfillmentRequestfulfilledTime
               ), //"09 Jan, 13:45pm",
         status: StatusEnum.Completed,
+        offerData: value,
       };
       return row;
     }
@@ -424,6 +425,7 @@ function MySwaps() {
       <GradientBackgroundContainer colorLeft="#FFD57243">
         <Box p={"lg"} className={styles.box}>
           <div className={styles.recentTable}>
+            {"desktop section"}
             <RecentOngoingTable
               tableCaption="Ongoing"
               cols={[
@@ -446,10 +448,11 @@ function MySwaps() {
             />
           </div>
           <div className={styles.recentMobileTable}>
+            {"mobile section"}
             <RecentOngoingTable
               tableCaption="Ongoing"
-              cols={["Sell", "Buy", "Progress", ""]}
-              data={OngoingTableData}
+              cols={["Selling", "Asking", "Progress", "Action"]}
+              data={OngoingTableData2}
               mobile={true}
               handleSubmitPaymentProof={handleSubmitPaymentProof}
               mySwapOngoingLoadingText={mySwapCompletedLoadingText}
@@ -535,6 +538,12 @@ function MySwaps() {
               data={HistoryTableData2}
               selectedToken={selectedToken}
               selectedNetwork={selectedNetwork}
+              contract={contract}
+              selectedToken={selectedToken}
+              selectedNetwork={selectedNetwork}
+              getSelectedTokenContractInstance={
+                getSelectedTokenContractInstance
+              }
             />
           </div>
           <div className={styles.mobileHistoryTable}>
@@ -542,9 +551,15 @@ function MySwaps() {
               tableCaption="History"
               cols={["# of order", "Date", "More Details"]}
               mobile={true}
-              data={HistoryTableData}
+              data={HistoryTableData2}
               selectedToken={selectedToken}
               selectedNetwork={selectedNetwork}
+              contract={contract}
+              selectedToken={selectedToken}
+              selectedNetwork={selectedNetwork}
+              getSelectedTokenContractInstance={
+                getSelectedTokenContractInstance
+              }
             />
           </div>
           <br />

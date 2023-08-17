@@ -45,6 +45,9 @@ import Swal from "sweetalert2";
 import "@sweetalert2/themes/dark/dark.scss";
 import AlertModal from "~/components/Modals/AlertModal";
 import { waitForTransaction } from "wagmi/actions";
+import { IPlanning } from "~/interfaces/IPlanning";
+import ImageIcon from "../ImageIcon/ImageIcon";
+import { StatusEnum } from "~/enums/StatusEnum";
 
 type Props = {
   isOpened: boolean;
@@ -53,8 +56,15 @@ type Props = {
   contract: ethers.Contract | undefined;
   GetProgressText: ({ progress }: { progress: string }) => void;
   selectedCurrencyIcon: JSX.Element | string;
+  isCompleted: boolean;
 };
 
+export interface ITableRow {
+  orderNumber: string | number;
+  planningToSell: IPlanning;
+  planningToBuy: IPlanning;
+  date: string;
+}
 const ViewOrderDrawer = ({
   isOpened,
   onClose,
@@ -62,6 +72,7 @@ const ViewOrderDrawer = ({
   contract,
   GetProgressText,
   selectedCurrencyIcon,
+  isCompleted = false,
 }: Props) => {
   const context = React.useContext(AppContext);
   if (context === null) {
@@ -251,43 +262,46 @@ const ViewOrderDrawer = ({
       );
     }
 
-    let viewOrderDrawerHistoryTableData2_ = fullfillmentResult
-      ? fullfillmentResult.map((value, index) => {
-          let fulfillmentRequest = value.settlementRequest;
-          let fulfillmentRequestId = value.settlementRequestId;
-          let ETHAmountPricePerBTC: string = (
-            Number(fulfillmentRequest?.quantityRequested?.toString()) *
-            (Number(offerData?.offerDetailsInJson.offerQuantity) /
-              Number(offerData?.offerDetailsInJson.satoshisToReceive))
-          ).toString();
-          let ETHAmount = tofixedEther(Number(WeitoEth(ETHAmountPricePerBTC)));
-          let expiryTime = TimestampfromNow(
-            fulfillmentRequest.expiryTime as string
-          );
+    let viewOrderDrawerHistoryTableData2_: ITableRow[] | undefined =
+      fullfillmentResult
+        ? fullfillmentResult.map((value, index) => {
+            let fulfillmentRequest = value.settlementRequest;
+            let fulfillmentRequestId = value.settlementRequestId;
+            let ETHAmountPricePerBTC: string = (
+              Number(fulfillmentRequest?.quantityRequested?.toString()) *
+              (Number(offerData?.offerDetailsInJson.offerQuantity) /
+                Number(offerData?.offerDetailsInJson.satoshisToReceive))
+            ).toString();
+            let ETHAmount = tofixedEther(
+              Number(WeitoEth(ETHAmountPricePerBTC))
+            );
+            let expiryTime = TimestampfromNow(
+              fulfillmentRequest.expiryTime as string
+            );
 
-          let row = {
-            orderNumber: fulfillmentRequestId.toString().slice(0, 6),
-            planningToSell: {
-              amount: ETHAmount,
-              // type: CurrencyEnum.ETH,
-              type: selectedCurrencyIcon,
-            },
-            planningToBuy: {
-              amount: tofixedBTC(
-                Number(
-                  SatoshiToBtcConverter(
-                    fulfillmentRequest?.quantityRequested?.toString()
+            let row: ITableRow = {
+              orderNumber: fulfillmentRequestId.toString().slice(0, 6),
+              planningToSell: {
+                amount: ETHAmount,
+                // type: CurrencyEnum.ETH,
+                type: selectedCurrencyIcon as CurrencyEnum,
+              },
+              planningToBuy: {
+                amount: tofixedBTC(
+                  Number(
+                    SatoshiToBtcConverter(
+                      fulfillmentRequest?.quantityRequested?.toString()
+                    )
                   )
-                )
-              ),
-              type: CurrencyEnum.BTC,
-            },
-            date: expiryTime,
-          };
-          return row;
-        })
-      : [];
-    // console.log(viewOrderDrawerHistoryTableData2_);
+                ),
+                type: CurrencyEnum.BTC,
+              },
+              date: expiryTime,
+            };
+            return row;
+          })
+        : [];
+
     SetViewOrderDrawerHistoryTableData2(viewOrderDrawerHistoryTableData2_);
   }, [fullfillmentResult]);
 
@@ -445,6 +459,7 @@ const ViewOrderDrawer = ({
   let progress: number = offerData?.offerDetailsInJson?.progress
     ? Number(offerData.offerDetailsInJson.progress)
     : 0;
+
   return (
     <Drawer
       opened={isOpened}
@@ -471,9 +486,12 @@ const ViewOrderDrawer = ({
       >
         <div className={styles.root} ref={rootRef}>
           {mobileView && (
-            <span className={styles.cancel} onClick={onClose}>
-              Cancel
-            </span>
+            <Button variant={VariantsEnum.default} onClick={onClose} p={0}>
+              <Icon
+                icon="radix-icons:cross-circled"
+                className={styles.closeIcon}
+              />
+            </Button>
           )}
           <Grid className={styles.heading}>
             <Grid.Col span={11}>
@@ -488,13 +506,14 @@ const ViewOrderDrawer = ({
                   {/* <CurrencyDisplay amount={buyAmount} type={CurrencyEnum.ETH} /> */}
                 </Text>
               ) : (
-                <Text component="h1" className={styles.title}>
-                  <span className={styles.buy}>Buy:</span>
-                  <CurrencyDisplay amount={1} type={CurrencyEnum.BTC} />
-                  <span className={styles.for}> for </span>
-                  for {selectedCurrencyIcon} {buyAmount}
-                  {/* <CurrencyDisplay amount={10} type={CurrencyEnum.ETH} /> */}
-                </Text>
+                <>
+                  <Text component="h1" className={styles.title}>
+                    <span className={styles.buy}>Buy:</span>
+                    <CurrencyDisplay amount={1} type={CurrencyEnum.BTC} />
+                    <span className={styles.for}> for </span>
+                    {selectedCurrencyIcon} {buyAmount}
+                  </Text>
+                </>
               )}
             </Grid.Col>
             {!mobileView && (
@@ -517,9 +536,20 @@ const ViewOrderDrawer = ({
           </Box>
           <Box>
             <Text className={styles.label}>Order status</Text>
-            <Text className={styles.value}>
-              {offerData?.offerDetailsInJson?.progress} % filled
-            </Text>
+            {isCompleted == false ? (
+              <>
+                <Text className={styles.value}>
+                  {offerData?.offerDetailsInJson?.progress} % filled
+                </Text>
+              </>
+            ) : (
+              <>
+                <div className={styles.statusCell}>
+                  <ImageIcon image="/icons/check-circle.svg" />{" "}
+                  {StatusEnum.Completed}
+                </div>
+              </>
+            )}
           </Box>
           <Grid className={styles.offerExpire}>
             <Grid.Col span={"auto"} className={styles.data}>
@@ -573,7 +603,7 @@ const ViewOrderDrawer = ({
             </GradientBackgroundContainer>
           </Box>
           <div className={styles.buttonContainer}>
-            {progress != 100 && (
+            {progress != 100 && isCompleted == false && (
               <>
                 {cancelOffer !== "Cancelled" ? (
                   <>

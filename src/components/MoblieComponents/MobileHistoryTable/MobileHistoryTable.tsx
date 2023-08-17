@@ -65,11 +65,22 @@ const MobileHistoryTable = ({
           ))}
         </div>
         <div className={styles.tableBody}>
-          {data[currentIndex].map((item, index) => (
-            <span className={styles.tableData} key={index}>
-              {item}
-            </span>
-          ))}
+          {data.length > 0 ? (
+            <>
+              {data[currentIndex].map((item, index) => (
+                <span className={styles.tableData} key={index}>
+                  {item}
+                </span>
+              ))}
+            </>
+          ) : (
+            <>
+              <span className={styles.tableData}>&nbsp;</span>
+              <span className={styles.tableData}>&nbsp;</span>
+              <span className={styles.tableData}>&nbsp;</span>
+              <span className={styles.tableData}>&nbsp;</span>
+            </>
+          )}
         </div>
       </div>
     </div>

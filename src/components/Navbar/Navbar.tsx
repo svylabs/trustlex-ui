@@ -29,7 +29,7 @@ import {
 } from "~/utils/BitcoinUtils";
 import { PaperWalletDownloadedEnum } from "~/interfaces/IExchannge";
 import MyWalletDrawer from "~/components/GenerateWalletDrawer/MyWalletDrawer";
-
+import { getStringForTx } from "~/helpers/commonHelper";
 import {
   networks,
   activeExchange,
@@ -161,6 +161,7 @@ const Navbar = (props: Props) => {
       <div className={styles.left}>
         {/* <Connectors /> */}
         {/* <Web3Button /> */}
+
         <Button
           p={0}
           variant={"subtle"}
@@ -170,22 +171,33 @@ const Navbar = (props: Props) => {
         >
           <Icon icon="material-symbols:menu-rounded" className={styles.icon} />
         </Button>
-        {account != "" ? (
+        {mobileView == false && (
           <>
-            <div style={{ fontSize: 14 }}>
-              Connected To: {account} ({balance} ETH)
-              <br />
-              Network: {networkName}
-              <br /> Contract: {contractAddress}
-            </div>
+            {account != "" ? (
+              <>
+                <div style={{ fontSize: 14 }}>
+                  Connected To:{" "}
+                  <strong>{getStringForTx(account?.toUpperCase())}</strong> (
+                  <strong>{balance}</strong> ETH)
+                  <br />
+                  Network: {networkName}
+                  <br /> Contract:{" "}
+                  <strong>
+                    {getStringForTx(
+                      contractAddress ? contractAddress.toUpperCase() : ""
+                    )}
+                  </strong>
+                </div>
+              </>
+            ) : (
+              ""
+            )}
           </>
-        ) : (
-          ""
         )}
       </div>
-      <div className={styles.left}>
-        {/* <strong>Offer Currency : &nbsp;&nbsp;</strong> */}
-        {/* <OfferCurrencyDropdown
+      {/* <div className={styles.left}> */}
+      {/* <strong>Offer Currency : &nbsp;&nbsp;</strong> */}
+      {/* <OfferCurrencyDropdown
           selectedToken={selectedToken}
           setSelectedToken={setSelectedToken}
           userInputData={userInputData}
@@ -193,7 +205,7 @@ const Navbar = (props: Props) => {
           selectedNetwork={selectedNetwork}
           setSelectedNetwork={setSelectedNetwork}
         /> */}
-        {/* <NetworkMenu
+      {/* <NetworkMenu
           selectedToken={selectedToken}
           setSelectedToken={setSelectedToken}
           userInputData={userInputData}
@@ -202,7 +214,7 @@ const Navbar = (props: Props) => {
           setSelectedNetwork={setSelectedNetwork}
           checkNetwork={checkNetwork}
         /> */}
-      </div>
+      {/* </div> */}
       <div className={styles.right}>
         <div className={styles.btcNavbutton}>
           <NavDropdownButton

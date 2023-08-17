@@ -5,7 +5,7 @@ export function getStringForTx(
   fisrtN: number = 4,
   lastN: number = 4
 ) {
-  if (tx.length >= fisrtN + lastN) {
+  if (tx && tx.length >= fisrtN + lastN) {
     let fisrtNChars = tx.slice(0, 5);
     let lastNchars = tx.slice(-5);
     let resultString = `${fisrtNChars}...${lastNchars}`;

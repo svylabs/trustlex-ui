@@ -3,6 +3,8 @@ import NavDropdownButton from "../NavDropdownButton/NavDropdownButton";
 import DropdownSubmenu from "../NavDropdownButton/DropdownSubmenu";
 import BitcoinNodeSelectionMenu from "../BitcoinNodeSelectionMenu/BitcoinNodeSelectionMenu";
 import { Icon } from "@iconify/react";
+import { CiWifiOff } from "react-icons/ci";
+
 import { Button } from "@mantine/core";
 import { useContext, useEffect, useState } from "react";
 import { AppContext } from "~/Context/AppContext";
@@ -155,7 +157,7 @@ const Navbar = (props: Props) => {
     // console.log(myBTCWalletDrawerOpen);
   }, [myBTCWalletDrawerOpen]);
   /*------------End Functions for my wallet-------------*/
-
+  let icon = "/icons/bitcoin.svg";
   return (
     <nav className={styles.navbar}>
       <div className={styles.left}>
@@ -218,7 +220,12 @@ const Navbar = (props: Props) => {
       <div className={styles.right}>
         <div className={styles.btcNavbutton}>
           <NavDropdownButton
-            title={`${BTCBalance} BTC`}
+            title={
+              <>
+                <span>{BTCBalance}</span>{" "}
+                <img src={icon} className={styles.icon} />
+              </>
+            }
             handleNavButtonClick={handleShowSendBtc}
           />
 
@@ -257,23 +264,27 @@ const Navbar = (props: Props) => {
             { title: " RPC Username", href: "" },
           ]}
         /> */}
-        <BitcoinNodeSelectionMenu
-          selectedBitcoinNode={selectedBitcoinNode}
-          setSelectedBitcoinNode={setSelectedBitcoinNode}
-        />
-
-        <DropdownSubmenu
-          selectedToken={selectedToken}
-          setSelectedToken={setSelectedToken}
-          userInputData={userInputData}
-          setUserInputData={setUserInputData}
-          selectedNetwork={selectedNetwork}
-          setSelectedNetwork={setSelectedNetwork}
-          checkNetwork={checkNetwork}
-        />
-
+        {mobileView == false && (
+          <BitcoinNodeSelectionMenu
+            selectedBitcoinNode={selectedBitcoinNode}
+            setSelectedBitcoinNode={setSelectedBitcoinNode}
+          />
+        )}
+        {connectInfo.walletName == "metamask" && (
+          <>
+            <DropdownSubmenu
+              selectedToken={selectedToken}
+              setSelectedToken={setSelectedToken}
+              userInputData={userInputData}
+              setUserInputData={setUserInputData}
+              selectedNetwork={selectedNetwork}
+              setSelectedNetwork={setSelectedNetwork}
+              checkNetwork={checkNetwork}
+            />
+          </>
+        )}
         <NavDropdownButton
-          title={mobileView ? "Connected" : "Connected"}
+          title={mobileView ? "" : "Connected"}
           icon={connectedWalletImage}
           dropdownItems={disconnectDropdown}
         />

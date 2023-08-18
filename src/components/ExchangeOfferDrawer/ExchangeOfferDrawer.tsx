@@ -114,7 +114,7 @@ type Props = {
   selectedBitcoinNode: string;
   btcWalletData: IBTCWallet | undefined;
   setBTCWalletData: (btcWalletData: IBTCWallet | undefined) => void;
-  getSelectedTokenContractInstance: () => Promise<ethers.Contract | false>;
+  getSelectedTokenContractInstance: () => Promise<ethers.Contract | undefined>;
   connectInfo: IConnectInfo;
 };
 

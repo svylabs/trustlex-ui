@@ -199,7 +199,7 @@ export const createContractInstanceWagmi = async (
     return contract;
   } catch (error) {
     console.log(error);
-    return false;
+    return undefined;
   }
 };
 export const createContractInstanceWalletService = async (
@@ -330,22 +330,22 @@ export const getEventDataWagmi = async (
     //   toBlock
     // );
 
-    const unwatch = watchContractEvent(
-      {
-        address: contractAddress,
-        abi: contractABI,
-        eventName: "SETTLEMENT_SUCCESSFUL",
-      },
-      (log) => console.log(log)
-    );
-    return 0;
-    console.log(unwatch);
-    const data = await readContract({
-      address: contractAddress,
-      abi: contractABI,
-      eventName: "SETTLEMENT_SUCCESSFUL",
-    });
-    console.log(data);
+    // const unwatch = watchContractEvent(
+    //   {
+    //     address: contractAddress,
+    //     abi: contractABI,
+    //     eventName: "SETTLEMENT_SUCCESSFUL",
+    //   },
+    //   (log) => console.log(log)
+    // );
+    // return 0;
+    // console.log(unwatch);
+    // const data = await readContract({
+    //   address: contractAddress,
+    //   abi: contractABI,
+    //   eventName: "SETTLEMENT_SUCCESSFUL",
+    // });
+    // console.log(data);
     let total_quantityRequested = 0;
 
     if (receivedByAddress != "") {

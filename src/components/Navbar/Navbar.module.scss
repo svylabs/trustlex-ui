@@ -9,6 +9,7 @@
   top: 0;
   z-index: 10;
 
+
   .left {
     align-self: center;
     // height: 7rem;
@@ -27,6 +28,9 @@
     display: flex;
     align-items: center;
     gap: 1.8rem;
+    .icon {
+      width: 2.5rem;
+    }
   }
 }
 

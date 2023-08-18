@@ -521,6 +521,7 @@ function MySwaps() {
           connectInfo={connectInfo}
         />
       </GradientBackgroundContainer>
+
       {/* Star My Swap completed History */}
       <GradientBackgroundContainer colorLeft="#FFD57243">
         <Box p={"lg"} className={styles.box}>
@@ -539,8 +540,6 @@ function MySwaps() {
               selectedToken={selectedToken}
               selectedNetwork={selectedNetwork}
               contract={contract}
-              selectedToken={selectedToken}
-              selectedNetwork={selectedNetwork}
               getSelectedTokenContractInstance={
                 getSelectedTokenContractInstance
               }
@@ -555,8 +554,6 @@ function MySwaps() {
               selectedToken={selectedToken}
               selectedNetwork={selectedNetwork}
               contract={contract}
-              selectedToken={selectedToken}
-              selectedNetwork={selectedNetwork}
               getSelectedTokenContractInstance={
                 getSelectedTokenContractInstance
               }
@@ -613,6 +610,7 @@ function AllSwaps() {
     setMySwapAllCompletedfromOfferId,
     //end All completed variables
     account,
+    contract,
     selectedToken,
     selectedNetwork,
     getSelectedTokenContractInstance,
@@ -669,6 +667,7 @@ function AllSwaps() {
 
         date: TimeToDateFormat(value.offerDetailsInJson.orderedTime),
         status: StatusEnum.Completed,
+        offerData: value,
       };
       return row;
     }
@@ -754,6 +753,10 @@ function AllSwaps() {
                 ]
           }
           tableCaption="All Swaps"
+          contract={contract}
+          selectedToken={selectedToken}
+          selectedNetwork={selectedNetwork}
+          getSelectedTokenContractInstance={getSelectedTokenContractInstance}
         />
         <br />
         <Center>

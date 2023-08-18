@@ -46,7 +46,7 @@ interface Props extends TableProps {
   contract: ethers.Contract | undefined;
   selectedToken: string;
   selectedNetwork: string;
-  getSelectedTokenContractInstance: () => Promise<ethers.Contract | false>;
+  getSelectedTokenContractInstance: () => Promise<ethers.Contract | undefined>;
 }
 
 const RecentOngoingTable = ({

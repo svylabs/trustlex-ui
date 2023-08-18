@@ -322,7 +322,7 @@ export const getBalance = async (ethereumObject: any, address: string) => {
 export const createContractInstance = async (
   contractAddress: string,
   contractABI: string
-): Promise<ethers.Contract | false> => {
+): Promise<ethers.Contract | undefined> => {
   try {
     const { ethereum } = window;
     if (typeof ethereum !== undefined) {
@@ -335,13 +335,13 @@ export const createContractInstance = async (
         signer
       );
 
-      return contract;
+      return undefined;
     } else {
-      return false;
+      return undefined;
     }
   } catch (error) {
     console.log(error);
-    return false;
+    return undefined;
   }
 };
 

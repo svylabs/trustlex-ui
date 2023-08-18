@@ -118,6 +118,7 @@ export default function App() {
         : "",
     ethereumObject: isConnected == true ? publicClient : MetamaskEthereum,
   });
+  console.log(publicClient);
   const [account, setAccount] = useState(address ? address : "");
   const [balance, setBalance] = useState("");
   const [contract, setContract] = useState<ethers.Contract>();

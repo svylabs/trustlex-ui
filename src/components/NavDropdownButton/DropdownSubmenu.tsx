@@ -15,6 +15,7 @@ import {
   currencyObjects,
 } from "~/Context/Constants";
 import IUserInputData from "~/interfaces/IUserInputData";
+import { IConnectInfo } from "~/interfaces/INetworkInfo";
 
 interface INavDropdown {
   icon?: string;
@@ -50,6 +51,7 @@ interface props {
     selectedNetworkChainID?: number,
     selectedNetworkName?: string
   ) => void;
+  connectInfo: IConnectInfo;
 }
 
 const DropdownSubmenu = ({
@@ -60,6 +62,7 @@ const DropdownSubmenu = ({
   selectedNetwork,
   setSelectedNetwork,
   checkNetwork,
+  connectInfo,
 }: props) => {
   const [selectedCurrencyIcon, setSelectedCurrencyIcon] = useState<
     string | JSX.Element
@@ -142,6 +145,12 @@ const DropdownSubmenu = ({
             );
             let networkKey: string = value.networkKey;
             let networkName: string = NetworkInfo[networkKey].NetworkName;
+            if (connectInfo.walletName == "wallet_connect") {
+              let ChainID: number = NetworkInfo[networkKey].ChainID;
+              if (connectInfo.chainId != ChainID) {
+                return;
+              }
+            }
             return (
               <Menu.Item
                 key={index}

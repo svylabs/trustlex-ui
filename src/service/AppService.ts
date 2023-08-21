@@ -38,6 +38,17 @@ export const getEthereumObject = () => window.ethereum;
 // https://snyk.io/advisor/npm-package/ethereum-block-by-date
 const { EthDater } = window;
 
+export const getNetworkInfo = async () => {
+  let ethereumObject = window.ethereum;
+  if (typeof ethereumObject !== undefined) {
+    const provider = new ethers.providers.Web3Provider(ethereumObject);
+    const { chainId } = await provider.getNetwork();
+    // console.log(chainId); // 42
+    return chainId;
+  } else {
+    return 0;
+  }
+};
 export const findMetaMaskAccount = async () => {
   try {
     const ethereum = getEthereumObject();
@@ -191,6 +202,7 @@ export const getEventData = async (
     // console.log(fromLastHours, receivedByAddress);
     if (typeof ethereumObject !== undefined) {
       // const { ethereum } = window;
+
       const provider = new ethers.providers.Web3Provider(ethereumObject);
       let toBlock: any = await provider.getBlockNumber();
       // Getting block by date:
@@ -325,6 +337,7 @@ export const createContractInstance = async (
 ): Promise<ethers.Contract | undefined> => {
   try {
     const { ethereum } = window;
+
     if (typeof ethereum !== undefined) {
       const provider = new ethers.providers.Web3Provider(ethereum);
 
@@ -335,7 +348,7 @@ export const createContractInstance = async (
         signer
       );
 
-      return undefined;
+      return contract;
     } else {
       return undefined;
     }

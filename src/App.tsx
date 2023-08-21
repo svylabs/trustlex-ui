@@ -35,6 +35,8 @@ import {
   getEventData,
   isMetamaskConnectedService,
   connectToMetamask,
+  getEthereumObject,
+  getNetworkInfo,
 } from "./service/AppService";
 import {
   ethereum as WalletConnectEthereum,
@@ -82,6 +84,8 @@ import { number } from "bitcoinjs-lib/src/script";
 import Alert from "./components/Alerts/Alert";
 import ProtocolDocs from "./pages/Protocol/protocol";
 
+const { ethereum: MetamaskEthereum }: any = window;
+
 interface ConnectInfo {
   chainId: string;
 }
@@ -101,13 +105,12 @@ const DefaultPage = () => {
 };
 
 export default function App() {
-  const { ethereum: MetamaskEthereum } = window;
   const [isMetamaskConnected, setIsMetamaskConnected] = useState(false);
   const { address, isConnected, isDisconnected } = useAccount();
   // const provider = useProvider(...)
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
-  // console.log(walletClient);
+
   const [connectInfo, setConnectinfo] = useState<IConnectInfo>({
     isConnected: isConnected == true || isMetamaskConnected == true,
     walletName:
@@ -117,20 +120,23 @@ export default function App() {
         ? "metamask"
         : "",
     ethereumObject: isConnected == true ? publicClient : MetamaskEthereum,
+    chainId:
+      isConnected == true
+        ? publicClient.chain.id
+        : // : MetamaskEthereum.chain != undefined
+          // ? MetamaskEthereum.chain.id
+          0,
   });
-  console.log(publicClient);
+
   const [account, setAccount] = useState(address ? address : "");
   const [balance, setBalance] = useState("");
   const [contract, setContract] = useState<ethers.Contract>();
 
   useEffect(() => {
     (async () => {
-      // const balance2 = await fetchBalance({
-      //   address: "0xF85acc0C5b6d42Cd40B3F798E8e85b41597A5450",
-      // });
-      // console.log(balance2);
       let isMetamaskConnected = await isMetamaskConnectedService();
-      console.log(isMetamaskConnected);
+      let ethereum = getEthereumObject();
+
       let account = await connectToMetamask();
 
       setIsMetamaskConnected(isMetamaskConnected);
@@ -139,12 +145,12 @@ export default function App() {
           isConnected: true,
           walletName: "metamask",
           ethereumObject: MetamaskEthereum,
+          chainId: await getNetworkInfo(),
         });
         setAccount(account);
       }
-      // console.log("connectInfo", connectInfo);
     })();
-  }, []);
+  }, [MetamaskEthereum]);
 
   // console.log("address", address);
   // console.log("isConnected", isConnected);
@@ -166,17 +172,22 @@ export default function App() {
         ...connectInfo,
         isConnected: true,
         walletName: "wallet_connect",
+        chainId: publicClient.chain.id,
       });
     }
   }, [isConnected]);
   useEffect(() => {
     if (isDisconnected) {
-      if (connectInfo.walletName != "metamask") {
+      if (
+        connectInfo.walletName != "metamask" &&
+        connectInfo.walletName == "wallet_connect"
+      ) {
         console.log("WalletConnect disconnect hook emited");
         setConnectinfo({
           ...connectInfo,
           isConnected: false,
           walletName: "",
+          chainId: 0,
         });
       }
     }
@@ -190,16 +201,21 @@ export default function App() {
         ...connectInfo,
         isConnected: false,
         walletName: "",
+        chainId: 0,
       });
     });
-    (MetamaskEthereum as any).on("connect", (connectInfo: ConnectInfo) => {
-      console.log("Metamask event disconnect fired");
-      setConnectinfo({
-        ...connectInfo,
-        isConnected: true,
-        walletName: "metamask",
-      });
-    });
+    (MetamaskEthereum as any).on(
+      "connect",
+      async (connectInfo: ConnectInfo) => {
+        console.log("Metamask event connect fired");
+        setConnectinfo({
+          ...connectInfo,
+          isConnected: true,
+          walletName: "metamask",
+          chainId: await getNetworkInfo(),
+        });
+      }
+    );
   }
   return (
     <>
@@ -1068,9 +1084,6 @@ export function BaseApp() {
       contractAddress as string,
       contractABI
     );
-    console.log(contract);
-    // contract = contract.read;
-
     return contract;
   }
 

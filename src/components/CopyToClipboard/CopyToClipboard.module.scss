@@ -1,0 +1,23 @@
+
+
+
+
+.iconBox {
+  height: 100%;
+  width: 2.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(180deg,
+      rgba(255, 213, 114, 0.1) 0%,
+      rgba(254, 189, 56, 0.1) 100%);
+  cursor: pointer;
+  border-radius: 8px;
+
+  .icon {
+    color: #febd38;
+  }
+}
+
+
+

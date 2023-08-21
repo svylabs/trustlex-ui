@@ -78,6 +78,7 @@ export const getPriceRate = async (
       );
 
       roundData = await priceFeed.latestRoundData();
+
       const { answer } = roundData;
       let ETHToUSD = answer / 10 ** 8;
       //   console.log("ETHToUSD", ETHToUSD);
@@ -87,8 +88,10 @@ export const getPriceRate = async (
         contractAddres as string,
         aggregatorV3InterfaceABI
       );
+      // console.log(priceFeed, contractAddres, aggregatorV3InterfaceABI);
       roundData = await priceFeed.read.latestRoundData();
-      const { answer } = roundData;
+
+      const answer = roundData.length > 0 ? Number(roundData[1]) : 0;
       let ETHToUSD = answer / 10 ** 8;
       //   console.log("ETHToUSD", ETHToUSD);
       return ETHToUSD;

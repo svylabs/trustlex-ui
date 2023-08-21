@@ -8,37 +8,14 @@ import { CiWifiOff } from "react-icons/ci";
 import { Button } from "@mantine/core";
 import { useContext, useEffect, useState } from "react";
 import { AppContext } from "~/Context/AppContext";
-import {
-  connectToMetamask,
-  showErrorMessage,
-  showSuccessMessage,
-} from "~/service/AppService";
-import {
-  ethereum as WalletConnectEthereum,
-  provider as walletConnectprovider,
-} from "~/service/WalletConnectService";
-import SendBtcDrawer from "~/components/SendBtc/SendBtcDrawer/SendBtcDrawer";
-import SendBtcBox from "~/components/SendBtc/SendBtcBox/SendBtcBox";
-import OfferCurrencyDropdown from "~/components/OfferCurrencyDropdown/OfferCurrencyDropdown";
-import useWindowDimensions from "~/hooks/useWindowDimesnsion";
-import NetworkMenu from "./NetworkMenu";
-import Connectors from "~/components/Connectors/Connectors";
 
-import {
-  Wallet,
-  generateBitcoinWallet,
-  generateTrustlexAddress,
-} from "~/utils/BitcoinUtils";
+import SendBtcBox from "~/components/SendBtc/SendBtcBox/SendBtcBox";
+import useWindowDimensions from "~/hooks/useWindowDimesnsion";
+
 import { PaperWalletDownloadedEnum } from "~/interfaces/IExchannge";
 import MyWalletDrawer from "~/components/GenerateWalletDrawer/MyWalletDrawer";
 import { getStringForTx } from "~/helpers/commonHelper";
-import {
-  networks,
-  activeExchange,
-  currencyObjects,
-  NetworkInfo,
-} from "~/Context/Constants";
-import { ethers } from "ethers";
+import { currencyObjects, NetworkInfo } from "~/Context/Constants";
 
 //------------Import for wallet connect -----------------//
 import { EthereumClient } from "@web3modal/ethereum";
@@ -46,6 +23,10 @@ import { useWeb3Modal } from "@web3modal/react";
 import { useAccount, useConnect, useDisconnect, useEnsName } from "wagmi";
 import { InjectedConnector } from "wagmi/connectors/injected";
 import { Web3Button } from "@web3modal/react";
+
+import CopyToClipboard from "~/components/CopyToClipboard/CopyToClipboard";
+import { Grid } from "@mantine/core";
+
 //------------End Import for wallet connect -----------------//
 type Props = {
   toggleSidebar: () => void;
@@ -108,13 +89,7 @@ const Navbar = (props: Props) => {
     } else if (connectInfo.walletName == "wallet_connect") {
       disconnect();
     }
-
-    // setConnectinfo({
-    //   ...connectInfo,
-    //   isConnected: false,
-    //   walletName: "",
-    // });
-    console.log("disconnected");
+    // console.log("disconnected");
   };
 
   const disconnectDropdown = [
@@ -183,12 +158,25 @@ const Navbar = (props: Props) => {
                   <strong>{balance}</strong> ETH)
                   <br />
                   Network: {networkName}
-                  <br /> Contract:{" "}
-                  <strong>
-                    {getStringForTx(
-                      contractAddress ? contractAddress.toUpperCase() : ""
-                    )}
-                  </strong>
+                  <br />
+                  <Grid>
+                    <Grid.Col span={7}>
+                      <span>Contract: &nbsp;</span>
+                      <strong>
+                        {getStringForTx(
+                          contractAddress ? contractAddress.toUpperCase() : ""
+                        )}{" "}
+                      </strong>
+                    </Grid.Col>
+
+                    <Grid.Col span={5}>
+                      <CopyToClipboard
+                        text={
+                          contractAddress ? contractAddress.toUpperCase() : ""
+                        }
+                      />
+                    </Grid.Col>
+                  </Grid>
                 </div>
               </>
             ) : (
@@ -270,19 +258,18 @@ const Navbar = (props: Props) => {
             setSelectedBitcoinNode={setSelectedBitcoinNode}
           />
         )}
-        {connectInfo.walletName == "metamask" && (
-          <>
-            <DropdownSubmenu
-              selectedToken={selectedToken}
-              setSelectedToken={setSelectedToken}
-              userInputData={userInputData}
-              setUserInputData={setUserInputData}
-              selectedNetwork={selectedNetwork}
-              setSelectedNetwork={setSelectedNetwork}
-              checkNetwork={checkNetwork}
-            />
-          </>
-        )}
+
+        <DropdownSubmenu
+          selectedToken={selectedToken}
+          setSelectedToken={setSelectedToken}
+          userInputData={userInputData}
+          setUserInputData={setUserInputData}
+          selectedNetwork={selectedNetwork}
+          setSelectedNetwork={setSelectedNetwork}
+          checkNetwork={checkNetwork}
+          connectInfo={connectInfo}
+        />
+
         <NavDropdownButton
           title={mobileView ? "" : "Connected"}
           icon={connectedWalletImage}

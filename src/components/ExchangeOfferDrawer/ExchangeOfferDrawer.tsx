@@ -83,7 +83,7 @@ import { default as Countdowntimer } from "react-countdown";
 import BtcToSatoshiConverter from "~/utils/BtcToSatoshiConverter";
 import { currencyObjects } from "~/Context/Constants";
 import { IBTCWallet } from "~/utils/BitcoinUtils";
-import { IConnectInfo } from "./interfaces/INetworkInfo";
+import { IConnectInfo } from "~/interfaces/INetworkInfo";
 
 type Props = {
   isOpened: boolean;

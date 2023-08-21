@@ -8,4 +8,5 @@ export interface IConnectInfo {
   walletName: string;
   ethereumObject?: any;
   provider?: any;
+  chainId: number;
 }

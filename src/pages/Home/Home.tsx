@@ -91,9 +91,9 @@ const Home = (props: Props) => {
   };
   const [totalNetworks, setTotalNetworks] = useState(networks.length);
   const [totalPairs, setTotalPairs] = useState(0);
-  const [totalLockedAmount, setTotalLockedAmount] = useState<string>("0");
+  const [totalLockedAmount, setTotalLockedAmount] = useState<number>(0);
   const [totalTransactionVolume, setTotalTransactionVolume] =
-    useState<string>("0");
+    useState<number>(0);
 
   const handleLimitChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setUserInputData((prev) => {
@@ -127,7 +127,7 @@ const Home = (props: Props) => {
       contract_balance = await fetchBalanceWagmi(contractAddress, "eth");
       contract_balance = +tofixedEther(contract_balance).toString();
     }
-
+    // console.log(contract_balance);
     return contract_balance;
   }
 
@@ -186,7 +186,7 @@ const Home = (props: Props) => {
       let contractInstance = await getSelectedTokenContractInstance();
       // console.log(contractInstance);
       let total_quantityRequested = 0;
-      if (contractInstance != false) {
+      if (!contractInstance) {
         let fromLastHours: number = 24;
         total_quantityRequested = 0;
         // await getEventData(
@@ -205,14 +205,12 @@ const Home = (props: Props) => {
         priceRateBTCContractAddress,
         connectInfo
       );
-      // console.log("btc_to_usd_rate", btc_to_usd_rate);
-      // console.log("total_quantityRequested", total_quantityRequested);
 
       let total_transaction_volume_btc = await ConvertCrytoToFiat(
         btc_to_usd_rate,
         total_quantityRequested
       );
-      // console.log(total_transaction_volume_btc);
+
       setTotalTransactionVolume(total_transaction_volume_btc);
     })();
   }, [selectedToken]);
@@ -236,7 +234,11 @@ const Home = (props: Props) => {
               color="#67D558b3"
               icon="/icons/Lock.png"
               title="Total Value Locked"
-              value={`$ ${totalLockedAmount}`}
+              value={
+                !isNaN(totalLockedAmount)
+                  ? `$ ${totalLockedAmount}`
+                  : "Unable to fetch!"
+              }
             />
             <HomepageCard
               color="#78CEF9b3"

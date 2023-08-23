@@ -17,7 +17,7 @@ export interface ITableRow {
 interface Props extends TableProps {
   tableCaption?: string;
   cols: string[];
-  data: ITableRow[];
+  data: ITableRow[] | undefined;
   GetProgressText: ({ progress }: { progress: string }) => any;
 }
 
@@ -37,14 +37,16 @@ const ViewOrderDrawerHistoryTable = ({
       setIsMoreTableDataLoading(false);
     }, 2000);
   };
+  console.log(data);
   const tableData = data
     ? data.map((item) => [
         item.orderNumber,
         <CurrencyDisplay {...item.planningToSell} />,
         <CurrencyDisplay {...item.planningToBuy} />,
-        <GetProgressText progress={item.date} />,
+        !mobileView ? <GetProgressText progress={item.date} /> : item.date,
       ])
     : [];
+
   return (
     <div className={styles.root}>
       {!mobileView ? (

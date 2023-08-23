@@ -83,6 +83,7 @@ import { default as Countdowntimer } from "react-countdown";
 import BtcToSatoshiConverter from "~/utils/BtcToSatoshiConverter";
 import { currencyObjects } from "~/Context/Constants";
 import { IBTCWallet } from "~/utils/BitcoinUtils";
+import { IConnectInfo } from "~/interfaces/INetworkInfo";
 
 type Props = {
   isOpened: boolean;
@@ -113,7 +114,8 @@ type Props = {
   selectedBitcoinNode: string;
   btcWalletData: IBTCWallet | undefined;
   setBTCWalletData: (btcWalletData: IBTCWallet | undefined) => void;
-  getSelectedTokenContractInstance: () => Promise<ethers.Contract | false>;
+  getSelectedTokenContractInstance: () => Promise<ethers.Contract | undefined>;
+  connectInfo: IConnectInfo;
 };
 
 const ExchangeOfferDrawer = ({
@@ -140,6 +142,7 @@ const ExchangeOfferDrawer = ({
   btcWalletData,
   setBTCWalletData,
   getSelectedTokenContractInstance,
+  connectInfo,
 }: Props) => {
   const { get, set, remove } = useLocalstorage();
   const { cleanTx } = window;
@@ -214,23 +217,30 @@ const ExchangeOfferDrawer = ({
         // ["0xFD05beBFEa081f6902bf9ec57DCb50b40BA02510", 0, 0, '0x0000000000000000000000000000000000000000', 0]
         [
           contractAddress,
-          rowOfferId,
+          Number(rowOfferId),
           fulfillmentId,
           foundOffer.offerDetailsInJson.pubKeyHash,
-          orderTimestamp,
+          Number(orderTimestamp),
         ]
       )
     );
 
     const shortOrderId = orderId.slice(2, 10);
+
     //let publicKeyCurrentUser = btcWalletData?.extendd;
     //let pubKeyHash = btcWalletData?.pubkeyHash || "";
     //let inputForSecret = publicKeyCurrentUser + shortOrderId;
     //let inputForSecretBuffer: Buffer = Buffer.from(inputForSecret, "hex");
     let extendedPublicKeyRecovery = btcWalletData?.extendedPublicKeyRecovery;
     let extendedPublicKeySecret = btcWalletData?.extendedPublicKeySecret;
-    let pubKeyHash = deriveRecoveryPubKeyHash(extendedPublicKeyRecovery || '', rowOfferId || 0).toString('hex');
-    let secret = deriveSecret(extendedPublicKeySecret || '', rowOfferId || 0);
+    console.log(extendedPublicKeyRecovery, rowOfferId);
+    let pubKeyHash = deriveRecoveryPubKeyHash(
+      extendedPublicKeyRecovery || "",
+      Number(rowOfferId) || 0
+    ).toString("hex");
+
+    let secret = deriveSecret(extendedPublicKeySecret || "", rowOfferId || 0);
+    console.log({ shortOrderId, secret, pubKeyHash });
     return { shortOrderId, secret, pubKeyHash };
   };
 
@@ -241,7 +251,7 @@ const ExchangeOfferDrawer = ({
     setInitiatedOrders,
   } = context;
 
-  let foundOffer =
+  let foundOffer: any =
     rowOfferId &&
     // listenedOfferData.offers.find((offer) => {
     listenedOfferDataByNonEvent.offers.find((offer) => {
@@ -258,8 +268,11 @@ const ExchangeOfferDrawer = ({
       // get offer details
       let offerDetails: IOfferdata | false | undefined = await getOffer(
         contract,
-        rowOfferId
+        rowOfferId,
+        "",
+        connectInfo.walletName
       );
+
       if (!offerDetails || offerDetails === undefined) return;
       // console.log(offerDetails);
 
@@ -279,7 +292,6 @@ const ExchangeOfferDrawer = ({
         isOrderExpired = true;
         setIsOrderExpired(true);
       }
-      // console.log(isOrderExpired);
 
       let planningToSell_ = Number(
         ethers.utils.formatEther(foundOffer.offerDetailsInJson.offerQuantity)
@@ -304,7 +316,11 @@ const ExchangeOfferDrawer = ({
       //-----------------Update satoshisReserved if order is expired ---------------------//
       // get the offerfullfillment details
       let fullfillmentResults: IResultSettlementRequest[] =
-        await getInitializedFulfillmentsByOfferId(contract, rowOfferId);
+        await getInitializedFulfillmentsByOfferId(
+          contract,
+          rowOfferId,
+          connectInfo.walletName
+        );
 
       fullfillmentResults &&
         fullfillmentResults?.map(
@@ -359,6 +375,7 @@ const ExchangeOfferDrawer = ({
 
       // Make the btc address to pay
       let pubKeyHash = Buffer.from(offerDetails.pubKeyHash.substring(2), "hex");
+
       const addressParameters = getParametersForAddress(
         contractAddress || "",
         foundOffer,
@@ -454,9 +471,10 @@ const ExchangeOfferDrawer = ({
           (Number(ethers.utils.formatEther(offerQuantity)) /
             Number(SatoshiToBtcConverter(satoshisToReceive)));
       }
+      console.log(left_to_buy);
       //----------------------------------End if order already initiated ----------------------//
       left_to_buy = tofixedEther(left_to_buy);
-      // console.log(left_to_buy);
+      console.log(left_to_buy);
       setLeftToBuy(left_to_buy);
       setEthValue(left_to_buy);
     })();
@@ -698,7 +716,19 @@ const ExchangeOfferDrawer = ({
     return BTCAmount;
   };
 
-  const renderer = ({ days, hours, minutes, seconds, completed }) => {
+  const renderer = ({
+    days,
+    hours,
+    minutes,
+    seconds,
+    completed,
+  }: {
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+    completed: boolean;
+  }) => {
     // Render a countdown
     return (
       <span>
@@ -748,7 +778,7 @@ const ExchangeOfferDrawer = ({
   };
 
   const getInitiatedOrderDetails = () => {
-    let rowOfferId_ = rowOfferId.toString();
+    let rowOfferId_ = rowOfferId?.toString();
 
     let initiatedOrders_ = initiatedOrders;
 
@@ -764,7 +794,7 @@ const ExchangeOfferDrawer = ({
     return initiatedOrderResult;
   };
   const getInitiatedOrderDetailsIndex = () => {
-    let rowOfferId_ = rowOfferId.toString();
+    let rowOfferId_ = rowOfferId?.toString();
 
     let initiatedOrders_ = initiatedOrders;
 
@@ -872,7 +902,7 @@ const ExchangeOfferDrawer = ({
       });
 
       // set the data in local storage
-      let rowOfferId_ = rowOfferId.toString();
+      let rowOfferId_ = rowOfferId?.toString();
       let userAccount = account.toLowerCase();
 
       let initiatedOrderResult: IInitiatedOrder | undefined =
@@ -881,7 +911,7 @@ const ExchangeOfferDrawer = ({
       if (initiatedOrderResult === undefined) {
         let userIntiatedOrder: IInitiatedOrder = {
           accountAddress: userAccount,
-          offerId: rowOfferId_,
+          offerId: rowOfferId_ as string,
           ethAmount: ethValue as string,
           txHash: transactionHash,
           blockHash: blockHash,
@@ -926,7 +956,10 @@ const ExchangeOfferDrawer = ({
                     onClose(false);
                   }}
                 >
-                  Cancel
+                  <Icon
+                    icon="radix-icons:cross-circled"
+                    className={styles.closeIcon}
+                  />
                 </span>
               </Grid.Col>
             )}

@@ -6,6 +6,7 @@ import { IAddOfferWithToken } from "~/interfaces/IAddOfferWithToken";
 import erc20ContractABI from "~/files/erc20Contract.json";
 import { ERC20 } from "~/Context/AppConfig";
 import { ContractMap } from "~/Context/AppConfig";
+import { waitForTransaction } from "wagmi/actions";
 import {
   IFullfillmentEvent,
   IListenedOfferData,
@@ -37,14 +38,27 @@ export const getEthereumObject = () => window.ethereum;
 // https://snyk.io/advisor/npm-package/ethereum-block-by-date
 const { EthDater } = window;
 
+export const getNetworkInfo = async () => {
+  let ethereumObject = window.ethereum;
+  if (typeof ethereumObject !== undefined) {
+    const provider = new ethers.providers.Web3Provider(ethereumObject);
+    const { chainId } = await provider.getNetwork();
+    // console.log(chainId); // 42
+    return chainId;
+  } else {
+    return 0;
+  }
+};
 export const findMetaMaskAccount = async () => {
   try {
     const ethereum = getEthereumObject();
+
     if (!ethereum || ethereum.request === undefined) {
       return false;
     }
 
     const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+
     if (accounts.length !== 0) {
       const account = accounts[0];
       return account;
@@ -91,10 +105,10 @@ export const findWalletConnetAccount = async () => {
 export const connectToMetamask = async () => {
   try {
     const ethereum = getEthereumObject();
-    console.log(ethereum);
     if (ethereum == undefined || ethereum.request === undefined) {
-      showErrorMessage("Get MetaMask!");
-      alert("Get MetaMask!");
+      // showErrorMessage("Get MetaMask!");
+      // alert("Get MetaMask!");
+      console.log("Get MetaMask!");
       return false;
     }
     // console.log(ethereum.request);
@@ -102,92 +116,97 @@ export const connectToMetamask = async () => {
       method: "eth_requestAccounts",
     });
     return accounts[0];
-  } catch (error) {
+  } catch (error: any) {
+    // console.log(error.message);
+    showErrorMessage(error.message);
+
     return false;
   }
 };
-export const listOffers = async (
-  trustLex: ethers.Contract | undefined,
-  fromBlock: number = 0,
-  toBlock: "latest" | number = "latest"
-) => {
-  try {
-    console.log("Querying... ", fromBlock, toBlock);
-    if (!trustLex || toBlock == -1)
-      return { fromBlock: fromBlock, toBlock: toBlock, offers: [] };
-    let estimatedFromBlock = fromBlock;
-    if (toBlock === "latest") {
-      toBlock = await trustLex.provider.getBlockNumber();
-      estimatedFromBlock = Math.max(0, toBlock - MAX_BLOCKS_TO_QUERY);
-    } else if (toBlock > 0) {
-      estimatedFromBlock = Math.max(fromBlock, toBlock - MAX_BLOCKS_TO_QUERY);
-    }
-    const offers: IListenedOfferData[] = [];
-    let iterations = 0;
-    do {
-      estimatedFromBlock = Math.max(
-        fromBlock,
-        estimatedFromBlock - MAX_BLOCKS_TO_QUERY
-      );
-      console.log(
-        "Querying... ",
-        estimatedFromBlock,
-        estimatedFromBlock + MAX_BLOCKS_TO_QUERY
-      );
-      const offersSubSet = await trustLex.queryFilter(
-        "NEW_OFFER",
-        estimatedFromBlock,
-        estimatedFromBlock + MAX_BLOCKS_TO_QUERY
-      );
-      const promises = offersSubSet.map(async (offer) => {
-        const offerEvent = {
-          from: offer.args ? offer.args[0] : "",
-          to: offer.args ? offer.args[1] : "",
-        };
+// export const listOffers = async (
+//   trustLex: ethers.Contract | undefined,
+//   fromBlock: number = 0,
+//   toBlock: "latest" | number = "latest"
+// ) => {
+//   try {
+//     console.log("Querying... ", fromBlock, toBlock);
+//     if (!trustLex || toBlock == -1)
+//       return { fromBlock: fromBlock, toBlock: toBlock, offers: [] };
+//     let estimatedFromBlock = fromBlock;
+//     if (toBlock === "latest") {
+//       toBlock = await trustLex.provider.getBlockNumber();
+//       estimatedFromBlock = Math.max(0, toBlock - MAX_BLOCKS_TO_QUERY);
+//     } else if (toBlock > 0) {
+//       estimatedFromBlock = Math.max(fromBlock, toBlock - MAX_BLOCKS_TO_QUERY);
+//     }
+//     const offers: IListenedOfferData[] = [];
+//     let iterations = 0;
+//     do {
+//       estimatedFromBlock = Math.max(
+//         fromBlock,
+//         estimatedFromBlock - MAX_BLOCKS_TO_QUERY
+//       );
+//       console.log(
+//         "Querying... ",
+//         estimatedFromBlock,
+//         estimatedFromBlock + MAX_BLOCKS_TO_QUERY
+//       );
+//       const offersSubSet = await trustLex.queryFilter(
+//         "NEW_OFFER",
+//         estimatedFromBlock,
+//         estimatedFromBlock + MAX_BLOCKS_TO_QUERY
+//       );
+//       const promises = offersSubSet.map(async (offer) => {
+//         const offerEvent = {
+//           from: offer.args ? offer.args[0] : "",
+//           to: offer.args ? offer.args[1] : "",
+//         };
 
-        const offerData = await getOffers(trustLex, offerEvent.to);
-        const offerDetailsInJson = {
-          offerQuantity: offerData[0].toString(),
-          offeredBy: offerData[1].toString(),
-          offerValidTill: offerData[2].toString(),
-          orderedTime: offerData[3].toString(),
-          offeredBlockNumber: offerData[4].toString(),
-          bitcoinAddress: offerData[5].toString(),
-          satoshisToReceive: offerData[6].toString(),
-          satoshisReceived: offerData[7].toString(),
-          satoshisReserved: offerData[8].toString(),
-          collateralPer3Hours: offerData[9].toString(),
-        };
-        return { offerEvent, offerDetailsInJson };
-      });
-      const offersList: IListenedOfferData[] = await Promise.all(promises);
-      offersList.forEach((o) => {
-        offers.push(o);
-      });
-      iterations++;
-    } while (estimatedFromBlock > fromBlock && iterations < MAX_ITERATIONS);
-    // console.log(offers);
-    return {
-      fromBlock: fromBlock,
-      toBlock: toBlock,
-      offers: offers,
-    };
-  } catch (error) {
-    console.log(error);
-    return { offers: [], fromBlock, toBlock };
-  }
-};
+//         const offerData = await getOffers(trustLex, offerEvent.to);
+//         const offerDetailsInJson = {
+//           offerQuantity: offerData[0].toString(),
+//           offeredBy: offerData[1].toString(),
+//           offerValidTill: offerData[2].toString(),
+//           orderedTime: offerData[3].toString(),
+//           offeredBlockNumber: offerData[4].toString(),
+//           bitcoinAddress: offerData[5].toString(),
+//           satoshisToReceive: offerData[6].toString(),
+//           satoshisReceived: offerData[7].toString(),
+//           satoshisReserved: offerData[8].toString(),
+//           collateralPer3Hours: offerData[9].toString(),
+//         };
+//         return { offerEvent, offerDetailsInJson };
+//       });
+//       const offersList: IListenedOfferData[] = await Promise.all(promises);
+//       offersList.forEach((o) => {
+//         offers.push(o);
+//       });
+//       iterations++;
+//     } while (estimatedFromBlock > fromBlock && iterations < MAX_ITERATIONS);
+//     // console.log(offers);
+//     return {
+//       fromBlock: fromBlock,
+//       toBlock: toBlock,
+//       offers: offers,
+//     };
+//   } catch (error) {
+//     console.log(error);
+//     return { offers: [], fromBlock, toBlock };
+//   }
+// };
 
 export const getEventData = async (
   ContractInstance: ethers.Contract,
   fromLastHours: number = 0,
-  receivedByAddress: string = ""
+  receivedByAddress: string = "",
+  ethereumObject: any
 ) => {
   try {
     // console.log(fromLastHours, receivedByAddress);
-    if (typeof window.ethereum !== undefined) {
-      const { ethereum } = window;
-      const provider = new ethers.providers.Web3Provider(ethereum);
+    if (typeof ethereumObject !== undefined) {
+      // const { ethereum } = window;
+
+      const provider = new ethers.providers.Web3Provider(ethereumObject);
       let toBlock: any = await provider.getBlockNumber();
       // Getting block by date:
       const dater = new EthDater(
@@ -238,16 +257,6 @@ export const getEventData = async (
           compactFulfillmentDetail & ((BigInt(1) << BigInt(8 * 8)) - BigInt(1))
         );
         total_quantityRequested += quantityRequested;
-        // console.log([
-        //   fulfillmentId,
-        //   quantityRequested,
-        //   offerId,
-        //   submittedBy,
-        //   receivedBy,
-        //   txHash,
-        //   outputHash,
-        //   compactFulfillmentDetail,
-        // ]);
       });
       // console.log(PAYMENT_SUCCESSFUL_EVENTS);
       // console.log(total_quantityRequested);
@@ -310,17 +319,15 @@ export const connect = async (
   }
 };
 
-export const getBalance = async (address: string) => {
+export const getBalance = async (ethereumObject: any, address: string) => {
   try {
-    if (typeof window.ethereum !== undefined) {
-      const { ethereum } = window;
-      const provider = new ethers.providers.Web3Provider(ethereum);
-      let balance: any = await provider.getBalance(address);
-      balance = +ethers.utils.formatEther(balance);
-      return balance;
-    } else {
-      return 0;
-    }
+    // console.log(ethereumObject, address);
+    const provider = new ethers.providers.Web3Provider(ethereumObject);
+    let balance: any = await provider.getBalance(address);
+    balance = +ethers.utils.formatEther(balance);
+
+    // console.log(balance);
+    return balance;
   } catch (error) {
     console.log(error);
     return 0;
@@ -330,10 +337,11 @@ export const getBalance = async (address: string) => {
 export const createContractInstance = async (
   contractAddress: string,
   contractABI: string
-): Promise<ethers.Contract | false> => {
+): Promise<ethers.Contract | undefined> => {
   try {
-    if (typeof window.ethereum !== undefined) {
-      const { ethereum } = window;
+    const { ethereum } = window;
+
+    if (typeof ethereum !== undefined) {
       const provider = new ethers.providers.Web3Provider(ethereum);
 
       const signer = provider.getSigner();
@@ -345,11 +353,11 @@ export const createContractInstance = async (
 
       return contract;
     } else {
-      return false;
+      return undefined;
     }
   } catch (error) {
     console.log(error);
-    return false;
+    return undefined;
   }
 };
 
@@ -384,15 +392,24 @@ export const getERC20TokenBalance = async (
   }
 };
 
-export const getTotalOffers = async (trustLex: ethers.Contract | undefined) => {
+export const getTotalOffers = async (
+  trustLex: ethers.Contract | undefined,
+  walletName: string = "metamask"
+) => {
   try {
     if (!trustLex) return false;
+    let offerData;
+    if (walletName == "metamask") {
+      offerData = await trustLex.getTotalOffers();
+    } else if (walletName == "wallet_connect") {
+      offerData = await trustLex.read.getTotalOffers();
+    }
 
-    let offerData = await trustLex.getTotalOffers();
     return offerData.toString();
   } catch (error) {
+    console.log("error");
     console.log(error);
-    return;
+    return 0;
   }
 };
 
@@ -415,13 +432,22 @@ export const getOffers = async (
 export const getOffer = async (
   trustLex: ethers.Contract | undefined,
   offerId: any,
-  account: string = ""
+  account: string = "",
+  walletName: string = "metamask"
 ) => {
   try {
     if (!trustLex) return false;
 
-    let offer: IOfferdata = await trustLex.getOffer(offerId);
-
+    let offer: IOfferdata | undefined = undefined;
+    if (walletName == "metamask") {
+      offer = await trustLex.getOffer(offerId);
+    }
+    if (walletName == "wallet_connect") {
+      offer = await trustLex.read.getOffer([offerId]);
+    }
+    if (!offer) {
+      return undefined;
+    }
     const offerDetailsInJson: IOfferdata = {
       offerId: offerId,
       offerQuantity: offer.offerQuantity.toString(),
@@ -468,7 +494,7 @@ export const getOffer = async (
     }
     // get the fullfillment list
     let FullfillmentResults: IResultSettlementRequest[] =
-      await getInitializedFulfillmentsByOfferId(trustLex, offerId);
+      await getInitializedFulfillmentsByOfferId(trustLex, offerId, walletName);
 
     let fullfillmentRequestId = undefined;
     let fullfillmentResult =
@@ -480,7 +506,7 @@ export const getOffer = async (
           //   &&
           // fullfillmentResult.settlementRequest.settled == false
         ) {
-          fullfillmentRequestId = offer.settlementRequests[index];
+          fullfillmentRequestId = offer?.settlementRequests[index];
           return true;
         } else {
           return false;
@@ -515,7 +541,8 @@ export const getOffer = async (
 export const AddOfferWithEth = async (
   trustLex: ethers.Contract | undefined,
   data: IAddOfferWithEth,
-  sellCurrecny: string
+  sellCurrecny: string,
+  ethereumObject: any
 ) => {
   const { weieth, satoshis, pubKeyHash, offerValidTill, account } = data;
 
@@ -529,7 +556,8 @@ export const AddOfferWithEth = async (
     // Get the ETH account
     // const account = await connectToMetamask();
     // Get the ETH balance
-    const EthBalance = await getBalance(account);
+    const EthBalance = await getBalance(ethereumObject, account);
+
     const userInputEth = WeitoEth(weieth);
 
     if (userInputEth > EthBalance) {
@@ -708,7 +736,8 @@ export const increaseContractAllownace = async (
 
 export const getOffersList = async (
   trustLex: ethers.Contract | undefined,
-  fromOfferId: number
+  fromOfferId: number,
+  walletName: string
 ) => {
   try {
     if (!trustLex) {
@@ -716,10 +745,20 @@ export const getOffersList = async (
       return <IOffersResultByNonEvent>{ offers: [] };
     }
 
-    let offersData = await trustLex.getOffers(fromOfferId);
-    // console.log(offersData);
-    let totalFetchedRecords = offersData.total;
-    let records = offersData.result;
+    let offersData: any;
+    let totalFetchedRecords: number = 0;
+    let records: any = [];
+
+    if (walletName == "metamask") {
+      offersData = await trustLex.getOffers(fromOfferId);
+      totalFetchedRecords = offersData.total;
+      records = offersData.result;
+    }
+    if (walletName == "wallet_connect") {
+      offersData = await trustLex.read.getOffers([fromOfferId]);
+      totalFetchedRecords = offersData[1];
+      records = offersData[0];
+    }
 
     const promises = [];
     for (let i = 0; i < totalFetchedRecords; i++) {
@@ -751,15 +790,19 @@ export const getOffersList = async (
       // fetch the intial fullfillment
       let allFullfillments = await getInitializedFulfillmentsByOfferId(
         trustLex,
-        offerDetailsInJson.offerId
+        offerDetailsInJson.offerId,
+        walletName
       );
+
       offerDetailsInJson.settlementRequestResults = allFullfillments;
 
       // }
       // console.log(offerDetailsInJson);
       promises.push({ offerDetailsInJson });
     }
+
     const offersList = await Promise.all(promises);
+    // console.log(offersList);
     return <IOffersResultByNonEvent>{
       offers: offersList,
     };
@@ -772,17 +815,28 @@ export const getOffersList = async (
 export const listInitializeFullfillmentOnGoingByNonEvent = async (
   trustLex: ethers.Contract | undefined,
   account: string,
-  fromOfferId: number
+  fromOfferId: number,
+  walletName: string = "metamask"
 ) => {
   let MyoffersList: IListInitiatedFullfillmentDataByNonEvent[] = [];
   if (!trustLex) {
-    console.log("trustLex is not defined", trustLex);
     return MyoffersList;
   }
-  let offersData = await trustLex.getOffers(fromOfferId);
+  let offersData: any;
+  let totalFetchedRecords: number = 0;
+  let offers: IResultOffer[] = [];
 
-  let totalFetchedRecords = offersData.total;
-  let offers: IResultOffer[] = offersData.result;
+  if (walletName == "metamask") {
+    offersData = await trustLex.getOffers(fromOfferId);
+    totalFetchedRecords = offersData.total;
+    offers = offersData.result;
+  } else if (walletName == "wallet_connect") {
+    offersData = await trustLex.read.getOffers([fromOfferId]);
+
+    totalFetchedRecords = Number(offersData[1]);
+    offers = offersData[0];
+  }
+
   let MyOngoingOrdersPromises = [];
   const MyOffersPromises = [];
   for (let i = 0; i < totalFetchedRecords; i++) {
@@ -831,7 +885,8 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
     let FullfillmentResults: IResultSettlementRequest[] =
       await getInitializedFulfillmentsByOfferId(
         trustLex,
-        Number(value.offerId)
+        Number(value.offerId),
+        walletName
       );
 
     let fullfillmentRequestId = undefined;
@@ -878,16 +933,30 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
 export const listInitializeFullfillmentCompletedByNonEvent = async (
   trustLex: ethers.Contract | undefined,
   account: string = "",
-  fromOfferId: number
+  fromOfferId: number,
+  walletName: string = "metamask"
 ) => {
   let MyoffersList: IListInitiatedFullfillmentDataByNonEvent[] = [];
   if (!trustLex) {
     console.log("trustLex is not defined", trustLex);
     return MyoffersList;
   }
-  let offersData = await trustLex.getOffers(fromOfferId);
-  let totalFetchedRecords = offersData.total;
-  let offers: IResultOffer[] = offersData.result;
+
+  let offersData: any;
+  let totalFetchedRecords: number = 0;
+  let offers: IResultOffer[] = [];
+  if (walletName == "metamask") {
+    offersData = await trustLex.getOffers(fromOfferId);
+
+    totalFetchedRecords = offersData.total;
+    offers = offersData.result;
+  } else if (walletName == "wallet_connect") {
+    offersData = await trustLex.read.getOffers([fromOfferId]);
+
+    totalFetchedRecords = Number(offersData[1]);
+    offers = offersData[0];
+  }
+
   const MyOffersPromises = [];
   for (let i = 0; i < totalFetchedRecords; i++) {
     let value = offers[i];
@@ -915,6 +984,7 @@ export const listInitializeFullfillmentCompletedByNonEvent = async (
     let satoshisToReceive = offer.satoshisToReceive;
     let satoshisReceived = offer.satoshisReceived;
     let ConditionFlag;
+
     if (account != "") {
       if (offer.offeredBy.toLowerCase() == account.toLowerCase()) {
         ConditionFlag = true;
@@ -939,7 +1009,11 @@ export const listInitializeFullfillmentCompletedByNonEvent = async (
     if (account != "") {
       // get the fullfillment list
       let FullfillmentResults: IResultSettlementRequest[] =
-        await getInitializedFulfillmentsByOfferId(trustLex, Number(offerId));
+        await getInitializedFulfillmentsByOfferId(
+          trustLex,
+          Number(offerId),
+          walletName
+        );
       if (FullfillmentResults && FullfillmentResults.length > 0) {
         // console.log(FullfillmentResults);
         let fullfillmentRequestIds: string[] = [];
@@ -994,6 +1068,7 @@ export const listInitializeFullfillmentCompletedByNonEvent = async (
     }
   }
   MyoffersList = await Promise.all(MyOffersPromises);
+
   return MyoffersList;
 };
 
@@ -1018,13 +1093,23 @@ export const getInitializedFulfillments = async (
 
 export const getInitializedFulfillmentsByOfferId = async (
   trustLex: ethers.Contract | undefined,
-  offerId: number
+  offerId: number,
+  walletName: string
 ) => {
   let fullfillmentResult: IResultSettlementRequest[] = [];
   try {
     if (!trustLex) return false;
 
-    let fullfillmentResult = await trustLex.getInitiatedSettlements(offerId);
+    let fullfillmentResult = [];
+    if (walletName == "metamask") {
+      fullfillmentResult = await trustLex.getInitiatedSettlements(offerId);
+    }
+    if (walletName == "wallet_connect") {
+      fullfillmentResult = await trustLex.read.getInitiatedSettlements([
+        offerId,
+      ]);
+    }
+
     // console.log(fullfillmentResult);
     return fullfillmentResult;
   } catch (error) {

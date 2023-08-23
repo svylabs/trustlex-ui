@@ -101,10 +101,10 @@ export const AppContext = createContext<null | {
   setRefreshMySwapAllCompletedListKey: React.Dispatch<
     React.SetStateAction<number>
   >;
-  getSelectedTokenContractInstance: () => Promise<ethers.Contract | false>;
+  getSelectedTokenContractInstance: () => Promise<ethers.Contract | undefined>;
   selectedNetwork: string;
   setSelectedNetwork: (selectedNetwork: string) => void;
-  checkNetwork: () => void;
+  checkNetwork: (ethereumObject: any) => void;
   alertOpen: number;
   setAlertOpen: (alertOpen: number) => void;
   alertMessage: string | JSX.Element;
@@ -121,4 +121,11 @@ export const AppContext = createContext<null | {
   isMetamaskConnected: boolean;
   connectInfo: IConnectInfo;
   setConnectinfo: (connectInfo: IConnectInfo) => void;
+  getSelectedTokenContractandABI: () => Promise<{
+    contractAddress: string | undefined;
+    contractABI: string | false;
+  }>;
+  getSelectedTokenWalletConnectSignerContractInstance: () => Promise<
+    ethers.Contract | false
+  >;
 }>(null);

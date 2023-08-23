@@ -3,40 +3,19 @@ import NavDropdownButton from "../NavDropdownButton/NavDropdownButton";
 import DropdownSubmenu from "../NavDropdownButton/DropdownSubmenu";
 import BitcoinNodeSelectionMenu from "../BitcoinNodeSelectionMenu/BitcoinNodeSelectionMenu";
 import { Icon } from "@iconify/react";
+import { CiWifiOff } from "react-icons/ci";
+
 import { Button } from "@mantine/core";
 import { useContext, useEffect, useState } from "react";
 import { AppContext } from "~/Context/AppContext";
-import {
-  connectToMetamask,
-  showErrorMessage,
-  showSuccessMessage,
-} from "~/service/AppService";
-import {
-  ethereum as WalletConnectEthereum,
-  provider as walletConnectprovider,
-} from "~/service/WalletConnectService";
-import SendBtcDrawer from "~/components/SendBtc/SendBtcDrawer/SendBtcDrawer";
-import SendBtcBox from "~/components/SendBtc/SendBtcBox/SendBtcBox";
-import OfferCurrencyDropdown from "~/components/OfferCurrencyDropdown/OfferCurrencyDropdown";
-import useWindowDimensions from "~/hooks/useWindowDimesnsion";
-import NetworkMenu from "./NetworkMenu";
-import Connectors from "~/components/Connectors/Connectors";
 
-import {
-  Wallet,
-  generateBitcoinWallet,
-  generateTrustlexAddress,
-} from "~/utils/BitcoinUtils";
+import SendBtcBox from "~/components/SendBtc/SendBtcBox/SendBtcBox";
+import useWindowDimensions from "~/hooks/useWindowDimesnsion";
+
 import { PaperWalletDownloadedEnum } from "~/interfaces/IExchannge";
 import MyWalletDrawer from "~/components/GenerateWalletDrawer/MyWalletDrawer";
-
-import {
-  networks,
-  activeExchange,
-  currencyObjects,
-  NetworkInfo,
-} from "~/Context/Constants";
-import { ethers } from "ethers";
+import { getStringForTx } from "~/helpers/commonHelper";
+import { currencyObjects, NetworkInfo } from "~/Context/Constants";
 
 //------------Import for wallet connect -----------------//
 import { EthereumClient } from "@web3modal/ethereum";
@@ -44,6 +23,11 @@ import { useWeb3Modal } from "@web3modal/react";
 import { useAccount, useConnect, useDisconnect, useEnsName } from "wagmi";
 import { InjectedConnector } from "wagmi/connectors/injected";
 import { Web3Button } from "@web3modal/react";
+
+import CopyToClipboard from "~/components/CopyToClipboard/CopyToClipboard";
+import { Grid } from "@mantine/core";
+import { showErrorMessage } from "~/service/AppService";
+
 //------------End Import for wallet connect -----------------//
 type Props = {
   toggleSidebar: () => void;
@@ -98,67 +82,17 @@ const Navbar = (props: Props) => {
   const [generateAddress, setGenerateAddress] = useState("");
   /* End Variables for My wallet */
 
-  const handleMetamaskConnect = async () => {
-    if (account !== "" && (account as unknown as boolean) != false) {
-      console.log("Account already connected");
-      return;
-    } else {
-      const connect = await connectToMetamask();
-      if (!connect) {
-        let message: string = "Failed to connect";
-        showErrorMessage(message);
-      }
-      setAccount(connect);
-    }
-  };
-  const handleWalletConnect = async () => {
-    if (account !== "" && (account as unknown as boolean) != false) {
-      console.log("Account already connected");
-      return;
-    } else {
-      const connect = await connectToMetamask();
-      if (!connect) {
-        let message: string = "Failed to connect";
-        showErrorMessage(message);
-      }
-      setAccount(connect);
-    }
-  };
   const handleWalletDisconnect = async () => {
+    console.log(connectInfo.walletName);
     console.log(address, isWalletConnectConnected);
     // return;
-    disconnect();
-
-    // setConnectinfo({
-    //   ...connectInfo,
-    //   isConnected: false,
-    //   walletName: "",
-    // });
-    console.log("disconnected");
+    if (connectInfo.walletName == "metamask") {
+      showErrorMessage("Please disconnect from Metamask manually!");
+    } else if (connectInfo.walletName == "wallet_connect") {
+      disconnect();
+    }
+    // console.log("disconnected");
   };
-
-  const ethDropdownItems = [
-    {
-      title:
-        account !== "" && (account as unknown as boolean) != false
-          ? // ? `Connected to ${account} \n Balance ${balance} ETH`
-            `Connected`
-          : "Metamask",
-      href: "",
-      onClick: handleMetamaskConnect,
-      icon: "/icons/MetaMaskIcon.svg",
-    },
-    {
-      title:
-        account !== "" && (account as unknown as boolean) != false
-          ? // ? `Connected to ${account} \n Balance ${balance} ETH`
-            `Connected`
-          : "Wallet Connect",
-      href: "",
-      onClick: handleWalletConnect,
-      icon: "/icons/walletConnect.svg",
-    },
-  ];
 
   const disconnectDropdown = [
     {
@@ -200,12 +134,13 @@ const Navbar = (props: Props) => {
     // console.log(myBTCWalletDrawerOpen);
   }, [myBTCWalletDrawerOpen]);
   /*------------End Functions for my wallet-------------*/
-
+  let icon = "/icons/bitcoin.svg";
   return (
     <nav className={styles.navbar}>
       <div className={styles.left}>
         {/* <Connectors /> */}
         {/* <Web3Button /> */}
+
         <Button
           p={0}
           variant={"subtle"}
@@ -215,22 +150,46 @@ const Navbar = (props: Props) => {
         >
           <Icon icon="material-symbols:menu-rounded" className={styles.icon} />
         </Button>
-        {account != "" ? (
+        {mobileView == false && (
           <>
-            <div style={{ fontSize: 9 }}>
-              Connected To: {account} ({balance} ETH)
-              <br />
-              Network: {networkName}
-              <br /> Contract: {contractAddress}
-            </div>
+            {account != "" ? (
+              <>
+                <div style={{ fontSize: 14 }}>
+                  Connected To:{" "}
+                  <strong>{getStringForTx(account?.toUpperCase())}</strong> (
+                  <strong>{balance}</strong> ETH)
+                  <br />
+                  Network: {networkName}
+                  <br />
+                  <Grid>
+                    <Grid.Col span={7}>
+                      <span>Contract: &nbsp;</span>
+                      <strong>
+                        {getStringForTx(
+                          contractAddress ? contractAddress.toUpperCase() : ""
+                        )}{" "}
+                      </strong>
+                    </Grid.Col>
+
+                    <Grid.Col span={5}>
+                      <CopyToClipboard
+                        text={
+                          contractAddress ? contractAddress.toUpperCase() : ""
+                        }
+                      />
+                    </Grid.Col>
+                  </Grid>
+                </div>
+              </>
+            ) : (
+              ""
+            )}
           </>
-        ) : (
-          ""
         )}
       </div>
-      <div className={styles.left}>
-        {/* <strong>Offer Currency : &nbsp;&nbsp;</strong> */}
-        {/* <OfferCurrencyDropdown
+      {/* <div className={styles.left}> */}
+      {/* <strong>Offer Currency : &nbsp;&nbsp;</strong> */}
+      {/* <OfferCurrencyDropdown
           selectedToken={selectedToken}
           setSelectedToken={setSelectedToken}
           userInputData={userInputData}
@@ -238,7 +197,7 @@ const Navbar = (props: Props) => {
           selectedNetwork={selectedNetwork}
           setSelectedNetwork={setSelectedNetwork}
         /> */}
-        {/* <NetworkMenu
+      {/* <NetworkMenu
           selectedToken={selectedToken}
           setSelectedToken={setSelectedToken}
           userInputData={userInputData}
@@ -247,11 +206,16 @@ const Navbar = (props: Props) => {
           setSelectedNetwork={setSelectedNetwork}
           checkNetwork={checkNetwork}
         /> */}
-      </div>
+      {/* </div> */}
       <div className={styles.right}>
         <div className={styles.btcNavbutton}>
           <NavDropdownButton
-            title={`${BTCBalance} BTC`}
+            title={
+              <>
+                <span>{BTCBalance}</span>{" "}
+                <img src={icon} className={styles.icon} />
+              </>
+            }
             handleNavButtonClick={handleShowSendBtc}
           />
 
@@ -290,15 +254,13 @@ const Navbar = (props: Props) => {
             { title: " RPC Username", href: "" },
           ]}
         /> */}
-        <BitcoinNodeSelectionMenu
-          selectedBitcoinNode={selectedBitcoinNode}
-          setSelectedBitcoinNode={setSelectedBitcoinNode}
-        />
-        {/* <NavDropdownButton
-          title={mobileView ? "" : "Ethereum"}
-          icon="/icons/etherium.svg"
-          dropdownItems={ethDropdownItems}
-        /> */}
+        {mobileView == false && (
+          <BitcoinNodeSelectionMenu
+            selectedBitcoinNode={selectedBitcoinNode}
+            setSelectedBitcoinNode={setSelectedBitcoinNode}
+          />
+        )}
+
         <DropdownSubmenu
           selectedToken={selectedToken}
           setSelectedToken={setSelectedToken}
@@ -307,10 +269,11 @@ const Navbar = (props: Props) => {
           selectedNetwork={selectedNetwork}
           setSelectedNetwork={setSelectedNetwork}
           checkNetwork={checkNetwork}
+          connectInfo={connectInfo}
         />
 
         <NavDropdownButton
-          title={mobileView ? "Connected" : "Connected"}
+          title={mobileView ? "" : "Connected"}
           icon={connectedWalletImage}
           dropdownItems={disconnectDropdown}
         />

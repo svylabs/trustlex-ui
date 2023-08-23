@@ -109,6 +109,7 @@ function MySwaps() {
     selectedBitcoinNode,
     btcWalletData,
     setBTCWalletData,
+    connectInfo,
   } = context;
 
   const [isMoreOngoingLoading, setMoreOngoingDataLoading] = useState(false);
@@ -146,7 +147,8 @@ function MySwaps() {
       await listInitializeFullfillmentOnGoingByNonEvent(
         contract,
         account,
-        mySwapOngoingfromOfferId
+        mySwapOngoingfromOfferId,
+        connectInfo.walletName
       );
     return mySwapsOngoingList;
   };
@@ -183,7 +185,8 @@ function MySwaps() {
       await listInitializeFullfillmentCompletedByNonEvent(
         contract,
         account,
-        mySwapCompletedfromOfferId
+        mySwapCompletedfromOfferId,
+        connectInfo.walletName
       );
     return mySwapsCompletedList;
   };
@@ -257,7 +260,7 @@ function MySwaps() {
       }
       return true;
     })
-    .map((value, key) => {
+    .map(function (value, key) {
       // let fulfillmentBy: string = value?.offerDetailsInJson.fulfillmentBy;
       let planningToSell = Number(
         tofixedEther(
@@ -276,7 +279,7 @@ function MySwaps() {
       let rateInBTC = Number(tofixedBTC(planningToBuyAmount / planningToSell));
       let offerType = value.offerDetailsInJson.offerType;
 
-      let OrderSellAmount;
+      let OrderSellAmount = 0;
       if (offerType == "my_offer") {
         OrderSellAmount = planningToSell;
       } else if (offerType == "my_order") {
@@ -291,7 +294,7 @@ function MySwaps() {
           )
         );
       }
-      let orderBuyAmount;
+      let orderBuyAmount = 0;
       if (offerType == "my_offer") {
         orderBuyAmount = planningToBuyAmount;
       } else if (offerType == "my_order") {
@@ -318,7 +321,7 @@ function MySwaps() {
           type: CurrencyEnum.BTC,
         },
         rateInBTC: rateInBTC,
-        progress: value.offerDetailsInJson.progress, //TimestampTofromNow(value?.offersFullfillmentJson.expiryTime),
+        progress: value.offerDetailsInJson.progress,
         offerType: value.offerDetailsInJson.offerType,
         fullfillmentRequestId: value.offerDetailsInJson.fullfillmentRequestId,
         offerId: value.offerDetailsInJson.offerId,
@@ -395,11 +398,11 @@ function MySwaps() {
       let row = {
         orderNumber: value.offerDetailsInJson.offerId.toString(),
         planningToSell: {
-          amount: OrderSellAmount,
+          amount: OrderSellAmount ? OrderSellAmount : 0,
           type: CurrencyEnum.ETH,
         },
         planningToBuy: {
-          amount: orderBuyAmount,
+          amount: orderBuyAmount ? orderBuyAmount : 0,
           type: CurrencyEnum.BTC,
         },
         rateInBTC: rateInBTC,
@@ -411,6 +414,7 @@ function MySwaps() {
                 value.offerDetailsInJson.fulfillmentRequestfulfilledTime
               ), //"09 Jan, 13:45pm",
         status: StatusEnum.Completed,
+        offerData: value,
       };
       return row;
     }
@@ -421,6 +425,7 @@ function MySwaps() {
       <GradientBackgroundContainer colorLeft="#FFD57243">
         <Box p={"lg"} className={styles.box}>
           <div className={styles.recentTable}>
+            {/* {"desktop section"} */}
             <RecentOngoingTable
               tableCaption="Ongoing"
               cols={[
@@ -443,10 +448,11 @@ function MySwaps() {
             />
           </div>
           <div className={styles.recentMobileTable}>
+            {/* {"mobile section"} */}
             <RecentOngoingTable
               tableCaption="Ongoing"
-              cols={["Sell", "Buy", "Progress", ""]}
-              data={OngoingTableData}
+              cols={["Selling", "Asking", "Progress", "Action"]}
+              data={OngoingTableData2}
               mobile={true}
               handleSubmitPaymentProof={handleSubmitPaymentProof}
               mySwapOngoingLoadingText={mySwapCompletedLoadingText}
@@ -512,8 +518,10 @@ function MySwaps() {
           btcWalletData={btcWalletData}
           setBTCWalletData={setBTCWalletData}
           getSelectedTokenContractInstance={getSelectedTokenContractInstance}
+          connectInfo={connectInfo}
         />
       </GradientBackgroundContainer>
+
       {/* Star My Swap completed History */}
       <GradientBackgroundContainer colorLeft="#FFD57243">
         <Box p={"lg"} className={styles.box}>
@@ -531,6 +539,10 @@ function MySwaps() {
               data={HistoryTableData2}
               selectedToken={selectedToken}
               selectedNetwork={selectedNetwork}
+              contract={contract}
+              // getSelectedTokenContractInstance={
+              //   getSelectedTokenContractInstance
+              // }
             />
           </div>
           <div className={styles.mobileHistoryTable}>
@@ -538,9 +550,13 @@ function MySwaps() {
               tableCaption="History"
               cols={["# of order", "Date", "More Details"]}
               mobile={true}
-              data={HistoryTableData}
+              data={HistoryTableData2}
               selectedToken={selectedToken}
               selectedNetwork={selectedNetwork}
+              contract={contract}
+              // getSelectedTokenContractInstance={
+              //   getSelectedTokenContractInstance
+              // }
             />
           </div>
           <br />
@@ -594,9 +610,11 @@ function AllSwaps() {
     setMySwapAllCompletedfromOfferId,
     //end All completed variables
     account,
+    contract,
     selectedToken,
     selectedNetwork,
     getSelectedTokenContractInstance,
+    connectInfo,
   } = context;
 
   const { mobileView } = useWindowDimensions();
@@ -638,7 +656,7 @@ function AllSwaps() {
       let row = {
         orderNumber: value.offerDetailsInJson.offerId.toString(),
         planningToSell: {
-          amount: OrderSellAmount,
+          amount: OrderSellAmount ? OrderSellAmount : 0,
           type: selectedCurrencyIcon,
         },
         planningToBuy: {
@@ -649,6 +667,7 @@ function AllSwaps() {
 
         date: TimeToDateFormat(value.offerDetailsInJson.orderedTime),
         status: StatusEnum.Completed,
+        offerData: value,
       };
       return row;
     }
@@ -660,13 +679,15 @@ function AllSwaps() {
   const callMySwapsCompleted = async () => {
     let mySwapsAllCompletedList: IListInitiatedFullfillmentDataByNonEvent[] =
       [];
-    let contract = getSelectedTokenContractInstance();
+    let contract: ethers.Contract | undefined =
+      await getSelectedTokenContractInstance();
     if (contract) {
       mySwapsAllCompletedList =
         await listInitializeFullfillmentCompletedByNonEvent(
           contract,
           account,
-          mySwapAllCompletedfromOfferId
+          mySwapAllCompletedfromOfferId,
+          connectInfo.walletName
         );
     }
     return mySwapsAllCompletedList;
@@ -733,6 +754,10 @@ function AllSwaps() {
                 ]
           }
           tableCaption="All Swaps"
+          contract={contract}
+          selectedToken={selectedToken}
+          selectedNetwork={selectedNetwork}
+          // getSelectedTokenContractInstance={getSelectedTokenContractInstance}
         />
         <br />
         <Center>

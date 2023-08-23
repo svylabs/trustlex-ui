@@ -1,5 +1,5 @@
 import { Divider, TableProps } from "@mantine/core";
-import { useState, useEffect } from "react";
+import { isValidElement, useState, useEffect } from "react";
 import { CurrencyEnum } from "~/enums/CurrencyEnum";
 import { IPlanning } from "~/interfaces/IPlanning";
 import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";
@@ -19,8 +19,8 @@ export interface ITableRow {
   planningToSell: IPlanning;
   planningToBuy: IPlanning;
   rateInBTC: number;
-  progress: string;
-  offerType: string;
+  progress: string | undefined;
+  offerType: string | undefined;
   fullfillmentRequestId: string | undefined;
   offerId: number | string;
   fullfillmentExpiryTime: string | undefined;
@@ -46,7 +46,7 @@ interface Props extends TableProps {
   contract: ethers.Contract | undefined;
   selectedToken: string;
   selectedNetwork: string;
-  getSelectedTokenContractInstance: () => Promise<ethers.Contract | false>;
+  getSelectedTokenContractInstance: () => Promise<ethers.Contract | undefined>;
 }
 
 const RecentOngoingTable = ({
@@ -93,9 +93,17 @@ const RecentOngoingTable = ({
           </div>,
           <div className={styles.planningCell}>
             {row.planningToBuy.amount}{" "}
-            <ImageIcon
-              image={getIconFromCurrencyType(row.planningToBuy.type)}
-            />{" "}
+            {!isValidElement(row.planningToBuy.type) ? (
+              <>
+                <ImageIcon
+                  image={getIconFromCurrencyType(
+                    row.planningToBuy.type as CurrencyEnum
+                  )}
+                />{" "}
+              </>
+            ) : (
+              <>{row.planningToBuy.type}</>
+            )}
           </div>,
           <div className={styles.planningCell}>
             {row.rateInBTC}{" "}
@@ -160,8 +168,6 @@ const RecentOngoingTable = ({
                   variant={"primary"}
                   onClick={() => {
                     handleViewClick(row.offerData);
-                    console.log(row.offerData);
-                    console.log(row.progress);
                   }}
                 >
                   View
@@ -172,37 +178,63 @@ const RecentOngoingTable = ({
         ];
       })
     : data.map((row) => {
-        const progress = row.progress.split("and");
+        // const progress = row.progress.split("and");
+        let progress = row.progress;
+        let isCanceled = row.isCanceled;
+
         return [
           <div className={styles.planningCell}>
-            {row.planningToSell.amount}{" "}
-            <ImageIcon
-              image={getIconFromCurrencyType(row.planningToSell.type)}
-            />{" "}
-            {row.planningToSell.type}
+            {row.planningToSell.amount} {row.planningToSell.type}
           </div>,
           <div className={styles.planningCell}>
             {row.planningToBuy.amount}{" "}
-            <ImageIcon
-              image={getIconFromCurrencyType(row.planningToBuy.type)}
-            />{" "}
-            {row.planningToBuy.type}
+            {!isValidElement(row.planningToBuy.type) ? (
+              <>
+                <ImageIcon
+                  image={getIconFromCurrencyType(
+                    row.planningToBuy.type as CurrencyEnum
+                  )}
+                />{" "}
+              </>
+            ) : (
+              <>{row.planningToBuy.type}</>
+            )}
           </div>,
           <>
-            {row.progress
-              .substring(0, row.progress.indexOf(" "))
-              .toLowerCase() === "submit"
-              ? "Done"
-              : row.progress.substring(0, row.progress.indexOf(" "))}
+            {row.offerType == "my_order" ? (
+              <GetProgressText progress={progress} />
+            ) : (
+              <GetProgressText progress={progress + "% filled"} />
+            )}
           </>,
+
           <div className={styles.actionsCell}>
-            <SeeMoreButton
-              buttonText=""
-              onClick={(e) => {
-                // setViewOrderDrawerOpen(true);
-                handleViewClick(row.offerData);
-              }}
-            />
+            {row.offerType == "my_order" ? (
+              <>
+                <SeeMoreButton
+                  buttonText=""
+                  onClick={() => {
+                    handleSubmitPaymentProof(
+                      row.fullfillmentRequestId,
+                      row.offerId as number,
+                      row.fullfillmentExpiryTime,
+                      row.quantityRequested,
+                      row.paymentProofSubmitted
+                    );
+                  }}
+                />
+              </>
+            ) : (
+              <>
+                <SeeMoreButton
+                  buttonText=""
+                  onClick={(e) => {
+                    // setViewOrderDrawerOpen(true);
+                    handleViewClick(row.offerData);
+                  }}
+                />
+              </>
+            )}
           </div>,
         ];
       });
@@ -210,7 +242,6 @@ const RecentOngoingTable = ({
   const handleViewClick = (
     offerData: IListInitiatedFullfillmentDataByNonEvent
   ) => {
-    console.log(offerData);
     setViewOrderDrawerKey(viewOrderDrawerKey + 1);
     setOfferData(offerData);
     setViewOrderDrawerOpen(true);
@@ -252,7 +283,12 @@ const RecentOngoingTable = ({
   );
 };
 // function is used to make text wrap.
-export const GetProgressText = ({ progress }: { progress: string }) => {
+export const GetProgressText = ({
+  progress,
+}: {
+  progress: string | undefined;
+}) => {
+  if (!progress) return <></>;
   const progressArr = progress.split(" ");
   let progressArrLen = progressArr.length;
   const progresText = [];

@@ -8,7 +8,7 @@ interface INavDropdown {
   title: string;
   handleNavButtonClick?: () => void;
   dropdownItems?: {
-    title: string;
+    title: string | JSX.Element;
     href: string;
     inputField?: React.ReactNode;
     onClick?: () => void;

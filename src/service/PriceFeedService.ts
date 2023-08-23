@@ -1,6 +1,7 @@
 import { Wallet, ethers } from "ethers";
 import { tofixedBTC } from "~/utils/BitcoinUtils";
-
+import { IConnectInfo } from "~/interfaces/INetworkInfo";
+import { createContractInstanceWagmi } from "~/service/WalletConnectService";
 // https://docs.chain.link/data-feeds/price-feeds/addresses
 // const provider = new ethers.providers.JsonRpcProvider(
 //   "https://eth.getblock.io/d924a382-ab7c-4649-b4eb-0f731b9a100e/mainnet/"
@@ -56,29 +57,50 @@ const aggregatorV3InterfaceABI = [
   },
 ];
 
-export const getPriceRate = async (contractAddres: string) => {
-  if (typeof window.ethereum !== undefined) {
-    try {
-      const { ethereum } = window;
+export const getPriceRate = async (
+  contractAddres: string,
+  connectInfo: IConnectInfo
+) => {
+  try {
+    let priceFeed: any;
+    let roundData: any;
+
+    if (
+      connectInfo.walletName == "metamask" &&
+      connectInfo.ethereumObject != undefined
+    ) {
+      const ethereum: any = connectInfo.ethereumObject;
       const provider = new ethers.providers.Web3Provider(ethereum);
-      const priceFeed = new ethers.Contract(
+      priceFeed = new ethers.Contract(
         contractAddres,
         aggregatorV3InterfaceABI,
         provider
       );
 
-      const roundData: any = await priceFeed.latestRoundData();
-      // Do something with roundData
+      roundData = await priceFeed.latestRoundData();
+
       const { answer } = roundData;
       let ETHToUSD = answer / 10 ** 8;
       //   console.log("ETHToUSD", ETHToUSD);
       return ETHToUSD;
-    } catch (err) {
-      console.log(err);
+    } else if (connectInfo.walletName == "wallet_connect") {
+      priceFeed = await createContractInstanceWagmi(
+        contractAddres as string,
+        aggregatorV3InterfaceABI
+      );
+      // console.log(priceFeed, contractAddres, aggregatorV3InterfaceABI);
+      roundData = await priceFeed.read.latestRoundData();
+
+      const answer = roundData.length > 0 ? Number(roundData[1]) : 0;
+      let ETHToUSD = answer / 10 ** 8;
+      //   console.log("ETHToUSD", ETHToUSD);
+      return ETHToUSD;
+    } else {
+      console.log("Web3 injected provider is not found !");
       return 0;
     }
-  } else {
-    console.log("Web3 injected provider is not found !");
+  } catch (err) {
+    console.log(err);
     return 0;
   }
 };

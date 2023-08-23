@@ -45,7 +45,7 @@ export const generateBitcoinWallet = (): Wallet => {
     publicKey: keypair.publicKey,
     pubkeyHash: bitcoin.crypto.hash160(keypair.publicKey),
     extendedPublicKeyRecovery: extendedPublicKeyRecovery.neutered().toBase58(),
-    extendedPublicKeySecret: extendedPublicKeySecret.neutered().toBase58()
+    extendedPublicKeySecret: extendedPublicKeySecret.neutered().toBase58(),
   };
 };
 
@@ -62,6 +62,8 @@ export const encryptWallet = (keyPair: Wallet, password: string): string => {
     publicKey: keyPair.publicKey.toString("hex"),
     pubkeyHash: keyPair.pubkeyHash.toString("hex"),
     encryptedPrivateKey: encryptedKey,
+    extendedPublicKeyRecovery: keyPair.extendedPublicKeyRecovery,
+    extendedPublicKeySecret: keyPair.extendedPublicKeySecret,
   });
 };
 
@@ -77,7 +79,7 @@ export const decryptWallet = (walletJSON: string, password: string): Wallet => {
     publicKey: Buffer.from(wallet.publicKey, "hex"),
     pubkeyHash: bitcoin.crypto.hash160(Buffer.from(wallet.publicKey, "hex")),
     extendedPublicKeyRecovery: wallet.extendedPublicKeyRecovery,
-    extendedPublicKeySecret: wallet.extendedPublicKeySecret
+    extendedPublicKeySecret: wallet.extendedPublicKeySecret,
   };
 };
 
@@ -158,16 +160,22 @@ export const tofixedBTC = (amount: number) => {
   return Number(amount.toFixed(BTC_DECIMAL_PLACE));
 };
 
-export const deriveRecoveryPubKeyHash = (extendedPubKey: string, orderId: number): Buffer => {
+export const deriveRecoveryPubKeyHash = (
+  extendedPubKey: string,
+  orderId: number
+): Buffer => {
   const hdwallet = bip32.BIP32Factory(tinysecp);
   const node = hdwallet.fromBase58(extendedPubKey);
   const child = node.derive(orderId);
   return child.identifier;
-}
+};
 
-export const deriveSecret = (extendedPubKey: string, orderId: number): Buffer => {
+export const deriveSecret = (
+  extendedPubKey: string,
+  orderId: number
+): Buffer => {
   const hdwallet = bip32.BIP32Factory(tinysecp);
   const node = hdwallet.fromBase58(extendedPubKey);
   const child = node.derive(orderId);
   return bitcoin.crypto.sha256(child.publicKey);
-}
+};

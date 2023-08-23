@@ -84,7 +84,7 @@ export interface IFullfillmentResult {
 }
 
 export interface IListenedOfferData {
-  // offerEvent: INewOfferEvent;
+  offerEvent?: INewOfferEvent;
   offerDetailsInJson: IOfferdata;
 }
 

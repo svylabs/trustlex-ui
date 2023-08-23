@@ -26,6 +26,7 @@ import { Web3Button } from "@web3modal/react";
 
 import CopyToClipboard from "~/components/CopyToClipboard/CopyToClipboard";
 import { Grid } from "@mantine/core";
+import { showErrorMessage } from "~/service/AppService";
 
 //------------End Import for wallet connect -----------------//
 type Props = {
@@ -86,6 +87,7 @@ const Navbar = (props: Props) => {
     console.log(address, isWalletConnectConnected);
     // return;
     if (connectInfo.walletName == "metamask") {
+      showErrorMessage("Please disconnect from Metamask manually!");
     } else if (connectInfo.walletName == "wallet_connect") {
       disconnect();
     }

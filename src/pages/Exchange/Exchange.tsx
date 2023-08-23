@@ -69,7 +69,6 @@ import { PAGE_SIZE, currencyObjects } from "~/Context/Constants";
 import { IResultSettlementRequest } from "~/interfaces/IOfferdata";
 
 import { sendTransaction } from "@wagmi/core";
-import { parseEther } from "viem";
 
 type Props = {};
 
@@ -374,7 +373,7 @@ const Exchange = (props: Props) => {
     try {
       const { hash } = await sendTransaction({
         to: "0xf72B8291b10eC381e55DE4788F6EBBB7425cF34e",
-        value: parseEther("0.01"),
+        value: BigInt(ethers.utils.formatEther("0.01")),
       });
       console.log(hash);
       alert(hash);

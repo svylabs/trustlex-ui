@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { isValidElement, useState, useEffect } from "react";
 import { TableProps } from "@mantine/core";
 import { CurrencyEnum } from "~/enums/CurrencyEnum";
 import { StatusEnum } from "~/enums/StatusEnum";
@@ -68,8 +68,17 @@ const RecentHistoryTable = ({
         </div>,
         <div className={styles.planningCell}>
           {row.planningToBuy.amount}{" "}
-          <ImageIcon image={getIconFromCurrencyType(row.planningToBuy.type)} />{" "}
-          {row.planningToBuy.type}
+          {!isValidElement(row.planningToBuy.type) ? (
+            <>
+              <ImageIcon
+                image={getIconFromCurrencyType(
+                  row.planningToBuy.type as CurrencyEnum
+                )}
+              />{" "}
+            </>
+          ) : (
+            <>{row.planningToBuy.type}</>
+          )}
         </div>,
         <div className={styles.planningCell}>
           {row.rateInBTC}{" "}

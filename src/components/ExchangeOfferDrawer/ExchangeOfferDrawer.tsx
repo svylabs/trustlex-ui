@@ -210,42 +210,38 @@ const ExchangeOfferDrawer = ({
     secret: Buffer;
     pubKeyHash: String;
   } => {
-    try {
-      const orderId = ethers.utils.keccak256(
-        ethers.utils.solidityPack(
-          ["address", "uint256", "address", "bytes20", "uint256"],
-          // To be interpreted as: address of contract, orderId, fulfillmentId, pubKeyHash, orderTimestamp
-          // ["0xFD05beBFEa081f6902bf9ec57DCb50b40BA02510", 0, 0, '0x0000000000000000000000000000000000000000', 0]
-          [
-            contractAddress,
-            Number(rowOfferId),
-            fulfillmentId,
-            foundOffer.offerDetailsInJson.pubKeyHash,
-            Number(orderTimestamp),
-          ]
-        )
-      );
+    const orderId = ethers.utils.keccak256(
+      ethers.utils.solidityPack(
+        ["address", "uint256", "address", "bytes20", "uint256"],
+        // To be interpreted as: address of contract, orderId, fulfillmentId, pubKeyHash, orderTimestamp
+        // ["0xFD05beBFEa081f6902bf9ec57DCb50b40BA02510", 0, 0, '0x0000000000000000000000000000000000000000', 0]
+        [
+          contractAddress,
+          Number(rowOfferId),
+          fulfillmentId,
+          foundOffer.offerDetailsInJson.pubKeyHash,
+          Number(orderTimestamp),
+        ]
+      )
+    );
 
-      const shortOrderId = orderId.slice(2, 10);
+    const shortOrderId = orderId.slice(2, 10);
 
-      //let publicKeyCurrentUser = btcWalletData?.extendd;
-      //let pubKeyHash = btcWalletData?.pubkeyHash || "";
-      //let inputForSecret = publicKeyCurrentUser + shortOrderId;
-      //let inputForSecretBuffer: Buffer = Buffer.from(inputForSecret, "hex");
-      let extendedPublicKeyRecovery = btcWalletData?.extendedPublicKeyRecovery;
-      let extendedPublicKeySecret = btcWalletData?.extendedPublicKeySecret;
-      console.log(extendedPublicKeyRecovery, rowOfferId);
-      let pubKeyHash = deriveRecoveryPubKeyHash(
-        extendedPublicKeyRecovery || "",
-        Number(rowOfferId) || 0
-      ).toString("hex");
+    //let publicKeyCurrentUser = btcWalletData?.extendd;
+    //let pubKeyHash = btcWalletData?.pubkeyHash || "";
+    //let inputForSecret = publicKeyCurrentUser + shortOrderId;
+    //let inputForSecretBuffer: Buffer = Buffer.from(inputForSecret, "hex");
+    let extendedPublicKeyRecovery = btcWalletData?.extendedPublicKeyRecovery;
+    let extendedPublicKeySecret = btcWalletData?.extendedPublicKeySecret;
+    console.log(extendedPublicKeyRecovery, rowOfferId);
+    let pubKeyHash = deriveRecoveryPubKeyHash(
+      extendedPublicKeyRecovery || "",
+      Number(rowOfferId) || 0
+    ).toString("hex");
 
-      let secret = deriveSecret(extendedPublicKeySecret || "", rowOfferId || 0);
-      console.log({ shortOrderId, secret, pubKeyHash });
-      return { shortOrderId, secret, pubKeyHash };
-    } catch (err) {
-      console.log(err);
-    }
+    let secret = deriveSecret(extendedPublicKeySecret || "", rowOfferId || 0);
+    console.log({ shortOrderId, secret, pubKeyHash });
+    return { shortOrderId, secret, pubKeyHash };
   };
 
   const {
@@ -255,7 +251,7 @@ const ExchangeOfferDrawer = ({
     setInitiatedOrders,
   } = context;
 
-  let foundOffer =
+  let foundOffer: any =
     rowOfferId &&
     // listenedOfferData.offers.find((offer) => {
     listenedOfferDataByNonEvent.offers.find((offer) => {
@@ -720,7 +716,19 @@ const ExchangeOfferDrawer = ({
     return BTCAmount;
   };
 
-  const renderer = ({ days, hours, minutes, seconds, completed }) => {
+  const renderer = ({
+    days,
+    hours,
+    minutes,
+    seconds,
+    completed,
+  }: {
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+    completed: boolean;
+  }) => {
     // Render a countdown
     return (
       <span>
@@ -786,7 +794,7 @@ const ExchangeOfferDrawer = ({
     return initiatedOrderResult;
   };
   const getInitiatedOrderDetailsIndex = () => {
-    let rowOfferId_ = rowOfferId.toString();
+    let rowOfferId_ = rowOfferId?.toString();
 
     let initiatedOrders_ = initiatedOrders;
 
@@ -1463,7 +1471,7 @@ const ExchangeOfferDrawer = ({
                   </div>
                   <div className={styles.spacing} />
                   <div className={styles.spacing} />
-                  <div className={styles.buttonContainer} name={"xzccvscds"}>
+                  <div className={styles.buttonContainer}>
                     {confirmed !== "confirmed" && (
                       <Button
                         variant={

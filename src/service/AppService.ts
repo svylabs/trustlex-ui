@@ -116,81 +116,84 @@ export const connectToMetamask = async () => {
       method: "eth_requestAccounts",
     });
     return accounts[0];
-  } catch (error) {
+  } catch (error: any) {
+    // console.log(error.message);
+    showErrorMessage(error.message);
+
     return false;
   }
 };
-export const listOffers = async (
-  trustLex: ethers.Contract | undefined,
-  fromBlock: number = 0,
-  toBlock: "latest" | number = "latest"
-) => {
-  try {
-    console.log("Querying... ", fromBlock, toBlock);
-    if (!trustLex || toBlock == -1)
-      return { fromBlock: fromBlock, toBlock: toBlock, offers: [] };
-    let estimatedFromBlock = fromBlock;
-    if (toBlock === "latest") {
-      toBlock = await trustLex.provider.getBlockNumber();
-      estimatedFromBlock = Math.max(0, toBlock - MAX_BLOCKS_TO_QUERY);
-    } else if (toBlock > 0) {
-      estimatedFromBlock = Math.max(fromBlock, toBlock - MAX_BLOCKS_TO_QUERY);
-    }
-    const offers: IListenedOfferData[] = [];
-    let iterations = 0;
-    do {
-      estimatedFromBlock = Math.max(
-        fromBlock,
-        estimatedFromBlock - MAX_BLOCKS_TO_QUERY
-      );
-      console.log(
-        "Querying... ",
-        estimatedFromBlock,
-        estimatedFromBlock + MAX_BLOCKS_TO_QUERY
-      );
-      const offersSubSet = await trustLex.queryFilter(
-        "NEW_OFFER",
-        estimatedFromBlock,
-        estimatedFromBlock + MAX_BLOCKS_TO_QUERY
-      );
-      const promises = offersSubSet.map(async (offer) => {
-        const offerEvent = {
-          from: offer.args ? offer.args[0] : "",
-          to: offer.args ? offer.args[1] : "",
-        };
+// export const listOffers = async (
+//   trustLex: ethers.Contract | undefined,
+//   fromBlock: number = 0,
+//   toBlock: "latest" | number = "latest"
+// ) => {
+//   try {
+//     console.log("Querying... ", fromBlock, toBlock);
+//     if (!trustLex || toBlock == -1)
+//       return { fromBlock: fromBlock, toBlock: toBlock, offers: [] };
+//     let estimatedFromBlock = fromBlock;
+//     if (toBlock === "latest") {
+//       toBlock = await trustLex.provider.getBlockNumber();
+//       estimatedFromBlock = Math.max(0, toBlock - MAX_BLOCKS_TO_QUERY);
+//     } else if (toBlock > 0) {
+//       estimatedFromBlock = Math.max(fromBlock, toBlock - MAX_BLOCKS_TO_QUERY);
+//     }
+//     const offers: IListenedOfferData[] = [];
+//     let iterations = 0;
+//     do {
+//       estimatedFromBlock = Math.max(
+//         fromBlock,
+//         estimatedFromBlock - MAX_BLOCKS_TO_QUERY
+//       );
+//       console.log(
+//         "Querying... ",
+//         estimatedFromBlock,
+//         estimatedFromBlock + MAX_BLOCKS_TO_QUERY
+//       );
+//       const offersSubSet = await trustLex.queryFilter(
+//         "NEW_OFFER",
+//         estimatedFromBlock,
+//         estimatedFromBlock + MAX_BLOCKS_TO_QUERY
+//       );
+//       const promises = offersSubSet.map(async (offer) => {
+//         const offerEvent = {
+//           from: offer.args ? offer.args[0] : "",
+//           to: offer.args ? offer.args[1] : "",
+//         };
 
-        const offerData = await getOffers(trustLex, offerEvent.to);
-        const offerDetailsInJson = {
-          offerQuantity: offerData[0].toString(),
-          offeredBy: offerData[1].toString(),
-          offerValidTill: offerData[2].toString(),
-          orderedTime: offerData[3].toString(),
-          offeredBlockNumber: offerData[4].toString(),
-          bitcoinAddress: offerData[5].toString(),
-          satoshisToReceive: offerData[6].toString(),
-          satoshisReceived: offerData[7].toString(),
-          satoshisReserved: offerData[8].toString(),
-          collateralPer3Hours: offerData[9].toString(),
-        };
-        return { offerEvent, offerDetailsInJson };
-      });
-      const offersList: IListenedOfferData[] = await Promise.all(promises);
-      offersList.forEach((o) => {
-        offers.push(o);
-      });
-      iterations++;
-    } while (estimatedFromBlock > fromBlock && iterations < MAX_ITERATIONS);
-    // console.log(offers);
-    return {
-      fromBlock: fromBlock,
-      toBlock: toBlock,
-      offers: offers,
-    };
-  } catch (error) {
-    console.log(error);
-    return { offers: [], fromBlock, toBlock };
-  }
-};
+//         const offerData = await getOffers(trustLex, offerEvent.to);
+//         const offerDetailsInJson = {
+//           offerQuantity: offerData[0].toString(),
+//           offeredBy: offerData[1].toString(),
+//           offerValidTill: offerData[2].toString(),
+//           orderedTime: offerData[3].toString(),
+//           offeredBlockNumber: offerData[4].toString(),
+//           bitcoinAddress: offerData[5].toString(),
+//           satoshisToReceive: offerData[6].toString(),
+//           satoshisReceived: offerData[7].toString(),
+//           satoshisReserved: offerData[8].toString(),
+//           collateralPer3Hours: offerData[9].toString(),
+//         };
+//         return { offerEvent, offerDetailsInJson };
+//       });
+//       const offersList: IListenedOfferData[] = await Promise.all(promises);
+//       offersList.forEach((o) => {
+//         offers.push(o);
+//       });
+//       iterations++;
+//     } while (estimatedFromBlock > fromBlock && iterations < MAX_ITERATIONS);
+//     // console.log(offers);
+//     return {
+//       fromBlock: fromBlock,
+//       toBlock: toBlock,
+//       offers: offers,
+//     };
+//   } catch (error) {
+//     console.log(error);
+//     return { offers: [], fromBlock, toBlock };
+//   }
+// };
 
 export const getEventData = async (
   ContractInstance: ethers.Contract,
@@ -435,14 +438,16 @@ export const getOffer = async (
   try {
     if (!trustLex) return false;
 
-    let offer: IOfferdata;
+    let offer: IOfferdata | undefined = undefined;
     if (walletName == "metamask") {
       offer = await trustLex.getOffer(offerId);
     }
     if (walletName == "wallet_connect") {
       offer = await trustLex.read.getOffer([offerId]);
     }
-
+    if (!offer) {
+      return undefined;
+    }
     const offerDetailsInJson: IOfferdata = {
       offerId: offerId,
       offerQuantity: offer.offerQuantity.toString(),
@@ -501,7 +506,7 @@ export const getOffer = async (
           //   &&
           // fullfillmentResult.settlementRequest.settled == false
         ) {
-          fullfillmentRequestId = offer.settlementRequests[index];
+          fullfillmentRequestId = offer?.settlementRequests[index];
           return true;
         } else {
           return false;
@@ -815,12 +820,11 @@ export const listInitializeFullfillmentOnGoingByNonEvent = async (
 ) => {
   let MyoffersList: IListInitiatedFullfillmentDataByNonEvent[] = [];
   if (!trustLex) {
-    console.log("trustLex is not defined", trustLex);
     return MyoffersList;
   }
   let offersData: any;
-  let totalFetchedRecords: number;
-  let offers: IResultOffer[];
+  let totalFetchedRecords: number = 0;
+  let offers: IResultOffer[] = [];
 
   if (walletName == "metamask") {
     offersData = await trustLex.getOffers(fromOfferId);
@@ -939,8 +943,8 @@ export const listInitializeFullfillmentCompletedByNonEvent = async (
   }
 
   let offersData: any;
-  let totalFetchedRecords: number;
-  let offers: IResultOffer[];
+  let totalFetchedRecords: number = 0;
+  let offers: IResultOffer[] = [];
   if (walletName == "metamask") {
     offersData = await trustLex.getOffers(fromOfferId);
 

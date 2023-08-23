@@ -1,5 +1,5 @@
 import { Divider, TableProps } from "@mantine/core";
-import { useState, useEffect } from "react";
+import { isValidElement, useState, useEffect } from "react";
 import { CurrencyEnum } from "~/enums/CurrencyEnum";
 import { IPlanning } from "~/interfaces/IPlanning";
 import { getIconFromCurrencyType } from "~/utils/getIconFromCurrencyType";
@@ -19,8 +19,8 @@ export interface ITableRow {
   planningToSell: IPlanning;
   planningToBuy: IPlanning;
   rateInBTC: number;
-  progress: string;
-  offerType: string;
+  progress: string | undefined;
+  offerType: string | undefined;
   fullfillmentRequestId: string | undefined;
   offerId: number | string;
   fullfillmentExpiryTime: string | undefined;
@@ -93,9 +93,17 @@ const RecentOngoingTable = ({
           </div>,
           <div className={styles.planningCell}>
             {row.planningToBuy.amount}{" "}
-            <ImageIcon
-              image={getIconFromCurrencyType(row.planningToBuy.type)}
-            />{" "}
+            {!isValidElement(row.planningToBuy.type) ? (
+              <>
+                <ImageIcon
+                  image={getIconFromCurrencyType(
+                    row.planningToBuy.type as CurrencyEnum
+                  )}
+                />{" "}
+              </>
+            ) : (
+              <>{row.planningToBuy.type}</>
+            )}
           </div>,
           <div className={styles.planningCell}>
             {row.rateInBTC}{" "}
@@ -180,9 +188,17 @@ const RecentOngoingTable = ({
           </div>,
           <div className={styles.planningCell}>
             {row.planningToBuy.amount}{" "}
-            <ImageIcon
-              image={getIconFromCurrencyType(row.planningToBuy.type)}
-            />{" "}
+            {!isValidElement(row.planningToBuy.type) ? (
+              <>
+                <ImageIcon
+                  image={getIconFromCurrencyType(
+                    row.planningToBuy.type as CurrencyEnum
+                  )}
+                />{" "}
+              </>
+            ) : (
+              <>{row.planningToBuy.type}</>
+            )}
           </div>,
           <>
             {row.offerType == "my_order" ? (
@@ -267,7 +283,12 @@ const RecentOngoingTable = ({
   );
 };
 // function is used to make text wrap.
-export const GetProgressText = ({ progress }: { progress: string }) => {
+export const GetProgressText = ({
+  progress,
+}: {
+  progress: string | undefined;
+}) => {
+  if (!progress) return <></>;
   const progressArr = progress.split(" ");
   let progressArrLen = progressArr.length;
   const progresText = [];

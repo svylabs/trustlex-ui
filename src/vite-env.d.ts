@@ -9,10 +9,12 @@ declare global {
   interface Window {
     ethereum: ethers.providers.ExternalProvider;
     Stream: Stream;
+    EthDater: any;
+    cleanTx: any;
   }
 }
 declare module "wif";
 declare module "bip38";
-declare module 'react-mermaid';
-declare module 'react-faq-component';
+declare module "react-mermaid";
+declare module "react-faq-component";
 // declare module "vite-plugin-wasm";

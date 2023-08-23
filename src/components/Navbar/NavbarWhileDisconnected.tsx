@@ -6,12 +6,13 @@ import { useContext, useEffect, useState } from "react";
 import useWindowDimensions from "~/hooks/useWindowDimesnsion";
 import { Web3Button } from "@web3modal/react";
 import { useWeb3Modal } from "@web3modal/react";
-import {
-  getConnectedAccount,
-  ethereum as WalletConnectEthereum,
-} from "~/service/WalletConnectService";
 
-import { connectToMetamask, showErrorMessage } from "~/service/AppService";
+import {
+  connectToMetamask,
+  showErrorMessage,
+  getNetworkInfo,
+  getEthereumObject,
+} from "~/service/AppService";
 
 interface props {
   title: string;
@@ -24,7 +25,7 @@ const NavbarWhileDisconnected = ({ title, description }: props) => {
   if (context === null) {
     return <>Loading...</>;
   }
-  const { connectInfo, setConnectinfo } = context;
+  const { connectInfo, setConnectinfo, setAccount } = context;
 
   const handleWalletConnect = async () => {
     open();
@@ -34,8 +35,16 @@ const NavbarWhileDisconnected = ({ title, description }: props) => {
     if (!connect) {
       let message: string = "Failed to connect";
       showErrorMessage(message);
+    } else {
+      console.log(connect);
+      setConnectinfo({
+        isConnected: true,
+        walletName: "metamask",
+        ethereumObject: getEthereumObject(),
+        chainId: await getNetworkInfo(),
+      });
+      setAccount(connect[0]);
     }
-    //   setAccount(connect);
   };
   const connectDropdownItems = [
     {

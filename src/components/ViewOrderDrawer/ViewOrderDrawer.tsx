@@ -56,7 +56,7 @@ type Props = {
   contract: ethers.Contract | undefined;
   GetProgressText: ({ progress }: { progress: string }) => void;
   selectedCurrencyIcon: JSX.Element | string;
-  isCompleted: boolean;
+  isCompleted?: boolean;
 };
 
 export interface ITableRow {
@@ -371,7 +371,7 @@ const ViewOrderDrawer = ({
         setCancelOffer("loading");
         setEnableoutSideClick(false);
         let contractInstance = await getSelectedTokenContractInstance();
-        if (contractInstance == false) {
+        if (!contractInstance) {
           return;
         }
         let walletName = connectInfo.walletName;

@@ -39,13 +39,7 @@ import {
   getNetworkInfo,
 } from "./service/AppService";
 import {
-  ethereum as WalletConnectEthereum,
-  createContractInstanceWalletService,
   createContractInstanceWagmi,
-  writeContractWagmi,
-  readContractWagmi,
-  getEventDataWagmi,
-  watchContractEventWagmi,
   fetchBalanceWagmi,
 } from "./service/WalletConnectService";
 
@@ -106,6 +100,7 @@ const DefaultPage = () => {
 
 export default function App() {
   const [isMetamaskConnected, setIsMetamaskConnected] = useState(false);
+
   const { address, isConnected, isDisconnected } = useAccount();
   // const provider = useProvider(...)
   const publicClient = usePublicClient();
@@ -124,7 +119,7 @@ export default function App() {
       isConnected == true
         ? publicClient.chain.id
         : // : MetamaskEthereum.chain != undefined
-          // ? MetamaskEthereum.chain.id
+          // ?
           0,
   });
 
@@ -193,30 +188,6 @@ export default function App() {
     }
   }, [isDisconnected]);
 
-  if (MetamaskEthereum) {
-    // metamask disconnect event
-    (MetamaskEthereum as any).on("disconnect", (error: ProviderRpcError) => {
-      console.log("Metamask event disconnect fired");
-      setConnectinfo({
-        ...connectInfo,
-        isConnected: false,
-        walletName: "",
-        chainId: 0,
-      });
-    });
-    (MetamaskEthereum as any).on(
-      "connect",
-      async (connectInfo: ConnectInfo) => {
-        console.log("Metamask event connect fired");
-        setConnectinfo({
-          ...connectInfo,
-          isConnected: true,
-          walletName: "metamask",
-          chainId: await getNetworkInfo(),
-        });
-      }
-    );
-  }
   return (
     <>
       <BaseContext.Provider
@@ -236,10 +207,12 @@ export default function App() {
         {connectInfo.isConnected == true ? (
           <>
             {" "}
+            <ToastContainer />
             <BaseApp />
           </>
         ) : (
           <>
+            <ToastContainer />
             <MantineProvider
               theme={{ colorScheme: "dark" }}
               withGlobalStyles
@@ -272,8 +245,7 @@ export function BaseApp() {
   } = context;
 
   const { get, set, remove } = useLocalstorage();
-  // const [account, setAccount] = useState("");
-  // const [balance, setBalance] = useState("");
+
   const [totalOffers, setTotalOffers] = useState(0);
   const [fromOfferId, setFromOfferId] = useState(0);
   // const [contract, setContract] = useState<ethers.Contract>();
@@ -510,27 +482,49 @@ export function BaseApp() {
   //Account change event
 
   const { ethereum } = window;
-  if (connectInfo.ethereumObject) {
-    // (connectInfo.ethereumObject as any).on(
-    //   "accountsChanged",
-    //   async function (accounts: any) {
-    //     // alert("line no. 443");
-    //     setAccount(accounts[0]);
-    //   }
-    // );
+
+  if (connectInfo.ethereumObject && connectInfo.walletName == "metamask") {
+    (connectInfo.ethereumObject as any).on(
+      "accountsChanged",
+      async function (accounts: any) {
+        if (accounts.length > 0) {
+          // console.log("account");
+          // console.log(account);
+          if (account != "") {
+            // console.log("Metamask connected");
+            setConnectinfo({
+              ...connectInfo,
+              isConnected: true,
+              walletName: "metamask",
+              ethereumObject: ethereum,
+              chainId: await getNetworkInfo(),
+            });
+          }
+          setAccount(accounts[0]);
+        } else {
+          // console.log("Metamask disconnected");
+          setConnectinfo({
+            ...connectInfo,
+            isConnected: false,
+            walletName: "",
+            chainId: 0,
+          });
+        }
+      }
+    );
     //  Network changed event
-    // (connectInfo.ethereumObject as any).on(
-    //   connectInfo.walletName == "metamask" ? "networkChanged" : "chainChanged",
-    //   async function (networkId: number) {
-    //     // console.log(networkId);
-    //     let provider = new ethers.providers.Web3Provider(
-    //       connectInfo.ethereumObject
-    //     );
-    //     let network = await provider.getNetwork();
-    //     setNetWorkInfoData(network as INetworkInfo);
-    //     checkNetwork(connectInfo.ethereumObject);
-    //   }
-    // );
+    (connectInfo.ethereumObject as any).on(
+      connectInfo.walletName == "metamask" ? "networkChanged" : "chainChanged",
+      async function (networkId: number) {
+        // console.log(networkId);
+        let provider = new ethers.providers.Web3Provider(
+          connectInfo.ethereumObject
+        );
+        let network = await provider.getNetwork();
+        setNetWorkInfoData(network as INetworkInfo);
+        checkNetwork(connectInfo.ethereumObject);
+      }
+    );
   }
 
   useEffect(() => {
@@ -1268,7 +1262,6 @@ export function BaseApp() {
             }}
           >
             <Layout>
-              <ToastContainer />
               {alertMessage != "" ? (
                 <>
                   <Alert

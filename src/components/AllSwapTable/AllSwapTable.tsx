@@ -13,7 +13,7 @@ import SeeMoreButton from "../SeeMoreButton/SeeMoreButton";
 import ViewOrderDrawer from "../ViewOrderDrawer/ViewOrderDrawer";
 import { ethers } from "ethers";
 import { IListInitiatedFullfillmentDataByNonEvent } from "~/interfaces/IOfferdata";
-import { useState, useEffect } from "react";
+import { isValidElement, useState, useEffect } from "react";
 import { currencyObjects } from "~/Context/Constants";
 
 interface Props extends TableProps {
@@ -51,17 +51,25 @@ const AllSwapTable = ({
       ? data.map((row) => [
           row.orderNumber,
           <div className={styles.planningCell}>
-            {row.planningToSell.amount}{" "}
-            <ImageIcon
+            {row.planningToSell.amount} {row.planningToSell.type}
+            {/* <ImageIcon
               image={getIconFromCurrencyType(row.planningToSell.type)}
-            />{" "}
+            /> */}{" "}
             {row.planningToSell.type}
           </div>,
           <div className={styles.planningCell}>
             {row.planningToBuy.amount}{" "}
-            <ImageIcon
-              image={getIconFromCurrencyType(row.planningToBuy.type)}
-            />{" "}
+            {!isValidElement(row.planningToBuy.type) ? (
+              <>
+                <ImageIcon
+                  image={getIconFromCurrencyType(
+                    row.planningToBuy.type as CurrencyEnum
+                  )}
+                />{" "}
+              </>
+            ) : (
+              <>{row.planningToBuy.type}</>
+            )}
             {row.planningToBuy.type}
           </div>,
           <div className={styles.planningCell}>
